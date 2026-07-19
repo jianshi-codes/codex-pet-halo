@@ -1,0 +1,43 @@
+{
+  "completedAt": "2026-07-19T16:31:17.433170+00:00",
+  "contextUpdates": [],
+  "handshake": "PASS",
+  "loadedThreadCount": 0,
+  "methodErrors": {},
+  "observedNotificationMethods": [
+    "remoteControl/status/changed"
+  ],
+  "rateLimits": {
+    "fiveHour": [],
+    "unknown": [],
+    "weekly": [
+      {
+        "limitId": "codex",
+        "remainingPercent": 97.0,
+        "resetsAt": 1785078166,
+        "sourceSlot": "primary",
+        "usedPercent": 3.0,
+        "windowDurationMins": 10080
+      },
+      {
+        "limitId": "codex_bengalfox",
+        "remainingPercent": 100.0,
+        "resetsAt": 1785083473,
+        "sourceSlot": "primary",
+        "usedPercent": 0.0,
+        "windowDurationMins": 10080
+      }
+    ]
+  },
+  "startedAt": "2026-07-19T16:31:11.988439+00:00",
+  "status": "PASS",
+  "stderr": [],
+  "successfulMethods": [
+    "account/read",
+    "account/rateLimits/read",
+    "account/usage/read",
+    "thread/loaded/list"
+  ],
+  "tokenUsageEventCount": 0,
+  "transport": "stdio"
+}

@@ -1,0 +1,113 @@
+{
+  "captureMetadata": {
+    "capturedAt": "2026-07-19T16:31:17.433170+00:00",
+    "redaction": "deny-by-default strings and token metrics; high-volume arrays compacted",
+    "transport": "stdio"
+  },
+  "notifications": [
+    {
+      "emittedAtMs": 1784478672174,
+      "method": "remoteControl/status/changed",
+      "params": {
+        "environmentId": null,
+        "installationId": "<redacted-id>",
+        "serverName": "<redacted-string>",
+        "status": "disabled"
+      }
+    }
+  ],
+  "responses": {
+    "account/rateLimits/read": {
+      "rateLimitResetCredits": "<redacted-string>",
+      "rateLimits": {
+        "credits": {
+          "balance": "<redacted-string>",
+          "hasCredits": false,
+          "unlimited": false
+        },
+        "individualLimit": null,
+        "limitId": "codex",
+        "limitName": null,
+        "planType": "<redacted-string>",
+        "primary": {
+          "resetsAt": 1785078166,
+          "usedPercent": 3,
+          "windowDurationMins": 10080
+        },
+        "rateLimitReachedType": null,
+        "secondary": null,
+        "spendControlReached": false
+      },
+      "rateLimitsByLimitId": {
+        "codex": {
+          "credits": {
+            "balance": "<redacted-string>",
+            "hasCredits": false,
+            "unlimited": false
+          },
+          "individualLimit": null,
+          "limitId": "codex",
+          "limitName": null,
+          "planType": "<redacted-string>",
+          "primary": {
+            "resetsAt": 1785078166,
+            "usedPercent": 3,
+            "windowDurationMins": 10080
+          },
+          "rateLimitReachedType": null,
+          "secondary": null,
+          "spendControlReached": false
+        },
+        "codex_bengalfox": {
+          "credits": null,
+          "individualLimit": null,
+          "limitId": "codex_bengalfox",
+          "limitName": "GPT-5.3-Codex-Spark",
+          "planType": "<redacted-string>",
+          "primary": {
+            "resetsAt": 1785083473,
+            "usedPercent": 0,
+            "windowDurationMins": 10080
+          },
+          "rateLimitReachedType": null,
+          "secondary": null,
+          "spendControlReached": null
+        }
+      }
+    },
+    "account/read": {
+      "account": {
+        "email": "<redacted-sensitive>",
+        "planType": "<redacted-string>",
+        "type": "chatgpt"
+      },
+      "requiresOpenaiAuth": true
+    },
+    "account/usage/read": {
+      "dailyUsageBuckets": [
+        {
+          "startDate": "<redacted-string>",
+          "tokens": "<redacted-sensitive-number>"
+        }
+      ],
+      "summary": {
+        "currentStreakDays": "<redacted-sensitive-number>",
+        "lifetimeTokens": "<redacted-sensitive-number>",
+        "longestRunningTurnSec": "<redacted-sensitive-number>",
+        "longestStreakDays": "<redacted-sensitive-number>",
+        "peakDailyTokens": "<redacted-sensitive-number>"
+      }
+    },
+    "initialize": {
+      "codexHome": "<redacted-path>",
+      "platformFamily": "<redacted-string>",
+      "platformOs": "<redacted-string>",
+      "userAgent": "<redacted-string>"
+    },
+    "thread/loaded/list": {
+      "data": [],
+      "nextCursor": null,
+      "observedThreadCount": 0
+    }
+  }
+}
