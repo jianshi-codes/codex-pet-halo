@@ -1,0 +1,45 @@
+name: PetHalo
+options:
+  minimumXcodeGenVersion: 2.46.0
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    CLANG_ENABLE_MODULES: YES
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+targets:
+  PetHalo:
+    type: application
+    platform: macOS
+    productName: Pet Halo
+    sources:
+      - path: PetHalo
+    settings:
+      base:
+        PRODUCT_NAME: Pet Halo
+        PRODUCT_MODULE_NAME: PetHalo
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.jianshicodes.PetHalo
+        MARKETING_VERSION: 0.1.0
+        CURRENT_PROJECT_VERSION: 1
+        INFOPLIST_FILE: Config/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_STYLE: Automatic
+    scheme:
+      testTargets:
+        - PetHaloTests
+      gatherCoverageData: true
+  PetHaloTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: PetHaloTests
+    dependencies:
+      - target: PetHalo
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.jianshicodes.PetHaloTests
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGNING_ALLOWED: NO

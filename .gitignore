@@ -3,6 +3,7 @@
 DerivedData/
 *.xcuserstate
 xcuserdata/
+.tools/
 
 __pycache__/
 *.py[cod]

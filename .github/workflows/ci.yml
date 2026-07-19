@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  protocol-evidence:
+    name: Protocol evidence
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run retained M0 tests
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s Tests -p 'test_*.py' -v
+          python3 -m compileall -q Tools/ProtocolProbe Tests
+      - name: Parse generated JSON schemas
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          paths = list(Path("Tools/ProtocolProbe/Schemas").rglob("*.json"))
+          if not paths:
+              raise SystemExit("no generated JSON schemas found")
+          for path in paths:
+              with path.open(encoding="utf-8") as handle:
+                  json.load(handle)
+          print(f"Parsed {len(paths)} generated JSON schemas")
+          PY
+      - name: Run privacy and path scans
+        run: ./Scripts/privacy-scan.sh
+      - name: Check whitespace
+        run: git diff --check
+
+  macos-application:
+    name: macOS application
+    runs-on: macos-15
+    env:
+      XCODEGEN_VERSION: 2.46.0
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned XcodeGen
+        run: |
+          set -euo pipefail
+          curl -fsSLo /tmp/xcodegen.zip "https://github.com/yonaskolb/XcodeGen/releases/download/${XCODEGEN_VERSION}/xcodegen.zip"
+          mkdir -p /tmp/xcodegen-release
+          ditto -x -k /tmp/xcodegen.zip /tmp/xcodegen-release
+          echo "/tmp/xcodegen-release/xcodegen/bin" >> "$GITHUB_PATH"
+      - name: Validate M1 and retained M0 work
+        run: make check
+      - name: Confirm generated project is current
+        run: git diff --exit-code -- PetHalo.xcodeproj
+      - name: Check whitespace
+        run: git diff --check
