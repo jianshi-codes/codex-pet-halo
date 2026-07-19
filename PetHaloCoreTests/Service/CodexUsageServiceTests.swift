@@ -271,6 +271,10 @@ final class CodexUsageServiceTests: XCTestCase {
 
         XCTAssertEqual(state.connection, .connected)
         XCTAssertEqual(state.compatibility, .supported(version: "0.145.0-alpha.18"))
+        XCTAssertEqual(
+            state.componentFreshness,
+            UsageComponentFreshness(rateLimits: .current, accountUsage: .current)
+        )
         XCTAssertEqual(state.freshness, .current)
         XCTAssertEqual(state.snapshot?.rateLimitBuckets.map(\.id), ["codex"])
         XCTAssertNil(state.snapshot?.contextUsage)
@@ -300,6 +304,9 @@ final class CodexUsageServiceTests: XCTestCase {
         XCTAssertNotNil(state.snapshot)
         XCTAssertNil(state.snapshot?.accountUsage)
         XCTAssertEqual(state.capabilities.accountUsage, .unavailable(.unsupported))
+        XCTAssertEqual(state.componentFreshness.rateLimits, .current)
+        XCTAssertEqual(state.componentFreshness.accountUsage, .unavailable)
+        XCTAssertEqual(state.freshness, .current)
         await service.stop()
     }
 
@@ -314,9 +321,62 @@ final class CodexUsageServiceTests: XCTestCase {
         let refreshed = await service.stateForTesting()
 
         XCTAssertEqual(refreshed.connection, .connected)
+        XCTAssertEqual(refreshed.componentFreshness.rateLimits, .current)
+        XCTAssertEqual(refreshed.componentFreshness.accountUsage, .stale)
         XCTAssertEqual(refreshed.freshness, .stale)
         XCTAssertNotNil(refreshed.snapshot?.accountUsage)
         XCTAssertEqual(refreshed.failureReason, .accountUsageUnsupported)
+        await service.stop()
+    }
+
+    func testStaleAccountUsageSurvivesRateOnlyRefreshAndRecoversOnFullRefresh() async throws {
+        let observation = try makeObservationFile()
+        defer { try? FileManager.default.removeItem(at: observation.deletingLastPathComponent()) }
+        let (service, clock, _) = try makeService(
+            scenarios: ["usage-stale-then-recovers"],
+            observationURL: observation
+        )
+        await service.start()
+        let initial = await service.stateForTesting()
+        let originalUsage = try XCTUnwrap(initial.snapshot?.accountUsage)
+        XCTAssertEqual(initial.componentFreshness.rateLimits, .current)
+        XCTAssertEqual(initial.componentFreshness.accountUsage, .current)
+
+        await service.refresh()
+        let failedUsage = await service.stateForTesting()
+        XCTAssertEqual(failedUsage.componentFreshness.rateLimits, .current)
+        XCTAssertEqual(failedUsage.componentFreshness.accountUsage, .stale)
+        XCTAssertEqual(failedUsage.freshness, .stale)
+        XCTAssertEqual(failedUsage.snapshot?.accountUsage, originalUsage)
+        XCTAssertEqual(failedUsage.failureReason, .accountUsageUnsupported)
+        let failedCollectionTime = failedUsage.snapshot?.collectedAt
+
+        try await waitForClockWaiter(clock, dueIn: 60_000_000_000)
+        clock.advance(by: 60_000_000_000)
+        let notified = try await waitForState(service) {
+            $0.componentFreshness.rateLimits == .stale
+                && $0.componentFreshness.accountUsage == .stale
+        }
+        XCTAssertEqual(notified.snapshot?.accountUsage, originalUsage)
+
+        let rateOnly = try await waitForState(service) {
+            $0.componentFreshness.rateLimits == .current
+                && $0.componentFreshness.accountUsage == .stale
+                && $0.snapshot?.collectedAt != failedCollectionTime
+        }
+        XCTAssertEqual(rateOnly.freshness, .stale)
+        XCTAssertEqual(rateOnly.snapshot?.accountUsage, originalUsage)
+        XCTAssertEqual(rateOnly.failureReason, .accountUsageUnsupported)
+        XCTAssertEqual(try methodCount("account/usage/read", in: observation), 2)
+
+        await service.refresh()
+        let recovered = await service.stateForTesting()
+        XCTAssertEqual(recovered.componentFreshness.rateLimits, .current)
+        XCTAssertEqual(recovered.componentFreshness.accountUsage, .current)
+        XCTAssertEqual(recovered.freshness, .current)
+        XCTAssertNil(recovered.failureReason)
+        XCTAssertNotEqual(recovered.snapshot?.accountUsage, originalUsage)
+        XCTAssertEqual(recovered.snapshot?.accountUsage?.dailyBuckets?.first?.tokenCount, 99)
         await service.stop()
     }
 
@@ -336,6 +396,8 @@ final class CodexUsageServiceTests: XCTestCase {
         XCTAssertEqual(state.failureReason, .requestTimedOut)
         XCTAssertNotNil(state.snapshot)
         XCTAssertNil(state.snapshot?.accountUsage)
+        XCTAssertEqual(state.componentFreshness.rateLimits, .current)
+        XCTAssertEqual(state.componentFreshness.accountUsage, .unavailable)
         XCTAssertEqual(state.freshness, .current)
         await service.stop()
     }
@@ -349,6 +411,7 @@ final class CodexUsageServiceTests: XCTestCase {
         XCTAssertEqual(state.connection, .connected)
         XCTAssertEqual(state.failureReason, .authenticationUnavailable)
         XCTAssertNotEqual(state.failureReason, .transportClosed)
+        XCTAssertEqual(state.componentFreshness, .unavailable)
         await service.stop()
     }
 
@@ -375,6 +438,7 @@ final class CodexUsageServiceTests: XCTestCase {
             $0.connection == .reconnecting(attempt: 1)
         }
         XCTAssertEqual(reconnectingState.connection, .reconnecting(attempt: 1))
+        XCTAssertEqual(reconnectingState.componentFreshness, .unavailable)
         XCTAssertEqual(factory.count(), 1)
 
         clock.advance(by: 1_000_000_000)
@@ -388,6 +452,7 @@ final class CodexUsageServiceTests: XCTestCase {
         XCTAssertEqual(factory.count(), 2)
         let stoppedState = await service.stateForTesting()
         XCTAssertEqual(stoppedState.connection, .stopped)
+        XCTAssertEqual(stoppedState.componentFreshness, .unavailable)
     }
 
     func testUnsupportedVersionAndMissingExecutableNeverLaunchProcess() async throws {
@@ -490,6 +555,7 @@ final class CodexUsageServiceTests: XCTestCase {
             $0.connection == .connected && $0.freshness == .unavailable && $0.snapshot == nil
         }
         XCTAssertEqual(invalidated.capabilities.accountUsage, .unavailable(.requestFailed))
+        XCTAssertEqual(invalidated.componentFreshness, .unavailable)
 
         try await waitForClockWaiter(clock, dueIn: 250_000_000)
         clock.advance(by: 250_000_000)
@@ -500,6 +566,7 @@ final class CodexUsageServiceTests: XCTestCase {
         XCTAssertEqual(loggedOut.capabilities.generalWeekly, .unavailable(.requestFailed))
         XCTAssertEqual(loggedOut.capabilities.generalFiveHour, .unavailable(.requestFailed))
         XCTAssertEqual(loggedOut.capabilities.accountUsage, .unavailable(.authenticationUnavailable))
+        XCTAssertEqual(loggedOut.componentFreshness, .unavailable)
         XCTAssertEqual(try methodCount("account/read", in: observation), 2)
         XCTAssertEqual(try methodCount("account/rateLimits/read", in: observation), 2)
         XCTAssertEqual(try methodCount("account/usage/read", in: observation), 2)
@@ -558,6 +625,7 @@ final class CodexUsageServiceTests: XCTestCase {
             $0.freshness == .unavailable && $0.snapshot == nil
         }
         XCTAssertEqual(quarantined.capabilities.accountUsage, .unavailable(.requestFailed))
+        XCTAssertEqual(quarantined.componentFreshness, .unavailable)
 
         try await waitForClockWaiter(clock, dueIn: 250_000_000)
         clock.advance(by: 250_000_000)
@@ -587,9 +655,20 @@ final class CodexUsageServiceTests: XCTestCase {
         await service.start()
         let refresh = Task { await service.refresh() }
         try await waitForClockWaiter(clock, dueIn: 250_000_000)
+        let invalidated = try await waitForState(service) {
+            $0.componentFreshness.rateLimits == .stale
+                && $0.componentFreshness.accountUsage == .current
+        }
+        XCTAssertEqual(invalidated.freshness, .stale)
         clock.advance(by: 250_000_000)
         await refresh.value
         try await waitForMethodCount(3, method: "account/rateLimits/read", in: observation)
+
+        let restored = try await waitForState(service) {
+            $0.componentFreshness.rateLimits == .current
+                && $0.componentFreshness.accountUsage == .current
+        }
+        XCTAssertEqual(restored.freshness, .current)
 
         XCTAssertEqual(try methodCount("account/read", in: observation), 2)
         XCTAssertEqual(try methodCount("account/rateLimits/read", in: observation), 3)

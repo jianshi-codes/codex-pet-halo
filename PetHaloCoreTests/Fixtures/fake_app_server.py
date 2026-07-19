@@ -106,6 +106,9 @@ for raw_line in sys.stdin:
             time.sleep(0.05)
         if SCENARIO == "rate-delayed-after-first" and rate_request_count == 2:
             time.sleep(0.1)
+        if SCENARIO == "usage-stale-then-recovers" and rate_request_count == 3:
+            write({"method": "account/rateLimits/updated", "params": {"sparse": True}})
+            time.sleep(0.05)
         snapshot = {
             "limitId": "codex",
             "limitName": "General",
@@ -131,10 +134,14 @@ for raw_line in sys.stdin:
             time.sleep(0.2)
         if SCENARIO == "usage-fails" or (
             SCENARIO == "usage-fails-after-first" and usage_request_count > 1
+        ) or (
+            SCENARIO == "usage-stale-then-recovers" and usage_request_count == 2
         ):
             write({"id": request_id, "error": {"code": -32601, "message": "unsupported"}})
         else:
-            token_count = 99 if SCENARIO == "account-switch" and usage_request_count > 1 else 10
+            recovered_usage = SCENARIO == "usage-stale-then-recovers" and usage_request_count > 2
+            switched_account = SCENARIO == "account-switch" and usage_request_count > 1
+            token_count = 99 if recovered_usage or switched_account else 10
             result(
                 request_id,
                 {

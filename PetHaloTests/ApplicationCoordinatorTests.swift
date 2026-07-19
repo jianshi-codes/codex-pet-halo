@@ -27,7 +27,7 @@ private actor FakeUsageService: CodexUsageServing {
                 compatibility: .supported(version: "test"),
                 snapshot: nil,
                 capabilities: .unavailable,
-                freshness: .unavailable,
+                componentFreshness: .unavailable,
                 lastSuccessfulRefresh: nil,
                 failureReason: nil
             )
@@ -138,7 +138,7 @@ final class ApplicationCoordinatorTests: XCTestCase {
             compatibility: .unsupported(version: "future"),
             snapshot: nil,
             capabilities: .unavailable,
-            freshness: .unavailable,
+            componentFreshness: .unavailable,
             lastSuccessfulRefresh: nil,
             failureReason: .unsupportedProtocolVersion
         )

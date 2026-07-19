@@ -9,7 +9,7 @@
 
 `PetHaloCore` is a Swift 6 framework with complete strict-concurrency checking. It owns UI-independent Usage models and the Codex bridge. `PetHalo` depends on the framework and owns the application lifecycle; `PetHaloCoreTests` contains the transport/service suite and a fake process resource that is excluded from the app bundle.
 
-The stable model preserves all returned rate-limit buckets and identifies the general bucket only by exact `codex` ID. A weekly window is exactly 10,080 minutes and a five-hour window exactly 300 minutes; storage slots and map order never imply semantics. Used percentage is clamped once at the domain boundary and remaining percentage is derived there. Missing, ambiguous, unsupported, stale, authentication-unavailable, and transport-failed data remain distinguishable. Context is explicitly unsupported in M2.
+The stable model preserves all returned rate-limit buckets and identifies the general bucket only by exact `codex` ID. A weekly window is exactly 10,080 minutes and a five-hour window exactly 300 minutes; storage slots and map order never imply semantics. Used percentage is clamped once at the domain boundary and remaining percentage is derived there. `UsageComponentFreshness` exposes rate-limit and Account Usage freshness independently. Global freshness is derived from the available snapshot components: any included stale component makes the snapshot stale, while an optional unavailable component does not make current data stale. Missing, ambiguous, unsupported, stale, authentication-unavailable, and transport-failed data remain distinguishable. Context is explicitly unsupported in M2.
 
 ## Transport and lifecycle
 
@@ -19,7 +19,9 @@ The child owns its pipes, drains and discards stderr, closes stdin, requests ter
 
 ## Refresh and recovery
 
-Initial reads are sequential and read-only. Rate limits refresh every 60 seconds and Account Usage every 15 minutes on absolute monotonic schedules. Refresh work coalesces into ordered `rateLimitsOnly < fullAccount` scopes: one refresh runs at a time, incoming work merges into one strongest pending scope, and the follow-up runs immediately. `account/rateLimits/updated` retains same-account rate data as stale until a complete refetch. `account/updated` immediately clears all account-scoped data and schedules `account/read`, rate-limit, and Usage reads; a later rate notification cannot downgrade it. Authentication loss clears every account capability. Because identity is deliberately discarded, every new app-server connection also clears prior account data rather than assuming account continuity. Reconnect delays are bounded exponential steps of 1, 2, 4, 8, 16, 30, and 60 seconds with injected jitter. Intentional stop clears pending work and prevents relaunch.
+Initial reads are sequential and read-only. Rate limits refresh every 60 seconds and Account Usage every 15 minutes on absolute monotonic schedules. Refresh work coalesces into ordered `rateLimitsOnly < fullAccount` scopes: one refresh runs at a time, incoming work merges into one strongest pending scope, and the follow-up runs immediately. A failed Usage read may retain same-account Usage only with component freshness `.stale` and its safe failure reason preserved; an unrelated successful rate-only refresh cannot make it current or erase that failure. A later successful full refresh replaces the retained Usage, restores its freshness, and clears the failure. `account/rateLimits/updated` marks only retained rate data stale until a complete refetch. `account/updated` immediately clears all account-scoped data and schedules `account/read`, rate-limit, and Usage reads; a later rate notification cannot downgrade it. Authentication loss clears every account capability. Because identity is deliberately discarded, every new app-server connection also clears prior account data rather than assuming account continuity. Reconnect delays are bounded exponential steps of 1, 2, 4, 8, 16, 30, and 60 seconds with injected jitter. Intentional stop clears pending work and prevents relaunch.
+
+`UsageSnapshot.collectedAt` and `CodexUsageState.lastSuccessfulRefresh` represent the newest successful snapshot-component mutation. They do not assert that every included component was collected at that instant; consumers must use `componentFreshness` for individual recency.
 
 ## Privacy and compatibility
 
@@ -31,10 +33,10 @@ Diagnostics are limited to fixed events, safe failure enums, and reconnect attem
 
 | Evidence | Result |
 | --- | --- |
-| `make m2-tests` | PASS — 50 Core tests (1 local-only smoke skipped normally) and 5 lifecycle/menu-state tests, 0 failures |
+| `make m2-tests` | PASS — 51 Core tests (1 local-only smoke skipped normally) and 5 lifecycle/menu-state tests, 0 failures |
 | JSONL/JSON-RPC cases | PASS — framing, 4 MiB bound, IDs, concurrency, ordering, timeout, cancel, disconnect, duplicate/unknown IDs, malformed data |
 | Fake process cases | PASS — valid, partial stdout, stderr noise, malformed/oversized/hanging version output, abrupt exit, auth/account transitions, optional Usage failure, sparse/burst notifications |
-| Service cases | PASS — attempt invalidation, exact cleanup barrier, max owned-child concurrency 1, capability semantics, account isolation, refresh coalescing, reconnect, idempotent/concurrent shutdown |
+| Service cases | PASS — attempt invalidation, exact cleanup barrier, max owned-child concurrency 1, component freshness and recovery, account isolation, refresh coalescing, reconnect, idempotent/concurrent shutdown |
 | `make check` | PASS — Debug/Release builds, all Swift tests, retained M0 tests, bundle/privacy/source/project drift checks |
 | `make m2-smoke` | PASS — local executable/version/handshake/read capabilities and clean owned-child shutdown; sanitized output only |
 | Launch Services smoke | PASS — accessory process, no visible normal window, no Dock icon by policy, owned child exits with app |

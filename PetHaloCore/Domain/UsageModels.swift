@@ -183,11 +183,27 @@ public enum DataFreshness: Equatable, Sendable {
     case stale
 }
 
+public struct UsageComponentFreshness: Equatable, Sendable {
+    public let rateLimits: DataFreshness
+    public let accountUsage: DataFreshness
+
+    public init(rateLimits: DataFreshness, accountUsage: DataFreshness) {
+        self.rateLimits = rateLimits
+        self.accountUsage = accountUsage
+    }
+
+    public static let unavailable = UsageComponentFreshness(
+        rateLimits: .unavailable,
+        accountUsage: .unavailable
+    )
+}
+
 public struct CodexUsageState: Equatable, Sendable {
     public let connection: BridgeConnectionState
     public let compatibility: ProtocolCompatibilityState
     public let snapshot: UsageSnapshot?
     public let capabilities: UsageCapabilities
+    public let componentFreshness: UsageComponentFreshness
     public let freshness: DataFreshness
     public let lastSuccessfulRefresh: Date?
     public let failureReason: SafeFailureReason?
@@ -197,7 +213,7 @@ public struct CodexUsageState: Equatable, Sendable {
         compatibility: ProtocolCompatibilityState,
         snapshot: UsageSnapshot?,
         capabilities: UsageCapabilities,
-        freshness: DataFreshness,
+        componentFreshness: UsageComponentFreshness,
         lastSuccessfulRefresh: Date?,
         failureReason: SafeFailureReason?
     ) {
@@ -205,7 +221,11 @@ public struct CodexUsageState: Equatable, Sendable {
         self.compatibility = compatibility
         self.snapshot = snapshot
         self.capabilities = capabilities
-        self.freshness = freshness
+        self.componentFreshness = componentFreshness
+        self.freshness = Self.globalFreshness(
+            snapshot: snapshot,
+            componentFreshness: componentFreshness
+        )
         self.lastSuccessfulRefresh = lastSuccessfulRefresh
         self.failureReason = failureReason
     }
@@ -215,10 +235,26 @@ public struct CodexUsageState: Equatable, Sendable {
         compatibility: .unknown,
         snapshot: nil,
         capabilities: .unavailable,
-        freshness: .unavailable,
+        componentFreshness: .unavailable,
         lastSuccessfulRefresh: nil,
         failureReason: nil
     )
+
+    private static func globalFreshness(
+        snapshot: UsageSnapshot?,
+        componentFreshness: UsageComponentFreshness
+    ) -> DataFreshness {
+        guard let snapshot else { return .unavailable }
+        var included: [DataFreshness] = []
+        if componentFreshness.rateLimits != .unavailable {
+            included.append(componentFreshness.rateLimits)
+        }
+        if snapshot.accountUsage != nil {
+            included.append(componentFreshness.accountUsage)
+        }
+        guard !included.isEmpty else { return .unavailable }
+        return included.allSatisfy { $0 == .current } ? .current : .stale
+    }
 }
 
 public enum UsageSemantics {

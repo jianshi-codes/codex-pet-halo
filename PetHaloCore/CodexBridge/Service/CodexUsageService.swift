@@ -137,8 +137,11 @@ public actor CodexUsageService: CodexUsageServing {
     private var compatibility: ProtocolCompatibilityState = .unknown
     private var latestBuckets: [RateLimitBucket] = []
     private var hasRateLimitSnapshot = false
+    private var rateLimitFreshness: DataFreshness = .unavailable
     private var latestAccountUsage: AccountUsage?
+    private var accountUsageFreshness: DataFreshness = .unavailable
     private var accountUsageUnavailableReason: CapabilityUnavailableReason = .requestFailed
+    private var accountUsageFailureReason: SafeFailureReason?
     private var authenticationAvailable: Bool?
     private var lastSuccessfulRefresh: Date?
 
@@ -181,7 +184,6 @@ public actor CodexUsageService: CodexUsageServing {
         clearAccountScopedState()
         publish(
             connection: .starting,
-            freshness: .unavailable,
             failure: nil
         )
         logger.info("Codex bridge starting")
@@ -235,7 +237,6 @@ public actor CodexUsageService: CodexUsageServing {
         clearAccountScopedState()
         publish(
             connection: .stopped,
-            freshness: .unavailable,
             failure: nil
         )
         logger.info("Codex bridge stopped")
@@ -431,7 +432,9 @@ public actor CodexUsageService: CodexUsageServing {
         var refreshedUsageReason = accountUsageUnavailableReason
         var failure: SafeFailureReason?
         var successfulComponent = false
-        var retainedStaleComponent = false
+        var rateLimitReadFailed = false
+        var accountUsageReadFailed = false
+        var refreshedUsageFailure: SafeFailureReason?
 
         if scope == .fullAccount {
             do {
@@ -478,7 +481,7 @@ public actor CodexUsageService: CodexUsageServing {
                 )
                 return
             }
-            retainedStaleComponent = hasRateLimitSnapshot
+            rateLimitReadFailed = true
             failure = failure ?? rateLimitFailure(for: error)
         }
 
@@ -501,8 +504,9 @@ public actor CodexUsageService: CodexUsageServing {
                     )
                     return
                 }
-                retainedStaleComponent = retainedStaleComponent || latestAccountUsage != nil
-                failure = failure ?? accountUsageFailure(for: error)
+                accountUsageReadFailed = true
+                refreshedUsageFailure = accountUsageFailure(for: error)
+                failure = failure ?? refreshedUsageFailure
                 refreshedUsageReason = accountUsageCapabilityReason(for: error)
             }
         }
@@ -510,37 +514,37 @@ public actor CodexUsageService: CodexUsageServing {
         guard refreshIsCurrent(generation: generation, accountEpoch: refreshAccountEpoch) else { return }
         authenticationAvailable = refreshedAuthentication
         if refreshedAuthentication == false {
-            latestBuckets = []
-            hasRateLimitSnapshot = false
-            latestAccountUsage = nil
+            clearAccountScopedState()
+            authenticationAvailable = false
             accountUsageUnavailableReason = .authenticationUnavailable
-            lastSuccessfulRefresh = nil
-            publish(connection: .connected, freshness: .unavailable, failure: .authenticationUnavailable)
+            publish(connection: .connected, failure: .authenticationUnavailable)
             return
         }
         if let refreshedBuckets {
             latestBuckets = refreshedBuckets
             hasRateLimitSnapshot = true
+            rateLimitFreshness = .current
+        } else if rateLimitReadFailed {
+            rateLimitFreshness = hasRateLimitSnapshot ? .stale : .unavailable
         }
         if scope == .fullAccount {
             if let refreshedUsage {
                 latestAccountUsage = refreshedUsage
+                accountUsageFreshness = .current
+                accountUsageFailureReason = nil
+            } else if accountUsageReadFailed {
+                accountUsageFreshness = latestAccountUsage == nil ? .unavailable : .stale
+                accountUsageFailureReason = refreshedUsageFailure
             }
             accountUsageUnavailableReason = refreshedUsageReason
         }
         if successfulComponent {
             lastSuccessfulRefresh = clock.dateNow()
         }
-        let snapshot = makeSnapshot()
-        let freshness: DataFreshness
-        if retainedStaleComponent {
-            freshness = .stale
-        } else if successfulComponent {
-            freshness = .current
-        } else {
-            freshness = snapshot == nil ? .unavailable : .stale
-        }
-        publish(connection: .connected, freshness: freshness, failure: failure)
+        publish(
+            connection: .connected,
+            failure: failure
+        )
     }
 
     private func refreshIsCurrent(generation: Int, accountEpoch: Int) -> Bool {
@@ -660,13 +664,14 @@ public actor CodexUsageService: CodexUsageServing {
         switch event {
         case let .notification(method, _):
             if method == "account/rateLimits/updated" {
-                if makeSnapshot() != nil {
-                    publish(connection: .connected, freshness: .stale, failure: nil)
+                if hasRateLimitSnapshot {
+                    rateLimitFreshness = .stale
+                    publish(connection: .connected, failure: nil)
                 }
                 scheduleNotificationRefresh(scope: .rateLimitsOnly, generation: generation)
             } else if method == "account/updated" {
                 clearAccountScopedState()
-                publish(connection: .connected, freshness: .unavailable, failure: nil)
+                publish(connection: .connected, failure: nil)
                 scheduleNotificationRefresh(scope: .fullAccount, generation: generation)
             }
         case let .disconnected(error):
@@ -710,7 +715,6 @@ public actor CodexUsageService: CodexUsageServing {
         clearAccountScopedState()
         publish(
             connection: .reconnecting(attempt: reconnectAttempt + 1),
-            freshness: .unavailable,
             failure: failure
         )
         scheduleReconnect()
@@ -746,7 +750,6 @@ public actor CodexUsageService: CodexUsageServing {
     private func publishUnavailable(failure: SafeFailureReason) {
         publish(
             connection: .unavailable,
-            freshness: makeSnapshot() == nil ? .unavailable : .stale,
             failure: failure
         )
         logger.info("Codex bridge unavailable, reason: \(failure.rawValue, privacy: .public)")
@@ -754,7 +757,6 @@ public actor CodexUsageService: CodexUsageServing {
 
     private func publish(
         connection: BridgeConnectionState,
-        freshness: DataFreshness,
         failure: SafeFailureReason?
     ) {
         currentState = CodexUsageState(
@@ -762,9 +764,12 @@ public actor CodexUsageService: CodexUsageServing {
             compatibility: compatibility,
             snapshot: makeSnapshot(),
             capabilities: makeCapabilities(),
-            freshness: freshness,
+            componentFreshness: UsageComponentFreshness(
+                rateLimits: rateLimitFreshness,
+                accountUsage: accountUsageFreshness
+            ),
             lastSuccessfulRefresh: lastSuccessfulRefresh,
-            failureReason: failure
+            failureReason: failure ?? accountUsageFailureReason
         )
         stateContinuation.yield(currentState)
     }
@@ -820,8 +825,11 @@ public actor CodexUsageService: CodexUsageServing {
         accountEpoch += 1
         latestBuckets = []
         hasRateLimitSnapshot = false
+        rateLimitFreshness = .unavailable
         latestAccountUsage = nil
+        accountUsageFreshness = .unavailable
         accountUsageUnavailableReason = .requestFailed
+        accountUsageFailureReason = nil
         authenticationAvailable = nil
         lastSuccessfulRefresh = nil
     }
