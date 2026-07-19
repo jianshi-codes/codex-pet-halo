@@ -1,6 +1,6 @@
 # Contributing
 
-Pet Halo is currently limited to M0 protocol feasibility work.
+M0 protocol feasibility is complete. Until M1 receives separate implementation authorization, contributions remain limited to M0 evidence, compatibility, privacy, probe, fixture, and documentation maintenance.
 
 ## Development rules
 

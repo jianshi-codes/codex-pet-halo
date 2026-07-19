@@ -4,18 +4,19 @@
 
 - Pet Halo remains independent from Codex Desktop and Codex Pet.
 - Experimental protocol data is converted into a stable internal model.
-- Missing or unsupported data is displayed as unavailable, never estimated.
+- MVP metrics are capability-driven: optional segments appear only when their source is available.
+- Missing or unsupported data is hidden or displayed as unavailable, never estimated.
 - Each milestone has an explicit gate and does not authorize the next one automatically.
 
 ## Milestones
 
 ### M0 — Protocol feasibility
 
-Generate schemas from the installed Codex CLI, build a read-only protocol probe, capture redacted fixtures, and determine PASS-A/B/C. No production UI.
+Generate schemas from the installed Codex CLI, build a read-only protocol probe, capture redacted fixtures, and assess core and optional capabilities. M0 passes when an owned stdio app-server can connect, return at least one usable account rate-limit window, return account usage, and degrade missing optional data safely. Five-hour and thread Context data are optional. No production UI.
 
 ### M1 — Application skeleton
 
-Only after M0 authorization: create the macOS/Xcode project, modules, CI, and application lifecycle skeleton.
+After M0 PASS-CORE and separate implementation authorization: create the macOS/Xcode project, modules, CI, and application lifecycle skeleton. Do not require optional five-hour or Context sources to begin the skeleton.
 
 ### M2 — CodexBridge
 

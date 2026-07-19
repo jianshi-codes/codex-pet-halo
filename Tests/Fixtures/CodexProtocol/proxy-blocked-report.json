@@ -1,0 +1,19 @@
+{
+  "captureMetadata": {
+    "capturedAt": "2026-07-19T16:28:06Z",
+    "transport": "codex app-server proxy default discovery",
+    "redaction": "default control-socket path removed"
+  },
+  "status": "BLOCKED",
+  "handshake": "NOT_STARTED",
+  "error": {
+    "type": "TransportClosed",
+    "reason": "default app-server control socket does not exist"
+  },
+  "corroboration": {
+    "command": "codex doctor --json",
+    "check": "app_server.status",
+    "summary": "background server is not running",
+    "mode": "ephemeral"
+  }
+}
