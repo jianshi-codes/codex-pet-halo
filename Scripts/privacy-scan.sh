@@ -8,16 +8,28 @@ scan_tracked_and_pending() {
     local label="$1"
     local pattern="$2"
     local excluded_glob="${3:-}"
-    if [[ -n "$excluded_glob" ]]; then
-        if rg -n --hidden --no-messages -g '!.git/**' -g "$excluded_glob" -- "$pattern" .; then
-            echo "error: privacy scan found $label" >&2
-            exit 1
+    local excluded_path="${excluded_glob#!}"
+    local files=()
+    while IFS= read -r -d '' file; do
+        if [[ -n "$excluded_glob" && "$file" == "$excluded_path" ]]; then
+            continue
         fi
+        files+=("$file")
+    done < <(git ls-files --cached --others --exclude-standard -z)
+
+    if [[ ${#files[@]} -eq 0 ]]; then
         return
     fi
-    if rg -n --hidden --no-messages -g '!.git/**' -- "$pattern" .; then
+
+    local scan_status=0
+    grep -EIHn -- "$pattern" "${files[@]}" || scan_status=$?
+    if [[ $scan_status -eq 0 ]]; then
         echo "error: privacy scan found $label" >&2
         exit 1
+    fi
+    if [[ $scan_status -ne 1 ]]; then
+        echo "error: privacy scan could not inspect files for $label" >&2
+        exit "$scan_status"
     fi
 }
 

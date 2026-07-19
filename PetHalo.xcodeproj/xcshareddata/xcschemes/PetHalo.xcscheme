@@ -27,7 +27,7 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES"
+      shouldUseLaunchSchemeArgsEnv = "NO"
       codeCoverageEnabled = "YES"
       onlyGenerateCoverageForSpecifiedTargets = "NO">
       <MacroExpansion>
@@ -45,6 +45,17 @@
             parallelizable = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "81E40D7737303136A2A6FCF5"
+               BuildableName = "PetHaloCoreTests.xctest"
+               BlueprintName = "PetHaloCoreTests"
+               ReferencedContainer = "container:PetHalo.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "7973ADFDBE7945DA9185FCC3"
                BuildableName = "PetHaloTests.xctest"
                BlueprintName = "PetHaloTests"
@@ -54,6 +65,18 @@
       </Testables>
       <CommandLineArguments>
       </CommandLineArguments>
+      <EnvironmentVariables>
+         <EnvironmentVariable
+            key = "PET_HALO_RUN_REAL_SMOKE"
+            value = "$(PET_HALO_RUN_REAL_SMOKE)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "PET_HALO_SMOKE_REPORT_PATH"
+            value = "$(PET_HALO_SMOKE_REPORT_PATH)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+      </EnvironmentVariables>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"

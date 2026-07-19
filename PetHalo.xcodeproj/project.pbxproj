@@ -8,15 +8,43 @@
 
 /* Begin PBXBuildFile section */
 		171B9C8965C06CA84D826CE4 /* PetHaloApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D8C3263630349D92C95DE2 /* PetHaloApp.swift */; };
+		18BF5FABFA1AA1392FF0FBEA /* UsageModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1796734DF0D23BDDEC73973A /* UsageModels.swift */; };
 		1989C171DE35638239CEFDB5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53D191FCB6E05C2EDFDD855C /* AppDelegate.swift */; };
+		22F9A2E954B2016416E2BA64 /* JSONLFramerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 155ECFB494EA4A907BF68C97 /* JSONLFramerTests.swift */; };
 		277EB1F0053224E5DAB1DC9C /* ApplicationCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63D18F2C37C1D3D8A7A9C808 /* ApplicationCoordinatorTests.swift */; };
+		29E17286FD2FA6A43597418D /* JSONValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3CA016E9DEE0A716E42CABD /* JSONValue.swift */; };
+		2DF328ADE99FFFADADBBA921 /* CodexExecutableLocatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAF07A981EDA69C43A5C99A2 /* CodexExecutableLocatorTests.swift */; };
+		3D5DCA9A5E3DFAB51BE9D536 /* PetHaloCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 31E285D59ED6AC3404B469E7 /* PetHaloCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		56C0090D0694F70E7A0A0235 /* JSONRPCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44D0290C78C6A5EE7675F17E /* JSONRPCClient.swift */; };
+		6098B69858EB884122CECCC8 /* CodexAppServerProcessTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA3E4DFDEC40E481489464C6 /* CodexAppServerProcessTests.swift */; };
 		6DF192CC2CB5DA0986C4A0A9 /* ApplicationMenuModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FCA91196BF97C117A6CE257 /* ApplicationMenuModel.swift */; };
+		73DEC04D011B8B201B7CD3DE /* PetHaloCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31E285D59ED6AC3404B469E7 /* PetHaloCore.framework */; };
+		87EB7A8D40582EB085B22FA9 /* CodexProtocolCompatibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = B336F289A511EC4583E9A267 /* CodexProtocolCompatibility.swift */; };
+		8CBEED4568B022F8F1FC9A4F /* RealCodexSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD8F4A86160AFA059EB3FF32 /* RealCodexSmokeTests.swift */; };
+		95C38E0BF2EAD5A51FF92659 /* JSONRPCClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D91BC5FBCA2A93BA35D6400 /* JSONRPCClientTests.swift */; };
 		9AF8ABE12EA2B676FB68B516 /* AppVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F7170282579DD382F1DE12F /* AppVersionTests.swift */; };
+		A3B0A5F98A48C63479A9750B /* fake_app_server.py in Resources */ = {isa = PBXBuildFile; fileRef = 564D571EA9AE99D8DB0DB512 /* fake_app_server.py */; };
+		A68F15C9B4840A0FDEEF24EE /* CodexProtocolDTOs.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4A3F8DF27D6125D701EA440 /* CodexProtocolDTOs.swift */; };
+		ACBB2FC8FA0B41B6934FD0E5 /* CodexUsageServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B83A95766F449B64D80D63C1 /* CodexUsageServiceTests.swift */; };
 		AE3B8D535C6E223A5AFF1A6A /* ApplicationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F55331779FEB25CD5A3B9912 /* ApplicationCoordinator.swift */; };
+		AEB5A21C391F288A8542FE6D /* UsageModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7AC9DBB942D9C5D65550E7F /* UsageModelsTests.swift */; };
+		B019390F2CB3AFFC26C82128 /* CodexUsageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59D323BA311C25ABC5C4EE14 /* CodexUsageService.swift */; };
+		B8C05825FDF8E1EFF062AFED /* JSONLFramer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A8A9107A340EC6D416F711 /* JSONLFramer.swift */; };
+		CE8B089F62BD2B4E093BB7F9 /* PetHaloCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 31E285D59ED6AC3404B469E7 /* PetHaloCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D2FFBE559B6AB8DB3A6695E8 /* CodexExecutableLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 568D215FDD28F3C6E9B9345B /* CodexExecutableLocator.swift */; };
+		DDD45601CDD8492D15B983F2 /* CodexAppServerProcess.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE3BC6DE90D0B5E074A272EF /* CodexAppServerProcess.swift */; };
 		EACA08B2BF7B74CE4252E07F /* AppVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B738427C1831977BD2BC5E /* AppVersion.swift */; };
+		F224D94140A1796351A75894 /* PetHaloCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31E285D59ED6AC3404B469E7 /* PetHaloCore.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		353FD8C22171FACB7EA1EA57 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9F67A9BD9A3E7711A3FE43F7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BCB68AFB4B488FA0991EB9DC;
+			remoteInfo = PetHaloCore;
+		};
 		B1651BA2A50F794A9B4E1057 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 9F67A9BD9A3E7711A3FE43F7 /* Project object */;
@@ -24,28 +52,168 @@
 			remoteGlobalIDString = A264EF8D58E7D5DC6BDB9DE7;
 			remoteInfo = PetHalo;
 		};
+		E8AF75ED3461290306F24134 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9F67A9BD9A3E7711A3FE43F7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BCB68AFB4B488FA0991EB9DC;
+			remoteInfo = PetHaloCore;
+		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		2C2AEA19E77B0DDA344AF2CF /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				3D5DCA9A5E3DFAB51BE9D536 /* PetHaloCore.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BEDB4408C3B2E609011D3710 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				CE8B089F62BD2B4E093BB7F9 /* PetHaloCore.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		155ECFB494EA4A907BF68C97 /* JSONLFramerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONLFramerTests.swift; sourceTree = "<group>"; };
+		1796734DF0D23BDDEC73973A /* UsageModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageModels.swift; sourceTree = "<group>"; };
 		1992ED33BCBCA92C41D8691B /* PetHaloTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PetHaloTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		31E285D59ED6AC3404B469E7 /* PetHaloCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PetHaloCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		44D0290C78C6A5EE7675F17E /* JSONRPCClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONRPCClient.swift; sourceTree = "<group>"; };
 		46B738427C1831977BD2BC5E /* AppVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppVersion.swift; sourceTree = "<group>"; };
 		53D191FCB6E05C2EDFDD855C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		564D571EA9AE99D8DB0DB512 /* fake_app_server.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = fake_app_server.py; sourceTree = "<group>"; };
+		568D215FDD28F3C6E9B9345B /* CodexExecutableLocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexExecutableLocator.swift; sourceTree = "<group>"; };
+		57A8A9107A340EC6D416F711 /* JSONLFramer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONLFramer.swift; sourceTree = "<group>"; };
+		59D323BA311C25ABC5C4EE14 /* CodexUsageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexUsageService.swift; sourceTree = "<group>"; };
 		5FCA91196BF97C117A6CE257 /* ApplicationMenuModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationMenuModel.swift; sourceTree = "<group>"; };
 		63D18F2C37C1D3D8A7A9C808 /* ApplicationCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationCoordinatorTests.swift; sourceTree = "<group>"; };
+		6D91BC5FBCA2A93BA35D6400 /* JSONRPCClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONRPCClientTests.swift; sourceTree = "<group>"; };
 		6F7170282579DD382F1DE12F /* AppVersionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppVersionTests.swift; sourceTree = "<group>"; };
+		7AF1978CC2FC88E214BCA7F9 /* PetHaloCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PetHaloCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		94248589065E76AD0F4ED8AC /* Pet Halo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Pet Halo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B336F289A511EC4583E9A267 /* CodexProtocolCompatibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexProtocolCompatibility.swift; sourceTree = "<group>"; };
+		B4A3F8DF27D6125D701EA440 /* CodexProtocolDTOs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexProtocolDTOs.swift; sourceTree = "<group>"; };
+		B83A95766F449B64D80D63C1 /* CodexUsageServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexUsageServiceTests.swift; sourceTree = "<group>"; };
+		BAF07A981EDA69C43A5C99A2 /* CodexExecutableLocatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexExecutableLocatorTests.swift; sourceTree = "<group>"; };
+		BD8F4A86160AFA059EB3FF32 /* RealCodexSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealCodexSmokeTests.swift; sourceTree = "<group>"; };
 		C2D8C3263630349D92C95DE2 /* PetHaloApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetHaloApp.swift; sourceTree = "<group>"; };
+		D7AC9DBB942D9C5D65550E7F /* UsageModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageModelsTests.swift; sourceTree = "<group>"; };
+		E3CA016E9DEE0A716E42CABD /* JSONValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONValue.swift; sourceTree = "<group>"; };
+		EE3BC6DE90D0B5E074A272EF /* CodexAppServerProcess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexAppServerProcess.swift; sourceTree = "<group>"; };
 		F55331779FEB25CD5A3B9912 /* ApplicationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationCoordinator.swift; sourceTree = "<group>"; };
+		FA3E4DFDEC40E481489464C6 /* CodexAppServerProcessTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexAppServerProcessTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFrameworksBuildPhase section */
+		C5A52B16FD9250885DB22D9B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F224D94140A1796351A75894 /* PetHaloCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ED4DBAF26EC929D7E4F8C032 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				73DEC04D011B8B201B7CD3DE /* PetHaloCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
 /* Begin PBXGroup section */
+		01C16F01B0ED0BCC64F9FB84 /* Process */ = {
+			isa = PBXGroup;
+			children = (
+				FA3E4DFDEC40E481489464C6 /* CodexAppServerProcessTests.swift */,
+			);
+			path = Process;
+			sourceTree = "<group>";
+		};
+		0A61941C0C9F45CDBEEB3C00 /* JSONRPC */ = {
+			isa = PBXGroup;
+			children = (
+				57A8A9107A340EC6D416F711 /* JSONLFramer.swift */,
+				44D0290C78C6A5EE7675F17E /* JSONRPCClient.swift */,
+				E3CA016E9DEE0A716E42CABD /* JSONValue.swift */,
+			);
+			path = JSONRPC;
+			sourceTree = "<group>";
+		};
 		121527520F79EE8894308AF0 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				94248589065E76AD0F4ED8AC /* Pet Halo.app */,
+				31E285D59ED6AC3404B469E7 /* PetHaloCore.framework */,
+				7AF1978CC2FC88E214BCA7F9 /* PetHaloCoreTests.xctest */,
 				1992ED33BCBCA92C41D8691B /* PetHaloTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		18B716FB2A4FB2DE74284552 /* CodexBridge */ = {
+			isa = PBXGroup;
+			children = (
+				DAD7DF34494DA8242C1A2C75 /* Compatibility */,
+				C91128F93634008AA83C3C9B /* Executable */,
+				0A61941C0C9F45CDBEEB3C00 /* JSONRPC */,
+				AB8949FD0469F00233D52431 /* Process */,
+				8C6C1089C4580C25849512CC /* Service */,
+			);
+			path = CodexBridge;
+			sourceTree = "<group>";
+		};
+		3299203395420D946012FF4A /* Domain */ = {
+			isa = PBXGroup;
+			children = (
+				D7AC9DBB942D9C5D65550E7F /* UsageModelsTests.swift */,
+			);
+			path = Domain;
+			sourceTree = "<group>";
+		};
+		4E8DB9DD68D6D3002F707E97 /* Domain */ = {
+			isa = PBXGroup;
+			children = (
+				1796734DF0D23BDDEC73973A /* UsageModels.swift */,
+			);
+			path = Domain;
+			sourceTree = "<group>";
+		};
+		5DD985D94E4A7165EBF7B022 /* PetHaloCoreTests */ = {
+			isa = PBXGroup;
+			children = (
+				3299203395420D946012FF4A /* Domain */,
+				78AA7558B3C15D9B3AE5BE1F /* Executable */,
+				83207A563D2DEC8B0375B2CC /* Fixtures */,
+				94022FE29F3D66E26AEB6693 /* JSONRPC */,
+				01C16F01B0ED0BCC64F9FB84 /* Process */,
+				C56B638019FEF08AFCD45DCE /* Service */,
+			);
+			path = PetHaloCoreTests;
+			sourceTree = "<group>";
+		};
+		5E8828B04ABAFC529FAF2CF6 /* PetHaloCore */ = {
+			isa = PBXGroup;
+			children = (
+				18B716FB2A4FB2DE74284552 /* CodexBridge */,
+				4E8DB9DD68D6D3002F707E97 /* Domain */,
+			);
+			path = PetHaloCore;
 			sourceTree = "<group>";
 		};
 		6D93A514CB5298F282799C65 /* MenuBar */ = {
@@ -54,6 +222,40 @@
 				5FCA91196BF97C117A6CE257 /* ApplicationMenuModel.swift */,
 			);
 			path = MenuBar;
+			sourceTree = "<group>";
+		};
+		78AA7558B3C15D9B3AE5BE1F /* Executable */ = {
+			isa = PBXGroup;
+			children = (
+				BAF07A981EDA69C43A5C99A2 /* CodexExecutableLocatorTests.swift */,
+			);
+			path = Executable;
+			sourceTree = "<group>";
+		};
+		83207A563D2DEC8B0375B2CC /* Fixtures */ = {
+			isa = PBXGroup;
+			children = (
+				564D571EA9AE99D8DB0DB512 /* fake_app_server.py */,
+			);
+			path = Fixtures;
+			sourceTree = "<group>";
+		};
+		8C6C1089C4580C25849512CC /* Service */ = {
+			isa = PBXGroup;
+			children = (
+				B4A3F8DF27D6125D701EA440 /* CodexProtocolDTOs.swift */,
+				59D323BA311C25ABC5C4EE14 /* CodexUsageService.swift */,
+			);
+			path = Service;
+			sourceTree = "<group>";
+		};
+		94022FE29F3D66E26AEB6693 /* JSONRPC */ = {
+			isa = PBXGroup;
+			children = (
+				155ECFB494EA4A907BF68C97 /* JSONLFramerTests.swift */,
+				6D91BC5FBCA2A93BA35D6400 /* JSONRPCClientTests.swift */,
+			);
+			path = JSONRPC;
 			sourceTree = "<group>";
 		};
 		A738DD2FAB8806160AEB3098 /* PetHaloTests */ = {
@@ -65,6 +267,31 @@
 			path = PetHaloTests;
 			sourceTree = "<group>";
 		};
+		AB8949FD0469F00233D52431 /* Process */ = {
+			isa = PBXGroup;
+			children = (
+				EE3BC6DE90D0B5E074A272EF /* CodexAppServerProcess.swift */,
+			);
+			path = Process;
+			sourceTree = "<group>";
+		};
+		C56B638019FEF08AFCD45DCE /* Service */ = {
+			isa = PBXGroup;
+			children = (
+				B83A95766F449B64D80D63C1 /* CodexUsageServiceTests.swift */,
+				BD8F4A86160AFA059EB3FF32 /* RealCodexSmokeTests.swift */,
+			);
+			path = Service;
+			sourceTree = "<group>";
+		};
+		C91128F93634008AA83C3C9B /* Executable */ = {
+			isa = PBXGroup;
+			children = (
+				568D215FDD28F3C6E9B9345B /* CodexExecutableLocator.swift */,
+			);
+			path = Executable;
+			sourceTree = "<group>";
+		};
 		D0E519DA81F5A27373E85EFB /* PetHalo */ = {
 			isa = PBXGroup;
 			children = (
@@ -74,10 +301,20 @@
 			path = PetHalo;
 			sourceTree = "<group>";
 		};
+		DAD7DF34494DA8242C1A2C75 /* Compatibility */ = {
+			isa = PBXGroup;
+			children = (
+				B336F289A511EC4583E9A267 /* CodexProtocolCompatibility.swift */,
+			);
+			path = Compatibility;
+			sourceTree = "<group>";
+		};
 		E49F605906F51C7ADD23CB72 = {
 			isa = PBXGroup;
 			children = (
 				D0E519DA81F5A27373E85EFB /* PetHalo */,
+				5E8828B04ABAFC529FAF2CF6 /* PetHaloCore */,
+				5DD985D94E4A7165EBF7B022 /* PetHaloCoreTests */,
 				A738DD2FAB8806160AEB3098 /* PetHaloTests */,
 				121527520F79EE8894308AF0 /* Products */,
 			);
@@ -115,15 +352,39 @@
 			productReference = 1992ED33BCBCA92C41D8691B /* PetHaloTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		81E40D7737303136A2A6FCF5 /* PetHaloCoreTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AB55322ABD5B5E619A4DCC3F /* Build configuration list for PBXNativeTarget "PetHaloCoreTests" */;
+			buildPhases = (
+				573124BCA3817085F2397E11 /* Sources */,
+				53F064A3BE1551686873A8D1 /* Resources */,
+				ED4DBAF26EC929D7E4F8C032 /* Frameworks */,
+				BEDB4408C3B2E609011D3710 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				7E4DEEB3FBAA8809F4CFDB34 /* PBXTargetDependency */,
+			);
+			name = PetHaloCoreTests;
+			packageProductDependencies = (
+			);
+			productName = PetHaloCoreTests;
+			productReference = 7AF1978CC2FC88E214BCA7F9 /* PetHaloCoreTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		A264EF8D58E7D5DC6BDB9DE7 /* PetHalo */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = BC7D182CB6A80CBB9E052B8E /* Build configuration list for PBXNativeTarget "PetHalo" */;
 			buildPhases = (
 				84E69E2761A91D058100412A /* Sources */,
+				C5A52B16FD9250885DB22D9B /* Frameworks */,
+				2C2AEA19E77B0DDA344AF2CF /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				4B0F73E646E42D39DA6799E8 /* PBXTargetDependency */,
 			);
 			name = PetHalo;
 			packageProductDependencies = (
@@ -131,6 +392,23 @@
 			productName = PetHalo;
 			productReference = 94248589065E76AD0F4ED8AC /* Pet Halo.app */;
 			productType = "com.apple.product-type.application";
+		};
+		BCB68AFB4B488FA0991EB9DC /* PetHaloCore */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DD3822D97D0A9A4656CCD7B1 /* Build configuration list for PBXNativeTarget "PetHaloCore" */;
+			buildPhases = (
+				335686C6EE050EC33C47C2F1 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PetHaloCore;
+			packageProductDependencies = (
+			);
+			productName = PetHaloCore;
+			productReference = 31E285D59ED6AC3404B469E7 /* PetHaloCore.framework */;
+			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
 
@@ -160,13 +438,56 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+				BCB68AFB4B488FA0991EB9DC /* PetHaloCore */,
 				A264EF8D58E7D5DC6BDB9DE7 /* PetHalo */,
 				7973ADFDBE7945DA9185FCC3 /* PetHaloTests */,
+				81E40D7737303136A2A6FCF5 /* PetHaloCoreTests */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		53F064A3BE1551686873A8D1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A3B0A5F98A48C63479A9750B /* fake_app_server.py in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
+		335686C6EE050EC33C47C2F1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DDD45601CDD8492D15B983F2 /* CodexAppServerProcess.swift in Sources */,
+				D2FFBE559B6AB8DB3A6695E8 /* CodexExecutableLocator.swift in Sources */,
+				87EB7A8D40582EB085B22FA9 /* CodexProtocolCompatibility.swift in Sources */,
+				A68F15C9B4840A0FDEEF24EE /* CodexProtocolDTOs.swift in Sources */,
+				B019390F2CB3AFFC26C82128 /* CodexUsageService.swift in Sources */,
+				B8C05825FDF8E1EFF062AFED /* JSONLFramer.swift in Sources */,
+				56C0090D0694F70E7A0A0235 /* JSONRPCClient.swift in Sources */,
+				29E17286FD2FA6A43597418D /* JSONValue.swift in Sources */,
+				18BF5FABFA1AA1392FF0FBEA /* UsageModels.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		573124BCA3817085F2397E11 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6098B69858EB884122CECCC8 /* CodexAppServerProcessTests.swift in Sources */,
+				2DF328ADE99FFFADADBBA921 /* CodexExecutableLocatorTests.swift in Sources */,
+				ACBB2FC8FA0B41B6934FD0E5 /* CodexUsageServiceTests.swift in Sources */,
+				22F9A2E954B2016416E2BA64 /* JSONLFramerTests.swift in Sources */,
+				95C38E0BF2EAD5A51FF92659 /* JSONRPCClientTests.swift in Sources */,
+				8CBEED4568B022F8F1FC9A4F /* RealCodexSmokeTests.swift in Sources */,
+				AEB5A21C391F288A8542FE6D /* UsageModelsTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5BA36E9F5FFD8F5F8360418F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -195,6 +516,16 @@
 			isa = PBXTargetDependency;
 			target = A264EF8D58E7D5DC6BDB9DE7 /* PetHalo */;
 			targetProxy = B1651BA2A50F794A9B4E1057 /* PBXContainerItemProxy */;
+		};
+		4B0F73E646E42D39DA6799E8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BCB68AFB4B488FA0991EB9DC /* PetHaloCore */;
+			targetProxy = E8AF75ED3461290306F24134 /* PBXContainerItemProxy */;
+		};
+		7E4DEEB3FBAA8809F4CFDB34 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BCB68AFB4B488FA0991EB9DC /* PetHaloCore */;
+			targetProxy = 353FD8C22171FACB7EA1EA57 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -237,6 +568,30 @@
 				SDKROOT = macosx;
 			};
 			name = Release;
+		};
+		2493DF781AB37687BC48D0A9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.jianshicodes.PetHaloCore;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
 		};
 		5179C9295F26D91B36BD8C1C /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -321,6 +676,23 @@
 			};
 			name = Debug;
 		};
+		9049278236C0AD8481F608FF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.jianshicodes.PetHaloCoreTests;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
 		A2B3E5AA6629F0488F8B4BEB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -341,6 +713,23 @@
 				SDKROOT = macosx;
 			};
 			name = Debug;
+		};
+		B656DDDD5588DFDE25491AAA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.jianshicodes.PetHaloCoreTests;
+				SDKROOT = macosx;
+			};
+			name = Release;
 		};
 		CBA2D849CC725D2167ECF5C3 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -400,6 +789,30 @@
 			};
 			name = Release;
 		};
+		D454F54991F0C79EB3EB5A45 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.jianshicodes.PetHaloCore;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -408,6 +821,15 @@
 			buildConfigurations = (
 				84C560965178DA94E8F2ABF7 /* Debug */,
 				CBA2D849CC725D2167ECF5C3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		AB55322ABD5B5E619A4DCC3F /* Build configuration list for PBXNativeTarget "PetHaloCoreTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9049278236C0AD8481F608FF /* Debug */,
+				B656DDDD5588DFDE25491AAA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -426,6 +848,15 @@
 			buildConfigurations = (
 				A2B3E5AA6629F0488F8B4BEB /* Debug */,
 				1243FF95AB081C42C23CA73B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DD3822D97D0A9A4656CCD7B1 /* Build configuration list for PBXNativeTarget "PetHaloCore" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2493DF781AB37687BC48D0A9 /* Debug */,
+				D454F54991F0C79EB3EB5A45 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

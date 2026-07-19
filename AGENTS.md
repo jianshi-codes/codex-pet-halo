@@ -8,7 +8,8 @@ Pet Halo is an independent, unofficial macOS companion for Codex. The current ap
 
 - Work only within the milestone explicitly authorized by the user.
 - M1 contains the application skeleton, lifecycle boundary, menu-bar shell, tests, build tooling, CI, and documentation.
-- Do not begin CodexBridge, JSON-RPC, usage models, Halo windows, window tracking, or later milestone work without separate authorization.
+- M2 contains the stable Usage domain, read-only owned CodexBridge, JSON-RPC/process lifecycle, refresh/reconnect policy, tests, build tooling, CI, and documentation.
+- Do not begin Halo windows, Usage presentation, window tracking, or later milestone work without separate authorization.
 
 ## Build and test
 
@@ -18,6 +19,8 @@ make generate
 make build
 make test
 make m0-tests
+make m2-tests
+make m2-smoke
 make check
 ```
 
