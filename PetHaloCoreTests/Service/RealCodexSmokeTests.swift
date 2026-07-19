@@ -4,7 +4,7 @@ import XCTest
 
 final class RealCodexSmokeTests: XCTestCase {
     func testReadOnlyLocalIntegration() async throws {
-        guard FileManager.default.fileExists(atPath: "/tmp/pet-halo-m2-real-smoke-enabled") else {
+        guard ProcessInfo.processInfo.environment["PET_HALO_RUN_REAL_SMOKE"] == "1" else {
             throw XCTSkip("Real authenticated Codex smoke is local-only")
         }
 
@@ -14,23 +14,28 @@ final class RealCodexSmokeTests: XCTestCase {
 
         guard state.connection == .connected else {
             await service.stop()
-            XCTFail("M2 smoke blocker: \(typedBlocker(for: state.failureReason))")
+            let blocker = "M2 smoke blocker: \(typedBlocker(for: state.failureReason))"
+            try writeSmokeReport(blocker)
+            XCTFail(blocker)
             return
         }
-
-        print("Codex located: yes")
-        print("Protocol version: supported")
-        print("Handshake: pass")
-        print("Rate-limit buckets: \(state.snapshot?.rateLimitBuckets.isEmpty == false ? "available" : "unavailable")")
-        print("Weekly capability: \(availability(state.capabilities.generalWeekly))")
-        print("Five-hour capability: \(availability(state.capabilities.generalFiveHour))")
-        print("Account Usage capability: \(availability(state.capabilities.accountUsage))")
 
         await service.stop()
         let stopped = await service.stateForTesting()
         XCTAssertEqual(stopped.connection, .stopped)
         XCTAssertFalse(try hasOwnedAppServerChild())
-        print("Shutdown: clean")
+        try writeSmokeReport(
+            [
+                "Codex located: yes",
+                "Protocol version: supported",
+                "Handshake: pass",
+                "Rate-limit buckets: \(state.snapshot?.rateLimitBuckets.isEmpty == false ? "available" : "unavailable")",
+                "Weekly capability: \(availability(state.capabilities.generalWeekly))",
+                "Five-hour capability: \(availability(state.capabilities.generalFiveHour))",
+                "Account Usage capability: \(availability(state.capabilities.accountUsage))",
+                "Shutdown: clean",
+            ].joined(separator: "\n")
+        )
     }
 
     private func availability<Value: Equatable & Sendable>(_ capability: Capability<Value>) -> String {
@@ -63,5 +68,16 @@ final class RealCodexSmokeTests: XCTestCase {
         try process.run()
         process.waitUntilExit()
         return process.terminationStatus == 0
+    }
+
+    private func writeSmokeReport(_ report: String) throws {
+        guard let path = ProcessInfo.processInfo.environment["PET_HALO_SMOKE_REPORT_PATH"] else {
+            XCTFail("M2 smoke report path is unavailable")
+            return
+        }
+        let handle = try FileHandle(forWritingTo: URL(fileURLWithPath: path))
+        defer { try? handle.close() }
+        try handle.truncate(atOffset: 0)
+        try handle.write(contentsOf: Data((report + "\n").utf8))
     }
 }

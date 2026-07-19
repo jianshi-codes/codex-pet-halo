@@ -63,6 +63,71 @@ private actor ManualSleeper: RequestSleeping {
     }
 }
 
+private actor AsyncGate {
+    private var isOpen = false
+    private var waiters: [CheckedContinuation<Void, Never>] = []
+
+    func wait() async {
+        guard !isOpen else { return }
+        await withCheckedContinuation { continuation in
+            waiters.append(continuation)
+        }
+    }
+
+    func open() {
+        guard !isOpen else { return }
+        isOpen = true
+        let pending = waiters
+        waiters.removeAll()
+        pending.forEach { $0.resume() }
+    }
+}
+
+private actor DelayedStopTransport: JSONRPCTransport {
+    private let stream: AsyncThrowingStream<Data, Error>
+    private let continuation: AsyncThrowingStream<Data, Error>.Continuation
+    private let stopGate = AsyncGate()
+    private(set) var sent: [Data] = []
+    private(set) var stopCount = 0
+
+    init() {
+        let pair = AsyncThrowingStream.makeStream(of: Data.self, throwing: Error.self)
+        stream = pair.stream
+        continuation = pair.continuation
+    }
+
+    func start() async throws {}
+
+    func send(_ data: Data) async throws {
+        sent.append(data)
+    }
+
+    func inboundMessages() async -> AsyncThrowingStream<Data, Error> {
+        stream
+    }
+
+    func stop() async {
+        stopCount += 1
+        await stopGate.wait()
+    }
+
+    func disconnect() {
+        continuation.finish(throwing: JSONRPCClientError.transportClosed)
+    }
+
+    func finishStop() async {
+        await stopGate.open()
+    }
+}
+
+private actor CompletionCounter {
+    private(set) var value = 0
+
+    func increment() {
+        value += 1
+    }
+}
+
 final class JSONRPCClientTests: XCTestCase {
     func testSequentialIDsAndOutOfOrderResponses() async throws {
         let transport = InMemoryTransport()
@@ -215,6 +280,52 @@ final class JSONRPCClientTests: XCTestCase {
         }
     }
 
+    func testDisconnectAndConcurrentClosesShareAwaitableCleanupBarrier() async throws {
+        let transport = DelayedStopTransport()
+        let client = JSONRPCClient(transport: transport)
+        try await client.start()
+        let events = await client.events()
+        let eventTask = Task {
+            var iterator = events.makeAsyncIterator()
+            return await iterator.next()
+        }
+        let pending = Task { try await client.request(.rateLimitsRead) }
+        _ = try await waitForSentMessages(1, transport: transport)
+
+        await transport.disconnect()
+        do {
+            _ = try await pending.value
+            XCTFail("Expected disconnect")
+        } catch {
+            XCTAssertEqual(error as? JSONRPCClientError, .transportClosed)
+        }
+        try await waitForStopCount(1, transport: transport)
+
+        let completions = CompletionCounter()
+        let closes = (0 ..< 3).map { _ in
+            Task {
+                await client.close()
+                await completions.increment()
+            }
+        }
+        for _ in 0 ..< 20 { await Task.yield() }
+        let completionsBeforeRelease = await completions.value
+        let stopCountBeforeRelease = await transport.stopCount
+        XCTAssertEqual(completionsBeforeRelease, 0)
+        XCTAssertEqual(stopCountBeforeRelease, 1)
+
+        await transport.finishStop()
+        for close in closes {
+            await close.value
+        }
+        let completionCount = await completions.value
+        let stopCount = await transport.stopCount
+        let event = await eventTask.value
+        XCTAssertEqual(completionCount, 3)
+        XCTAssertEqual(stopCount, 1)
+        XCTAssertEqual(event, .disconnected(.transportClosed))
+    }
+
     private func waitForSentMessages(
         _ count: Int,
         transport: InMemoryTransport
@@ -223,6 +334,33 @@ final class JSONRPCClientTests: XCTestCase {
             let messages = await transport.sent
             if messages.count >= count {
                 return messages
+            }
+            await Task.yield()
+        }
+        throw JSONRPCClientError.requestTimedOut
+    }
+
+    private func waitForSentMessages(
+        _ count: Int,
+        transport: DelayedStopTransport
+    ) async throws -> [Data] {
+        for _ in 0 ..< 1_000 {
+            let messages = await transport.sent
+            if messages.count >= count {
+                return messages
+            }
+            await Task.yield()
+        }
+        throw JSONRPCClientError.requestTimedOut
+    }
+
+    private func waitForStopCount(
+        _ count: Int,
+        transport: DelayedStopTransport
+    ) async throws {
+        for _ in 0 ..< 1_000 {
+            if await transport.stopCount == count {
+                return
             }
             await Task.yield()
         }

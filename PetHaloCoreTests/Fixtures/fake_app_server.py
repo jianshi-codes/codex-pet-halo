@@ -3,14 +3,33 @@
 
 import json
 import os
+import signal
 import sys
 import time
 
 
 SCENARIO = sys.argv[1] if len(sys.argv) > 1 else "valid"
+OBSERVATION_PATH = sys.argv[2] if len(sys.argv) > 2 else None
 initialized = False
 notification_sent = False
 usage_request_count = 0
+rate_request_count = 0
+account_request_count = 0
+
+
+def observe(method: str) -> None:
+    if OBSERVATION_PATH is None:
+        return
+    with open(OBSERVATION_PATH, "a", encoding="utf-8") as stream:
+        stream.write(method + "\n")
+
+
+if SCENARIO == "invalid-delayed-termination":
+    def delayed_exit(_signum: int, _frame: object) -> None:
+        time.sleep(0.2)
+        raise SystemExit(0)
+
+    signal.signal(signal.SIGTERM, delayed_exit)
 
 
 def write(payload: dict, *, partial: bool = False) -> None:
@@ -33,9 +52,10 @@ for raw_line in sys.stdin:
     message = json.loads(raw_line)
     method = message.get("method")
     request_id = message.get("id")
+    observe(method)
 
     if method == "initialize":
-        if SCENARIO == "malformed":
+        if SCENARIO in {"malformed", "invalid-delayed-termination"}:
             sys.stdout.write("{bad json\n")
             sys.stdout.flush()
             continue
@@ -63,16 +83,29 @@ for raw_line in sys.stdin:
         continue
 
     if method == "account/read":
+        account_request_count += 1
+        authentication_unavailable = SCENARIO == "auth-unavailable" or (
+            SCENARIO == "account-logout" and account_request_count > 1
+        )
         result(
             request_id,
             {
-                "account": None if SCENARIO == "auth-unavailable" else {"identity": "discarded"},
-                "requiresOpenaiAuth": SCENARIO == "auth-unavailable",
+                "account": None if authentication_unavailable else {"identity": "discarded"},
+                "requiresOpenaiAuth": authentication_unavailable,
             },
         )
     elif method == "account/rateLimits/read":
+        rate_request_count += 1
         if SCENARIO == "delayed":
             time.sleep(0.05)
+        if SCENARIO == "account-update-during-initial" and rate_request_count == 1:
+            write({"method": "account/updated", "params": {"account": "must-not-be-used"}})
+            time.sleep(0.05)
+        if SCENARIO == "rate-notification-during-refresh" and rate_request_count == 2:
+            write({"method": "account/rateLimits/updated", "params": {"sparse": True}})
+            time.sleep(0.05)
+        if SCENARIO == "rate-delayed-after-first" and rate_request_count == 2:
+            time.sleep(0.1)
         snapshot = {
             "limitId": "codex",
             "limitName": "General",
@@ -101,6 +134,7 @@ for raw_line in sys.stdin:
         ):
             write({"id": request_id, "error": {"code": -32601, "message": "unsupported"}})
         else:
+            token_count = 99 if SCENARIO == "account-switch" and usage_request_count > 1 else 10
             result(
                 request_id,
                 {
@@ -111,9 +145,19 @@ for raw_line in sys.stdin:
                         "currentStreakDays": 2,
                         "longestStreakDays": 3,
                     },
-                    "dailyUsageBuckets": [{"startDate": "2026-07-20", "tokens": 10}],
+                    "dailyUsageBuckets": [{"startDate": "2026-07-20", "tokens": token_count}],
                 },
             )
+        if SCENARIO in {"account-logout", "account-switch", "account-update-burst"} \
+                and usage_request_count == 1:
+            write({"method": "account/updated", "params": {"account": "must-not-be-used"}})
+            if SCENARIO == "account-update-burst":
+                for _ in range(4):
+                    write({"method": "account/rateLimits/updated", "params": {"sparse": True}})
+        if SCENARIO == "queued-then-abrupt" and usage_request_count == 1:
+            write({"method": "account/rateLimits/updated", "params": {"sparse": True}})
+            time.sleep(0.05)
+            os._exit(8)
     else:
         write({"id": request_id, "error": {"code": -32601, "message": "unsupported"}})
 

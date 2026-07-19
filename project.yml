@@ -4,6 +4,28 @@ options:
   deploymentTarget:
     macOS: "14.0"
   createIntermediateGroups: true
+schemes:
+  PetHalo:
+    build:
+      targets:
+        PetHalo: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: true
+      targets:
+        - PetHaloCoreTests
+        - PetHaloTests
+      environmentVariables:
+        PET_HALO_RUN_REAL_SMOKE: "$(PET_HALO_RUN_REAL_SMOKE)"
+        PET_HALO_SMOKE_REPORT_PATH: "$(PET_HALO_SMOKE_REPORT_PATH)"
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
 settings:
   base:
     SWIFT_VERSION: "6.0"
@@ -39,11 +61,6 @@ targets:
         INFOPLIST_FILE: Config/Info.plist
         GENERATE_INFOPLIST_FILE: NO
         CODE_SIGN_STYLE: Automatic
-    scheme:
-      testTargets:
-        - PetHaloCoreTests
-        - PetHaloTests
-      gatherCoverageData: true
   PetHaloTests:
     type: bundle.unit-test
     platform: macOS

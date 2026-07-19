@@ -7,7 +7,7 @@
 - Optional capabilities: five-hour window unavailable / shared Context unavailable / target thread unavailable
 - Native application: Swift 6 / SwiftUI menu-bar shell / AppKit lifecycle boundary / `PetHaloCore` framework
 - Application targets: `PetHalo`, `PetHaloCore`, `PetHaloTests`, and `PetHaloCoreTests`
-- Local automated validation: Debug build ✅ / Release build ✅ / 38 focused M2 Swift tests ✅ / 14 retained M0 tests ✅ / bundle and boundary validation ✅
+- Local automated validation: Debug build ✅ / Release build ✅ / 55 focused M2 Swift tests ✅ (1 local-only test skipped in deterministic runs) / 14 retained M0 tests ✅ / bundle and boundary validation ✅
 - Deterministic CI path: fake app-server only; no Codex installation, authentication, or network required
 - Local real smoke: executable discovery ✅ / exact version gate ✅ / handshake ✅ / read-only Usage reads ✅ / clean owned-child shutdown ✅
 - Application smoke: process stays running ✅ / accessory activation policy ✅ / zero visible normal windows ✅ / owned app-server exits with application ✅
@@ -18,6 +18,6 @@
 
 The read-only independent stdio app-server successfully completed the handshake and read account, weekly rate-limit, account-usage, and loaded-thread responses. It is the recommended MVP transport for account-scoped data. The real account response did not include a 300-minute rate-limit window, so the optional five-hour segment is absent. The current CLI's shared control socket was not running, so Desktop thread Context remains optional and unavailable.
 
-M2 adds a bounded JSONL/JSON-RPC transport, safe child-process lifecycle, exact-version compatibility registry, read-only service orchestration, periodic and notification-driven refresh, deterministic reconnect policy, stable Usage models, and redacted diagnostics. The production allowlist contains only initialize/initialized and the three account read methods plus sparse account notifications. Context remains explicitly unavailable.
+M2 adds a bounded JSONL/JSON-RPC transport, an exactly-once awaitable cleanup barrier, connection-attempt epochs, a cancellable 5-second/4-KiB version probe, exact-version compatibility, scoped refresh coalescing, account-update isolation, deterministic reconnect, stable Usage models, and redacted diagnostics. New connections clear account data because identity continuity is intentionally unavailable. Deterministic invalid-message and disconnect tests observed a maximum of one owned app-server child. The production allowlist remains initialize/initialized and the three account read methods plus sparse account notifications. Context remains explicitly unavailable.
 
 M2 does not authorize M3. The next recommended milestone is M3 — Halo window, only after separate implementation authorization.

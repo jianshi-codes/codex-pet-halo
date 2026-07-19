@@ -13,13 +13,13 @@ The stable model preserves all returned rate-limit buckets and identifies the ge
 
 ## Transport and lifecycle
 
-The bridge discovers an executable without a shell, checks the exact supported CLI version, launches `codex app-server --stdio`, performs initialize/initialized, and uses only three account read methods. JSONL framing supports partial and multiple messages, rejects invalid UTF-8 and messages over 4 MiB, and fails closed if its bounded delivery queue overflows. JSON-RPC uses monotonic IDs, concurrent pending continuations, serialized writes, out-of-order responses, deterministic timeouts, cancellation/disconnect propagation, and explicit duplicate/unknown-ID behavior.
+The bridge discovers an executable without a shell, ignores relative `PATH` entries, checks the exact supported CLI version, launches `codex app-server --stdio`, performs initialize/initialized, and uses only three account read methods. The version probe has a 5-second default timeout and 4 KiB stdout cap; timeout/cancellation terminates, escalates when needed, and awaits confirmed exit. JSONL framing supports partial and multiple messages, rejects invalid UTF-8 and messages over 4 MiB, and fails closed if its bounded delivery queue overflows. JSON-RPC uses monotonic IDs, concurrent pending continuations, serialized writes, out-of-order responses, deterministic timeouts, cancellation/disconnect propagation, and explicit duplicate/unknown-ID behavior.
 
-The child owns its pipes, drains and discards stderr, closes stdin, requests termination, waits, and escalates to kill only after a bounded grace period. Concurrent and repeated shutdown calls wait for the same cleanup boundary. Application termination is deferred until the service has awaited child cleanup.
+The child owns its pipes, drains and discards stderr, closes stdin, requests termination, waits, and escalates to kill only after a bounded grace period. JSON-RPC close/disconnect creates exactly one awaitable transport-cleanup barrier; all concurrent closes wait for it, and disconnect is published only after it completes. Each service connection attempt carries an immutable epoch checked after every suspension. Stop invalidates and cancels the epoch, then awaits attempt-owned version/process cleanup, so an obsolete attempt cannot publish, reconnect, or overwrite `.stopped`. Application termination is deferred until those barriers complete.
 
 ## Refresh and recovery
 
-Initial reads are sequential and read-only. Rate limits refresh every 60 seconds and Account Usage every 15 minutes on absolute monotonic schedules. Sparse account notifications are debounce/invalidation hints and trigger a complete rate-limit refetch after 250 ms. A single in-flight refresh prevents overlap. Reconnect delays are bounded exponential steps of 1, 2, 4, 8, 16, 30, and 60 seconds with injected jitter; tests inject the clock and random source. Intentional stop cancels refresh/debounce/reconnect work and prevents relaunch.
+Initial reads are sequential and read-only. Rate limits refresh every 60 seconds and Account Usage every 15 minutes on absolute monotonic schedules. Refresh work coalesces into ordered `rateLimitsOnly < fullAccount` scopes: one refresh runs at a time, incoming work merges into one strongest pending scope, and the follow-up runs immediately. `account/rateLimits/updated` retains same-account rate data as stale until a complete refetch. `account/updated` immediately clears all account-scoped data and schedules `account/read`, rate-limit, and Usage reads; a later rate notification cannot downgrade it. Authentication loss clears every account capability. Because identity is deliberately discarded, every new app-server connection also clears prior account data rather than assuming account continuity. Reconnect delays are bounded exponential steps of 1, 2, 4, 8, 16, 30, and 60 seconds with injected jitter. Intentional stop clears pending work and prevents relaunch.
 
 ## Privacy and compatibility
 
@@ -31,10 +31,10 @@ Diagnostics are limited to fixed events, safe failure enums, and reconnect attem
 
 | Evidence | Result |
 | --- | --- |
-| `make m2-tests` | PASS — 33 Core tests (1 local-only smoke skipped normally) and 5 lifecycle/menu-state tests, 0 failures |
+| `make m2-tests` | PASS — 50 Core tests (1 local-only smoke skipped normally) and 5 lifecycle/menu-state tests, 0 failures |
 | JSONL/JSON-RPC cases | PASS — framing, 4 MiB bound, IDs, concurrency, ordering, timeout, cancel, disconnect, duplicate/unknown IDs, malformed data |
-| Fake process cases | PASS — valid, partial stdout, stderr noise, malformed output, abrupt exit, auth unavailable, optional Usage failure, sparse/burst notifications |
-| Service cases | PASS — exact version gate, capability semantics, partial availability, stale retention, debounce, reconnect, idempotent/concurrent shutdown |
+| Fake process cases | PASS — valid, partial stdout, stderr noise, malformed/oversized/hanging version output, abrupt exit, auth/account transitions, optional Usage failure, sparse/burst notifications |
+| Service cases | PASS — attempt invalidation, exact cleanup barrier, max owned-child concurrency 1, capability semantics, account isolation, refresh coalescing, reconnect, idempotent/concurrent shutdown |
 | `make check` | PASS — Debug/Release builds, all Swift tests, retained M0 tests, bundle/privacy/source/project drift checks |
 | `make m2-smoke` | PASS — local executable/version/handshake/read capabilities and clean owned-child shutdown; sanitized output only |
 | Launch Services smoke | PASS — accessory process, no visible normal window, no Dock icon by policy, owned child exits with app |

@@ -86,6 +86,16 @@ public protocol CodexUsageServing: Sendable {
 public typealias JSONRPCClientFactory = @Sendable (URL) -> JSONRPCClient
 
 public actor CodexUsageService: CodexUsageServing {
+    private enum RefreshScope: Int {
+        case rateLimitsOnly
+        case fullAccount
+
+        static func strongest(_ lhs: Self?, _ rhs: Self) -> Self {
+            guard let lhs else { return rhs }
+            return lhs.rawValue >= rhs.rawValue ? lhs : rhs
+        }
+    }
+
     private let applicationVersion: String
     private let locator: any CodexExecutableLocating
     private let versionInspector: any CodexVersionInspecting
@@ -107,10 +117,17 @@ public actor CodexUsageService: CodexUsageServing {
     private var stopping = false
     private var stopWaiters: [CheckedContinuation<Void, Never>] = []
     private var client: JSONRPCClient?
+    private var connectionAttemptEpoch = 0
+    private var connectionAttemptTask: Task<Void, Never>?
+    private var connectionAttemptTaskEpoch: Int?
     private var connectionGeneration = 0
+    private var accountEpoch = 0
     private var connectedAtNanoseconds: UInt64?
     private var reconnectAttempt = 0
     private var refreshInProgress = false
+    private var pendingRefreshScope: RefreshScope?
+    private var pendingRefreshGeneration: Int?
+    private var pendingNotificationScope: RefreshScope?
 
     private var eventTask: Task<Void, Never>?
     private var periodicTask: Task<Void, Never>?
@@ -121,6 +138,7 @@ public actor CodexUsageService: CodexUsageServing {
     private var latestBuckets: [RateLimitBucket] = []
     private var hasRateLimitSnapshot = false
     private var latestAccountUsage: AccountUsage?
+    private var accountUsageUnavailableReason: CapabilityUnavailableReason = .requestFailed
     private var authenticationAvailable: Bool?
     private var lastSuccessfulRefresh: Date?
 
@@ -160,13 +178,14 @@ public actor CodexUsageService: CodexUsageServing {
     public func start() async {
         guard !started, !stopping else { return }
         started = true
+        clearAccountScopedState()
         publish(
             connection: .starting,
-            freshness: currentState.snapshot == nil ? .unavailable : .stale,
+            freshness: .unavailable,
             failure: nil
         )
         logger.info("Codex bridge starting")
-        await establishConnection()
+        await beginConnectionAttempt()
     }
 
     public func stop() async {
@@ -185,6 +204,9 @@ public actor CodexUsageService: CodexUsageServing {
             waiters.forEach { $0.resume() }
         }
         started = false
+        connectionAttemptEpoch += 1
+        let activeAttempt = connectionAttemptTask
+        activeAttempt?.cancel()
         reconnectTask?.cancel()
         reconnectTask = nil
         periodicTask?.cancel()
@@ -194,6 +216,9 @@ public actor CodexUsageService: CodexUsageServing {
         eventTask?.cancel()
         eventTask = nil
         refreshInProgress = false
+        pendingRefreshScope = nil
+        pendingRefreshGeneration = nil
+        pendingNotificationScope = nil
         connectionGeneration += 1
 
         let activeClient = client
@@ -201,10 +226,16 @@ public actor CodexUsageService: CodexUsageServing {
         if let activeClient {
             await activeClient.close()
         }
+        if let activeAttempt {
+            await activeAttempt.value
+        }
+        connectionAttemptTask = nil
+        connectionAttemptTaskEpoch = nil
         connectedAtNanoseconds = nil
+        clearAccountScopedState()
         publish(
             connection: .stopped,
-            freshness: currentState.snapshot == nil ? .unavailable : .stale,
+            freshness: .unavailable,
             failure: nil
         )
         logger.info("Codex bridge stopped")
@@ -212,33 +243,64 @@ public actor CodexUsageService: CodexUsageServing {
 
     public func refresh() async {
         guard started, !stopping, client != nil else { return }
-        await performRefresh(includeAccountRead: true, includeUsage: true)
+        await enqueueRefresh(scope: .fullAccount, generation: connectionGeneration)
     }
 
     func stateForTesting() -> CodexUsageState {
         currentState
     }
 
-    private func establishConnection() async {
-        guard started, !stopping, client == nil else { return }
+    private func beginConnectionAttempt() async {
+        guard started, !stopping, client == nil, connectionAttemptTask == nil else { return }
+        connectionAttemptEpoch += 1
+        let epoch = connectionAttemptEpoch
+        let task = Task<Void, Never> { [weak self] in
+            guard let self else { return }
+            await self.establishConnection(epoch: epoch)
+        }
+        connectionAttemptTask = task
+        connectionAttemptTaskEpoch = epoch
+        await task.value
+        if connectionAttemptTaskEpoch == epoch {
+            connectionAttemptTask = nil
+            connectionAttemptTaskEpoch = nil
+            if case .reconnecting = currentState.connection,
+               started,
+               !stopping,
+               client == nil,
+               reconnectTask == nil
+            {
+                scheduleReconnect()
+            }
+        }
+    }
+
+    private func establishConnection(epoch: Int) async {
+        guard connectionAttemptIsCurrent(epoch), client == nil else { return }
 
         let executableURL: URL
         switch await locator.locate() {
         case let .available(url):
             executableURL = url
         case .unavailable:
-            publishUnavailable(failure: .executableMissing)
+            if connectionAttemptIsCurrent(epoch) {
+                publishUnavailable(failure: .executableMissing)
+            }
             return
         }
+        guard connectionAttemptIsCurrent(epoch) else { return }
 
         let version: String
         switch await versionInspector.inspect(executableURL: executableURL) {
         case let .available(value):
             version = value
         case .unavailable:
-            publishUnavailable(failure: .versionInspectionFailed)
+            if connectionAttemptIsCurrent(epoch) {
+                publishUnavailable(failure: .versionInspectionFailed)
+            }
             return
         }
+        guard connectionAttemptIsCurrent(epoch) else { return }
 
         guard CodexCompatibilityRegistry.compatibility(for: version) != nil else {
             compatibility = .unsupported(version: version)
@@ -248,6 +310,10 @@ public actor CodexUsageService: CodexUsageServing {
         compatibility = .supported(version: version)
 
         let newClient = clientFactory(executableURL)
+        guard connectionAttemptIsCurrent(epoch) else {
+            await newClient.close()
+            return
+        }
         client = newClient
         connectionGeneration += 1
         let generation = connectionGeneration
@@ -262,8 +328,16 @@ public actor CodexUsageService: CodexUsageServing {
             )
             return
         }
+        guard connectionAttemptIsCurrent(epoch), generation == connectionGeneration else {
+            await newClient.close()
+            return
+        }
 
         let events = await newClient.events()
+        guard connectionAttemptIsCurrent(epoch), generation == connectionGeneration else {
+            await newClient.close()
+            return
+        }
         eventTask = Task { [weak self] in
             for await event in events {
                 guard let self else { return }
@@ -273,6 +347,10 @@ public actor CodexUsageService: CodexUsageServing {
 
         do {
             _ = try await newClient.request(.initialize, params: initializeParameters())
+            guard connectionAttemptIsCurrent(epoch), generation == connectionGeneration else {
+                await newClient.close()
+                return
+            }
             try await newClient.notify(.initialized)
         } catch {
             await connectionFailed(
@@ -283,15 +361,21 @@ public actor CodexUsageService: CodexUsageServing {
             return
         }
 
-        guard generation == connectionGeneration, client != nil, !stopping else {
+        guard connectionAttemptIsCurrent(epoch), generation == connectionGeneration, client != nil else {
             await newClient.close()
             return
         }
         connectedAtNanoseconds = clock.monotonicNanoseconds()
         logger.info("Codex bridge handshake completed")
-        await performRefresh(includeAccountRead: true, includeUsage: true)
-        guard generation == connectionGeneration, client != nil, !stopping else { return }
+        await enqueueRefresh(scope: .fullAccount, generation: generation)
+        guard connectionAttemptIsCurrent(epoch), generation == connectionGeneration, client != nil else {
+            return
+        }
         schedulePeriodicRefresh()
+    }
+
+    private func connectionAttemptIsCurrent(_ epoch: Int) -> Bool {
+        started && !stopping && !Task.isCancelled && epoch == connectionAttemptEpoch
     }
 
     private func initializeParameters() -> JSONValue {
@@ -308,26 +392,61 @@ public actor CodexUsageService: CodexUsageServing {
         ])
     }
 
-    private func performRefresh(includeAccountRead: Bool, includeUsage: Bool) async {
-        guard !refreshInProgress, let activeClient = client, !stopping else { return }
-        refreshInProgress = true
-        defer { refreshInProgress = false }
-        let generation = connectionGeneration
+    private func enqueueRefresh(scope: RefreshScope, generation: Int) async {
+        guard generation == connectionGeneration, started, !stopping, client != nil else { return }
+        if pendingRefreshGeneration != generation {
+            pendingRefreshGeneration = generation
+            pendingRefreshScope = scope
+        } else {
+            pendingRefreshScope = RefreshScope.strongest(pendingRefreshScope, scope)
+        }
+        guard !refreshInProgress else { return }
 
+        refreshInProgress = true
+        defer {
+            refreshInProgress = false
+            if pendingRefreshGeneration == generation {
+                pendingRefreshGeneration = nil
+                pendingRefreshScope = nil
+            }
+        }
+
+        while generation == connectionGeneration,
+              started,
+              !stopping,
+              let scope = pendingRefreshScope,
+              pendingRefreshGeneration == generation
+        {
+            pendingRefreshScope = nil
+            await performRefresh(scope: scope, generation: generation)
+        }
+    }
+
+    private func performRefresh(scope: RefreshScope, generation: Int) async {
+        guard generation == connectionGeneration, let activeClient = client, !stopping else { return }
+        let refreshAccountEpoch = accountEpoch
+        var refreshedAuthentication = authenticationAvailable
+        var refreshedBuckets: [RateLimitBucket]?
+        var refreshedUsage: AccountUsage?
+        var refreshedUsageReason = accountUsageUnavailableReason
         var failure: SafeFailureReason?
         var successfulComponent = false
         var retainedStaleComponent = false
 
-        if includeAccountRead {
+        if scope == .fullAccount {
             do {
                 let value = try await activeClient.request(
                     .accountRead,
                     params: .object(["refreshToken": .bool(false)])
                 )
+                guard refreshIsCurrent(generation: generation, accountEpoch: refreshAccountEpoch) else {
+                    return
+                }
                 let account = try CodexDTOCodec.decode(AccountAvailabilityDTO.self, from: value)
-                authenticationAvailable = account.accountAvailable || !account.requiresOpenAIAuthentication
-                if authenticationAvailable == false {
+                refreshedAuthentication = account.accountAvailable || !account.requiresOpenAIAuthentication
+                if refreshedAuthentication == false {
                     failure = .authenticationUnavailable
+                    refreshedUsageReason = .authenticationUnavailable
                 }
             } catch {
                 if shouldReconnect(for: error, timeoutIsFatal: false) {
@@ -344,9 +463,11 @@ public actor CodexUsageService: CodexUsageServing {
 
         do {
             let value = try await activeClient.request(.rateLimitsRead)
+            guard refreshIsCurrent(generation: generation, accountEpoch: refreshAccountEpoch) else {
+                return
+            }
             let response = try CodexDTOCodec.decode(RateLimitsResponseDTO.self, from: value)
-            latestBuckets = CodexUsageNormalizer.rateLimitBuckets(from: response)
-            hasRateLimitSnapshot = true
+            refreshedBuckets = CodexUsageNormalizer.rateLimitBuckets(from: response)
             successfulComponent = true
         } catch {
             if shouldReconnect(for: error) {
@@ -361,11 +482,15 @@ public actor CodexUsageService: CodexUsageServing {
             failure = failure ?? rateLimitFailure(for: error)
         }
 
-        if includeUsage {
+        if scope == .fullAccount {
             do {
                 let value = try await activeClient.request(.accountUsageRead)
+                guard refreshIsCurrent(generation: generation, accountEpoch: refreshAccountEpoch) else {
+                    return
+                }
                 let response = try CodexDTOCodec.decode(AccountUsageResponseDTO.self, from: value)
-                latestAccountUsage = try CodexUsageNormalizer.accountUsage(from: response)
+                refreshedUsage = try CodexUsageNormalizer.accountUsage(from: response)
+                refreshedUsageReason = .requestFailed
                 successfulComponent = true
             } catch {
                 if shouldReconnect(for: error, timeoutIsFatal: false) {
@@ -378,10 +503,31 @@ public actor CodexUsageService: CodexUsageServing {
                 }
                 retainedStaleComponent = retainedStaleComponent || latestAccountUsage != nil
                 failure = failure ?? accountUsageFailure(for: error)
+                refreshedUsageReason = accountUsageCapabilityReason(for: error)
             }
         }
 
-        guard generation == connectionGeneration, client != nil, !stopping else { return }
+        guard refreshIsCurrent(generation: generation, accountEpoch: refreshAccountEpoch) else { return }
+        authenticationAvailable = refreshedAuthentication
+        if refreshedAuthentication == false {
+            latestBuckets = []
+            hasRateLimitSnapshot = false
+            latestAccountUsage = nil
+            accountUsageUnavailableReason = .authenticationUnavailable
+            lastSuccessfulRefresh = nil
+            publish(connection: .connected, freshness: .unavailable, failure: .authenticationUnavailable)
+            return
+        }
+        if let refreshedBuckets {
+            latestBuckets = refreshedBuckets
+            hasRateLimitSnapshot = true
+        }
+        if scope == .fullAccount {
+            if let refreshedUsage {
+                latestAccountUsage = refreshedUsage
+            }
+            accountUsageUnavailableReason = refreshedUsageReason
+        }
         if successfulComponent {
             lastSuccessfulRefresh = clock.dateNow()
         }
@@ -395,6 +541,14 @@ public actor CodexUsageService: CodexUsageServing {
             freshness = snapshot == nil ? .unavailable : .stale
         }
         publish(connection: .connected, freshness: freshness, failure: failure)
+    }
+
+    private func refreshIsCurrent(generation: Int, accountEpoch: Int) -> Bool {
+        generation == connectionGeneration
+            && accountEpoch == self.accountEpoch
+            && started
+            && !stopping
+            && client != nil
     }
 
     private func makeSnapshot() -> UsageSnapshot? {
@@ -430,7 +584,7 @@ public actor CodexUsageService: CodexUsageServing {
         } else if authenticationAvailable == false {
             accountCapability = .unavailable(.authenticationUnavailable)
         } else {
-            accountCapability = .unavailable(.requestFailed)
+            accountCapability = .unavailable(accountUsageUnavailableReason)
         }
         return UsageCapabilities(
             generalWeekly: weekly,
@@ -444,6 +598,7 @@ public actor CodexUsageService: CodexUsageServing {
         guard periodicTask == nil, !stopping else { return }
         let rateInterval = refreshPolicy.rateLimitsNanoseconds
         let usageInterval = refreshPolicy.accountUsageNanoseconds
+        let generation = connectionGeneration
         let clock = self.clock
         periodicTask = Task { [weak self, clock] in
             let start = clock.monotonicNanoseconds()
@@ -470,12 +625,15 @@ public actor CodexUsageService: CodexUsageServing {
                     nextUsage &+= usageInterval
                 }
                 guard let self else { return }
-                await self.performRefresh(includeAccountRead: false, includeUsage: includeUsage)
+                let scope: RefreshScope = includeUsage ? .fullAccount : .rateLimitsOnly
+                await self.enqueueRefresh(scope: scope, generation: generation)
             }
         }
     }
 
-    private func scheduleNotificationRefresh() {
+    private func scheduleNotificationRefresh(scope: RefreshScope, generation: Int) {
+        guard generation == connectionGeneration, started, !stopping else { return }
+        pendingNotificationScope = RefreshScope.strongest(pendingNotificationScope, scope)
         debounceTask?.cancel()
         let delay = refreshPolicy.notificationDebounceNanoseconds
         let clock = self.clock
@@ -486,21 +644,30 @@ public actor CodexUsageService: CodexUsageServing {
                 return
             }
             guard let self else { return }
-            await self.clearDebounceTaskAndRefresh()
+            await self.clearDebounceTaskAndRefresh(generation: generation)
         }
     }
 
-    private func clearDebounceTaskAndRefresh() async {
+    private func clearDebounceTaskAndRefresh(generation: Int) async {
         debounceTask = nil
-        await performRefresh(includeAccountRead: false, includeUsage: false)
+        guard generation == connectionGeneration, let scope = pendingNotificationScope else { return }
+        pendingNotificationScope = nil
+        await enqueueRefresh(scope: scope, generation: generation)
     }
 
     private func handle(event: JSONRPCEvent, generation: Int) async {
         guard generation == connectionGeneration, !stopping else { return }
         switch event {
         case let .notification(method, _):
-            if method == "account/rateLimits/updated" || method == "account/updated" {
-                scheduleNotificationRefresh()
+            if method == "account/rateLimits/updated" {
+                if makeSnapshot() != nil {
+                    publish(connection: .connected, freshness: .stale, failure: nil)
+                }
+                scheduleNotificationRefresh(scope: .rateLimitsOnly, generation: generation)
+            } else if method == "account/updated" {
+                clearAccountScopedState()
+                publish(connection: .connected, freshness: .unavailable, failure: nil)
+                scheduleNotificationRefresh(scope: .fullAccount, generation: generation)
             }
         case let .disconnected(error):
             await connectionFailed(
@@ -523,21 +690,27 @@ public actor CodexUsageService: CodexUsageServing {
             reconnectAttempt = 0
         }
 
+        connectionAttemptEpoch += 1
         connectionGeneration += 1
         connectedAtNanoseconds = nil
         periodicTask?.cancel()
         periodicTask = nil
         debounceTask?.cancel()
         debounceTask = nil
+        pendingNotificationScope = nil
+        pendingRefreshScope = nil
+        pendingRefreshGeneration = nil
         eventTask?.cancel()
         eventTask = nil
         client = nil
         if let failedClient {
             await failedClient.close()
         }
+        guard started, !stopping else { return }
+        clearAccountScopedState()
         publish(
             connection: .reconnecting(attempt: reconnectAttempt + 1),
-            freshness: makeSnapshot() == nil ? .unavailable : .stale,
+            freshness: .unavailable,
             failure: failure
         )
         scheduleReconnect()
@@ -567,7 +740,7 @@ public actor CodexUsageService: CodexUsageServing {
     private func runReconnect() async {
         reconnectTask = nil
         guard started, !stopping, client == nil else { return }
-        await establishConnection()
+        await beginConnectionAttempt()
     }
 
     private func publishUnavailable(failure: SafeFailureReason) {
@@ -629,6 +802,28 @@ public actor CodexUsageService: CodexUsageServing {
             }
         }
         return .accountUsageUnavailable
+    }
+
+    private func accountUsageCapabilityReason(for error: Error) -> CapabilityUnavailableReason {
+        if let rpcError = error as? JSONRPCClientError,
+           rpcError == .remoteError(code: -32_601)
+        {
+            return .unsupported
+        }
+        if authenticationAvailable == false {
+            return .authenticationUnavailable
+        }
+        return .requestFailed
+    }
+
+    private func clearAccountScopedState() {
+        accountEpoch += 1
+        latestBuckets = []
+        hasRateLimitSnapshot = false
+        latestAccountUsage = nil
+        accountUsageUnavailableReason = .requestFailed
+        authenticationAvailable = nil
+        lastSuccessfulRefresh = nil
     }
 
     private func shouldReconnect(for error: Error, timeoutIsFatal: Bool = true) -> Bool {

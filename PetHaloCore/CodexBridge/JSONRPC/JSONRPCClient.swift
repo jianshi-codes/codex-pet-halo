@@ -114,6 +114,14 @@ private struct IncomingEnvelope: Decodable {
 }
 
 public actor JSONRPCClient {
+    private enum Lifecycle {
+        case idle
+        case starting
+        case open
+        case closing
+        case closed
+    }
+
     private struct PendingRequest {
         let continuation: CheckedContinuation<JSONValue, Error>
         let timeoutTask: Task<Void, Never>
@@ -132,8 +140,9 @@ public actor JSONRPCClient {
     private var completedResponseIDs = Set<JSONRPCID>()
     private var completedResponseOrder: [JSONRPCID] = []
     private var readTask: Task<Void, Never>?
-    private var started = false
-    private var closed = false
+    private var cleanupTask: Task<Void, Never>?
+    private var cleanupWaiters: [CheckedContinuation<Void, Never>] = []
+    private var lifecycle = Lifecycle.idle
 
     public init(
         transport: any JSONRPCTransport,
@@ -156,19 +165,29 @@ public actor JSONRPCClient {
     }
 
     public func start() async throws {
-        guard !started else {
+        guard lifecycle == .idle else {
+            if lifecycle == .closed || lifecycle == .closing {
+                throw JSONRPCClientError.transportClosed
+            }
             throw JSONRPCClientError.alreadyStarted
         }
-        guard !closed else {
-            throw JSONRPCClientError.transportClosed
-        }
+        lifecycle = .starting
         do {
             try await transport.start()
         } catch {
+            await shutdown(error: .transportClosed, emitDisconnect: false)
             throw JSONRPCClientError.transportClosed
         }
-        started = true
+        guard lifecycle == .starting else {
+            await waitForCleanupBarrier()
+            throw JSONRPCClientError.transportClosed
+        }
+        lifecycle = .open
         let stream = await transport.inboundMessages()
+        guard lifecycle == .open else {
+            await waitForCleanupBarrier()
+            throw JSONRPCClientError.transportClosed
+        }
         readTask = Task { [weak self] in
             do {
                 for try await data in stream {
@@ -190,7 +209,7 @@ public actor JSONRPCClient {
         _ method: AllowedRequestMethod,
         params: JSONValue? = nil
     ) async throws -> JSONValue {
-        guard started, !closed else {
+        guard lifecycle == .open else {
             throw JSONRPCClientError.notStarted
         }
         let requestID = nextRequestID
@@ -225,7 +244,7 @@ public actor JSONRPCClient {
                         try await transport.send(outboundData)
                     } catch {
                         guard let self else { return }
-                        await self.failRequest(rpcID, with: .transportClosed)
+                        await self.connectionClosed(.transportClosed)
                     }
                 }
             }
@@ -237,7 +256,7 @@ public actor JSONRPCClient {
     }
 
     public func notify(_ method: AllowedNotificationMethod) async throws {
-        guard started, !closed else {
+        guard lifecycle == .open else {
             throw JSONRPCClientError.notStarted
         }
         guard var data = try? encoder.encode(OutgoingNotification(method: method.rawValue)) else {
@@ -247,22 +266,17 @@ public actor JSONRPCClient {
         do {
             try await transport.send(data)
         } catch {
+            await connectionClosed(.transportClosed)
             throw JSONRPCClientError.transportClosed
         }
     }
 
     public func close() async {
-        guard !closed else { return }
-        closed = true
-        readTask?.cancel()
-        readTask = nil
-        failAll(with: .cancelled)
-        eventContinuation.finish()
-        await transport.stop()
+        await shutdown(error: .cancelled, emitDisconnect: false)
     }
 
     private func receive(_ data: Data) async {
-        guard !closed else { return }
+        guard lifecycle == .open else { return }
         let envelope: IncomingEnvelope
         do {
             envelope = try decoder.decode(IncomingEnvelope.self, from: data)
@@ -333,11 +347,51 @@ public actor JSONRPCClient {
     }
 
     private func connectionClosed(_ error: JSONRPCClientError) async {
-        guard !closed else { return }
-        closed = true
+        await shutdown(error: error, emitDisconnect: true)
+    }
+
+    private func shutdown(
+        error: JSONRPCClientError,
+        emitDisconnect: Bool
+    ) async {
+        if lifecycle == .closing {
+            await withCheckedContinuation { continuation in
+                cleanupWaiters.append(continuation)
+            }
+            return
+        }
+        if lifecycle == .closed {
+            return
+        }
+
+        lifecycle = .closing
+        let activeReadTask = readTask
+        readTask = nil
+        activeReadTask?.cancel()
         failAll(with: error)
-        eventContinuation.yield(.disconnected(error))
+        let cleanup = Task { [transport] in
+            await transport.stop()
+        }
+        cleanupTask = cleanup
+        await cleanup.value
+
+        guard lifecycle == .closing else { return }
+        lifecycle = .closed
+        cleanupTask = nil
+        if emitDisconnect {
+            eventContinuation.yield(.disconnected(error))
+        }
         eventContinuation.finish()
-        await transport.stop()
+        let waiters = cleanupWaiters
+        cleanupWaiters.removeAll()
+        waiters.forEach { $0.resume() }
+    }
+
+    private func waitForCleanupBarrier() async {
+        if lifecycle == .closing {
+            await withCheckedContinuation { continuation in
+                cleanupWaiters.append(continuation)
+            }
+        }
     }
 }
