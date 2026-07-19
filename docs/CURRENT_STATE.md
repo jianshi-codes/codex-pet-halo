@@ -1,13 +1,14 @@
 # Current State
 
 - Milestone: M1 — application skeleton
-- Status: **IMPLEMENTED LOCALLY — MANUAL MENU CLICK AND CI PENDING**
+- Status: **BLOCKED — DIRECT MENU/QUIT OBSERVATION REQUIRED**
 - M0 status: **PASS-CORE / PARTIAL-OPTIONALS**
 - Core gate: owned stdio connection ✅ / weekly quota ✅ / account usage ✅ / safe optional degradation ✅
 - Optional capabilities: five-hour window unavailable / shared Context unavailable / target thread unavailable
 - Native application: Swift 6 / SwiftUI menu-bar shell / AppKit lifecycle boundary
 - Application targets: `PetHalo` and `PetHaloTests`
 - Local automated validation: Debug build ✅ / Release build ✅ / 5 Swift tests ✅ / 14 retained M0 tests ✅ / bundle validation ✅
+- Draft PR CI: Protocol evidence ✅ / macOS application ✅
 - Smoke evidence: process stays running ✅ / accessory activation policy ✅ / zero owned windows ✅ / standard termination exits ✅ / direct menu and Quit click not observed
 - Production UI: menu-bar skeleton only; Halo and Usage UI not started
 - Formal Codex runtime integration: not started

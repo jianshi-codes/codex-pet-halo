@@ -1,6 +1,6 @@
 # M1 Application Skeleton
 
-- Status: **IMPLEMENTED LOCALLY — MANUAL MENU CLICK AND CI PENDING**
+- Status: **BLOCKED — DIRECT MENU/QUIT OBSERVATION REQUIRED**
 - Date: 2026-07-20
 - Scope: native macOS accessory application, lifecycle boundary, menu-bar shell, unit tests, reproducible build commands, CI, and documentation
 - Stop condition: Draft M1 PR complete; do not implement M2 CodexBridge or M3 Halo UI
@@ -54,7 +54,7 @@ Build products and test results are written under ignored `DerivedData` paths. P
 | Bundle schema/fixture exclusion | PASS |
 | Production dependency/capability boundary scan | PASS |
 | Credential, email, and user-path scan | PASS |
-| Draft PR CI | PENDING |
+| Draft PR CI | PASS, protocol evidence and macOS application jobs |
 
 The Swift tests cover initial lifecycle state, idempotent start and shutdown transitions, single termination dispatch, version/build formatting, missing metadata behavior, and the menu model. Shell validation checks bundle identifier, version, build, `LSUIElement`, macOS 14.0, forbidden production dependencies, sensitive permissions, and M0 resource leakage.
 
@@ -76,4 +76,4 @@ The M1 application shell reads and stores no Codex data. Lifecycle logging uses 
 
 ## Gate
 
-The local automated portion of the M1 gate passes. Final state remains pending until a direct menu/Quit smoke observation and Draft PR CI complete. The next recommended milestone after an M1 PASS is a separately authorized **M2 — CodexBridge**; M1 does not authorize it.
+The local automated portion and Draft PR CI pass. The M1 gate is **BLOCKED** because a direct menu/Quit smoke observation could not be completed with the available window-oriented UI tooling. After that observation passes, the next recommended milestone is a separately authorized **M2 — CodexBridge**; M1 does not authorize it.

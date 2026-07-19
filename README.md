@@ -6,7 +6,7 @@ Pet Halo is an independent, unofficial macOS companion that aims to display a tr
 
 ## Status
 
-**M1 application skeleton is implemented locally; smoke testing and Draft PR CI are the remaining gate checks.** The native Swift 6 application runs as a menu-bar/accessory shell with no Dock icon or normal window. It contains only lifecycle, version, placeholder menu status, and Quit behavior. It does not connect to Codex or read Usage data.
+**M1 application skeleton is implemented and Draft PR CI passes; a direct menu/Quit smoke observation remains before M1 can pass.** The native Swift 6 application runs as a menu-bar/accessory shell with no Dock icon or normal window. It contains only lifecycle, version, placeholder menu status, and Quit behavior. It does not connect to Codex or read Usage data.
 
 M0 protocol feasibility remains complete with **PASS-CORE / PARTIAL-OPTIONALS**. The validated future MVP uses capability-driven data:
 
