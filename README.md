@@ -6,7 +6,7 @@ Pet Halo is an independent, unofficial macOS companion that aims to display a tr
 
 ## Status
 
-**M2 CodexBridge is complete with PASS.** The native Swift 6 application owns a local `codex app-server --stdio` child, performs the experimental JSON-RPC handshake, and reads account availability, rate limits, and Account Usage into stable, capability-driven domain models. The menu remains deliberately technical and displays only `Bridge: Starting`, `Bridge: Connected`, or `Bridge: Unavailable`; no quota presentation or Halo window is implemented.
+**M3 Halo Window is complete with PASS.** The native Swift 6 accessory application presents a transparent, borderless, non-activating `NSPanel` with compact and expanded Usage layouts. It shows the real weekly remaining quota, capability-gates the optional five-hour quota, presents Account Usage without identity, and marks current, stale, and unavailable components explicitly. Menu commands show, hide, resize, and refresh the Halo; compact is click-through, while expanded accepts scrolling without becoming key, main, or activating the application.
 
 M0 protocol feasibility remains complete with **PASS-CORE / PARTIAL-OPTIONALS**. The validated future MVP uses capability-driven data:
 
@@ -28,14 +28,18 @@ make test
 make m0-tests
 make m2-tests
 make m2-smoke
+make m3-tests
+make m3-smoke
 make check
 ```
 
 XcodeGen 2.46.0 is required. `project.yml` is the editable project source of truth; the generated Xcode project is committed and must not be hand-edited.
 
-`make m2-tests` is deterministic and uses only a test-bundle fake process; it never requires a real Codex installation or authenticated session. `make m2-smoke` is a separately invoked local-only read-only integration check and prints a sanitized capability summary.
+`make m2-tests` and `make m3-tests` are deterministic and require neither a real Codex installation nor authentication. `make m2-smoke` is a local-only read-only bridge check. `make m3-smoke` combines deterministic presentation checks with an authenticated accessory-app lifecycle smoke; both print sanitized status only.
 
-See [the M2 report](docs/milestones/m2-codex-bridge.md), [compatibility contract](docs/COMPATIBILITY.md), [privacy policy](docs/PRIVACY.md), and [contribution guide](CONTRIBUTING.md).
+M3 uses a fixed upper-right initial position and does not inspect, follow, or position itself relative to Codex or Codex Pet. It stores no placement or preferences. Calibration/window following belongs to M4, while final artwork, motion, and game-like visual design belong to M5.
+
+See [the M3 report](docs/milestones/m3-halo-window.md), [compatibility contract](docs/COMPATIBILITY.md), [privacy policy](docs/PRIVACY.md), and [contribution guide](CONTRIBUTING.md).
 
 ## Branding
 

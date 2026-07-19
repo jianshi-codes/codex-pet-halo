@@ -25,6 +25,43 @@ private struct ApplicationMenuContent: View {
         Text(menuModel.applicationName)
         Text(coordinator.bridgeStatusText)
         Divider()
+        Button("Show Halo") {
+            coordinator.showHalo()
+        }
+        .disabled(coordinator.haloIsVisible || !coordinator.acceptsUICommands)
+
+        Button("Hide Halo") {
+            coordinator.hideHalo()
+        }
+        .disabled(!coordinator.haloIsVisible || !coordinator.acceptsUICommands)
+
+        Button {
+            coordinator.setHaloMode(.compact)
+        } label: {
+            if coordinator.haloMode == .compact {
+                Label("Compact", systemImage: "checkmark")
+            } else {
+                Text("Compact")
+            }
+        }
+        .disabled(!coordinator.acceptsUICommands)
+
+        Button {
+            coordinator.setHaloMode(.expanded)
+        } label: {
+            if coordinator.haloMode == .expanded {
+                Label("Expanded", systemImage: "checkmark")
+            } else {
+                Text("Expanded")
+            }
+        }
+        .disabled(!coordinator.acceptsUICommands)
+
+        Button("Refresh Usage") {
+            coordinator.refreshUsage()
+        }
+        .disabled(!coordinator.canRefreshUsage)
+        Divider()
         Text(menuModel.versionText)
         Divider()
         Button("Quit Pet Halo") {

@@ -48,13 +48,16 @@ fi
 if find "$app_bundle" -type f \( \
     -name '*fixture*' -o \
     -name '*fake*' -o \
+    -name '*smoke*' -o \
+    -name '*report*' -o \
+    -name '*debug-harness*' -o \
     -name '*.py' -o \
     -name '*.json' -o \
     -name '*.ts' -o \
     -path '*/Schemas/*' -o \
     -path '*/CodexProtocol/*' \
 \) | grep -q .; then
-    echo "error: application bundle contains schemas, fixtures, or a fake server" >&2
+    echo "error: application bundle contains test, schema, fixture, smoke, report, or debug-harness material" >&2
     exit 1
 fi
 

@@ -441,6 +441,7 @@ final class CodexUsageServiceTests: XCTestCase {
         XCTAssertEqual(reconnectingState.componentFreshness, .unavailable)
         XCTAssertEqual(factory.count(), 1)
 
+        try await waitForClockWaiter(clock, dueIn: 1_000_000_000)
         clock.advance(by: 1_000_000_000)
         let connected = try await waitForState(service) { $0.connection == .connected }
         XCTAssertEqual(connected.connection, .connected)
@@ -723,6 +724,7 @@ final class CodexUsageServiceTests: XCTestCase {
         )
         await service.start()
         _ = try await waitForState(service) { $0.connection == .reconnecting(attempt: 1) }
+        try await waitForClockWaiter(clock, dueIn: 1_000_000_000)
         clock.advance(by: 1_000_000_000)
         _ = try await waitForState(service) { $0.connection == .connected }
 
@@ -750,6 +752,7 @@ final class CodexUsageServiceTests: XCTestCase {
         let reconnecting = await service.stateForTesting()
         XCTAssertEqual(reconnecting.connection, .reconnecting(attempt: 1))
 
+        try await waitForClockWaiter(clock, dueIn: 1_000_000_000)
         clock.advance(by: 1_000_000_000)
         _ = try await waitForState(service) { $0.connection == .connected }
         let connected = tracker.snapshot()
@@ -772,6 +775,7 @@ final class CodexUsageServiceTests: XCTestCase {
         _ = try await waitForState(service) { $0.connection == .reconnecting(attempt: 1) }
         XCTAssertEqual(tracker.snapshot().maximum, 1)
 
+        try await waitForClockWaiter(clock, dueIn: 1_000_000_000)
         clock.advance(by: 1_000_000_000)
         _ = try await waitForState(service) { $0.connection == .connected }
         XCTAssertEqual(tracker.snapshot().maximum, 1)

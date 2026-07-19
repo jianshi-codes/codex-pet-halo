@@ -1,6 +1,6 @@
 # Contributing
 
-M0 protocol feasibility, M1 application skeleton, and M2 CodexBridge are complete. Contributions must remain within the M2 boundary until a later milestone receives separate authorization.
+M0 protocol feasibility, M1 application skeleton, M2 CodexBridge, and M3 Halo Window are complete. Contributions must remain within the M3 boundary until a later milestone receives separate authorization.
 
 ## Development rules
 
@@ -11,7 +11,8 @@ M0 protocol feasibility, M1 application skeleton, and M2 CodexBridge are complet
 5. Keep all protocol work read-only: do not call `thread/start`, `turn/start`, account mutation, or any other mutation method.
 6. Do not make production Swift code depend on the M0 probe, schemas, or fixtures.
 7. Do not read or depend on Codex internal SQLite databases.
-8. Do not implement Halo windows, Usage presentation, window tracking, or later milestone behavior during M2.
+8. Keep the Halo non-activating, click-through, account-identity-free, and driven by component freshness rather than aggregate timestamps.
+9. Do not implement Codex/Pet discovery, Accessibility inspection, screen capture, calibration, saved placement, window following, final artwork, motion/themes, or later milestone behavior during M3.
 
 ## Validation
 
@@ -19,6 +20,6 @@ M0 protocol feasibility, M1 application skeleton, and M2 CodexBridge are complet
 make check
 ```
 
-Use `make m2-tests` for deterministic fake-transport coverage. Use `make m2-smoke` only for an explicit local authenticated read-only runtime check; it is not a CI command and prints only a sanitized capability summary.
+Use `make m2-tests` for deterministic fake-transport coverage and `make m3-tests` for presentation, accessibility, panel, and coordinator coverage. `make m2-smoke` and `make m3-smoke` are explicit local authenticated checks, are not CI commands, and print only sanitized status.
 
 Describe the Codex CLI version used to generate schemas and redact all captured protocol fixtures before committing them.

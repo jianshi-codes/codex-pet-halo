@@ -2,15 +2,21 @@
 set -euo pipefail
 
 readonly repository_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+readonly snapshot_dir="$(mktemp -d "${TMPDIR:-/tmp}/pet-halo-project-snapshot.XXXXXX")"
+cleanup() {
+    rm -rf "$snapshot_dir"
+}
+trap cleanup EXIT
 cd "$repository_root"
 
+cp -R PetHalo.xcodeproj "$snapshot_dir/PetHalo.xcodeproj"
 ./Scripts/generate.sh
 
-project_status="$(git status --porcelain --untracked-files=all -- PetHalo.xcodeproj)"
-if [[ -n "$project_status" ]]; then
-    echo "error: generated Xcode project differs from the committed project:" >&2
-    printf '%s\n' "$project_status" >&2
+if ! diff -qr "$snapshot_dir/PetHalo.xcodeproj" PetHalo.xcodeproj >/dev/null; then
+    echo "error: generated Xcode project differs from the checked working tree" >&2
     exit 1
 fi
 
-echo "Generated Xcode project matches committed tree"
+trap - EXIT
+cleanup
+echo "Generated Xcode project matches checked working tree"
