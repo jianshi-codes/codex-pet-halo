@@ -115,6 +115,13 @@ private final class TestBridgeClock: @unchecked Sendable, BridgeClock {
         }
     }
 
+    func hasWaiter(dueIn nanoseconds: UInt64) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        let expectedDeadline = nowNanoseconds &+ nanoseconds
+        return waiters.values.contains { $0.deadline == expectedDeadline }
+    }
+
     private func cancel(id: UUID) {
         lock.lock()
         let waiter = waiters.removeValue(forKey: id)
@@ -218,6 +225,7 @@ final class CodexUsageServiceTests: XCTestCase {
         await service.start()
         let before = await service.stateForTesting().lastSuccessfulRefresh
 
+        try await waitForClockWaiter(clock, dueIn: 250_000_000)
         clock.advance(by: 250_000_000)
         let after = try await waitForState(service) { state in
             state.lastSuccessfulRefresh != before
@@ -331,6 +339,19 @@ final class CodexUsageServiceTests: XCTestCase {
             let state = await service.stateForTesting()
             if predicate(state) {
                 return state
+            }
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        throw JSONRPCClientError.requestTimedOut
+    }
+
+    private func waitForClockWaiter(
+        _ clock: TestBridgeClock,
+        dueIn nanoseconds: UInt64
+    ) async throws {
+        for _ in 0 ..< 2_000 {
+            if clock.hasWaiter(dueIn: nanoseconds) {
+                return
             }
             try await Task.sleep(for: .milliseconds(1))
         }
