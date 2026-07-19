@@ -45,6 +45,17 @@
             parallelizable = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "81E40D7737303136A2A6FCF5"
+               BuildableName = "PetHaloCoreTests.xctest"
+               BlueprintName = "PetHaloCoreTests"
+               ReferencedContainer = "container:PetHalo.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "7973ADFDBE7945DA9185FCC3"
                BuildableName = "PetHaloTests.xctest"
                BlueprintName = "PetHaloTests"

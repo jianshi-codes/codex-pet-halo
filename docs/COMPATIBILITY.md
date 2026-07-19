@@ -29,6 +29,14 @@ This table records one M0 host, not a compatibility guarantee. The app-server pr
 
 Local M1 builds were validated with Xcode 26.4.1 (17E202) and Swift 6.3.1. The project deployment target, not that validation host version, defines the intended minimum OS.
 
+## M2 runtime gate
+
+Production runtime compatibility is intentionally fail-closed. `CodexCompatibilityRegistry` currently accepts exactly `0.145.0-alpha.18`; any other or unparseable version produces an unavailable state before a child process is launched. Adding a version requires regenerated local schemas, DTO comparison, fixture/test review, and an explicit registry entry.
+
+The executable locator accepts an injected URL for tests, executable entries from the inherited `PATH`, standard Homebrew prefixes, and the resource directories of installed Codex or ChatGPT applications. Candidates are resolved and checked as executable files. Version detection and app-server launch use `Foundation.Process` directly with argument arrays and working directory `/`; no shell command is constructed.
+
+The production method allowlist is limited to `initialize`, `initialized`, `account/read` with `refreshToken: false`, `account/rateLimits/read`, and `account/usage/read`. The bridge observes only `account/rateLimits/updated` and `account/updated`, treating their payloads as invalidation hints and refetching a complete read snapshot after a 250 ms debounce.
+
 ## Protocol matrix for Codex CLI 0.145.0-alpha.18
 
 | Capability | Generated shape | Runtime result |
@@ -69,3 +77,5 @@ For multiple rate-limit buckets, preserve every bucket. The exact `codex` bucket
 The official `codex doctor --json` `app_server.status` check reported `background server is not running` in ephemeral mode. Read-only socket inspection showed the running Desktop app and its Codex child communicating through unnamed Unix socketpairs, not an attachable path advertised by the CLI. Other IPC sockets were not assumed to be app-server transports. This limits optional shared Context only; it does not block the owned stdio MVP.
 
 The aggregate v2 JSON schema is not byte-deterministic in this CLI build because its `definitions` object order changes between runs. A second generation produced the same canonical sorted-JSON SHA-256 and identical individual JSON/TypeScript files. Consumers must treat JSON object ordering as insignificant.
+
+Generated M0 schemas and TypeScript remain retained evidence only. `PetHaloCore` owns minimal forward-compatible DTOs, ignores unknown response fields, and is not linked to or packaged with the probe, schemas, fixtures, or test fake server.

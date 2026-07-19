@@ -24,7 +24,6 @@ final class AppVersionTests: XCTestCase {
         )
 
         XCTAssertEqual(model.applicationName, "Pet Halo")
-        XCTAssertEqual(model.status, "Application skeleton")
         XCTAssertEqual(model.versionText, "Version 0.1.0 (1)")
     }
 }

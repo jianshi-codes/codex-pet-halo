@@ -20,7 +20,7 @@ Generate schemas from the installed Codex CLI, build a read-only protocol probe,
 
 ### M2 — CodexBridge
 
-Implement stable internal usage models, JSON-RPC transports, reconnection, version detection, and redacted logging.
+**Complete — PASS.** Stable internal usage models, bounded JSONL/JSON-RPC transport, owned process lifecycle, exact-version detection, read-only refresh/reconnection, redacted diagnostics, deterministic fake-process tests, and local real smoke validation are implemented. See [the M2 report](milestones/m2-codex-bridge.md).
 
 ### M3 — Halo window
 
