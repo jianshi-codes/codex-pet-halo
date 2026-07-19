@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: bootstrap generate build test m0-tests check validate-bundle
+.PHONY: bootstrap generate build test m0-tests check validate-bundle validate-generated-project
 
 bootstrap:
 	./Scripts/bootstrap.sh
@@ -19,6 +19,9 @@ m0-tests:
 
 validate-bundle:
 	./Scripts/validate-bundle.sh
+
+validate-generated-project:
+	./Scripts/validate-generated-project.sh
 
 check:
 	./Scripts/check.sh

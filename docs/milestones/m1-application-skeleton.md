@@ -22,10 +22,11 @@ The application opens no normal window and contains no Halo overlay. It does not
 | Lifecycle boundary | `ApplicationCoordinator` owned by `AppDelegate`, isolated to `@MainActor` |
 | Project source | `project.yml` |
 | Generator | XcodeGen 2.46.0 |
-| Generated project | Committed; CI regenerates and checks for drift |
+| Generator release digest | SHA-256 `4d9e34b62172d645eed6457cac13fc222569974098ef4ee9c3368bedf0196806` |
+| Generated project | Committed; `make check` regenerates and checks tracked and untracked project drift |
 | Sandbox/signing | Deferred; command-line and CI builds disable signing |
 
-The committed project supports direct Xcode inspection, while the declarative source prevents hand-edited project-file drift. `make bootstrap` validates prerequisites but installs nothing. CI downloads the pinned upstream XcodeGen release.
+The committed project supports direct Xcode inspection, while the declarative source prevents hand-edited project-file drift. `make bootstrap` validates prerequisites but installs nothing. CI pins the checkout action by commit, disables persisted Git credentials, downloads the pinned upstream XcodeGen release with bounded retries and timeouts, and verifies its SHA-256 before extraction.
 
 ## Command surface
 
@@ -46,7 +47,7 @@ Build products and test results are written under ignored `DerivedData` paths. P
 | --- | --- |
 | XcodeGen 2.46.0 generation | PASS |
 | Debug application build | PASS |
-| Release universal application build | PASS |
+| Release universal application build and bundle assertion | PASS, `arm64` and `x86_64` |
 | Swift unit tests | PASS, 5 tests |
 | Retained M0 unit/fixture tests | PASS, 14 tests |
 | Python compile validation | PASS |
@@ -54,9 +55,10 @@ Build products and test results are written under ignored `DerivedData` paths. P
 | Bundle schema/fixture exclusion | PASS |
 | Production dependency/capability boundary scan | PASS |
 | Credential, email, and user-path scan | PASS |
+| Generated project tracked/untracked drift check | PASS |
 | Draft PR CI | PASS, protocol evidence and macOS application jobs |
 
-The Swift tests cover initial lifecycle state, idempotent start and shutdown transitions, single termination dispatch, version/build formatting, missing metadata behavior, and the menu model. Shell validation checks bundle identifier, version, build, `LSUIElement`, macOS 14.0, forbidden production dependencies, sensitive permissions, and M0 resource leakage.
+The Swift tests cover initial lifecycle state, idempotent start and shutdown transitions, single termination dispatch, version/build formatting, missing metadata behavior, and the menu model. Shell validation checks bundle identifier, version, build, `LSUIElement`, macOS 14.0, both required Release executable architectures in either order, forbidden production dependencies, sensitive permissions, M0 resource leakage, and generated-project drift including untracked files.
 
 ## Manual smoke test
 

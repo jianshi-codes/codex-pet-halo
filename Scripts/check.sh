@@ -5,11 +5,7 @@ readonly repository_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repository_root"
 
 ./Scripts/bootstrap.sh
-./Scripts/generate.sh
-if ! git diff --quiet -- PetHalo.xcodeproj; then
-    echo "error: generated Xcode project differs from the committed project" >&2
-    exit 1
-fi
+./Scripts/validate-generated-project.sh
 ./Scripts/validate-source-boundaries.sh
 ./Scripts/privacy-scan.sh
 CONFIGURATION=Debug ./Scripts/build.sh

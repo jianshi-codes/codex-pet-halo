@@ -15,7 +15,9 @@ The project considered a hand-maintained Xcode project, Swift Package Manager al
 - Use SwiftUI for the `MenuBarExtra` scene and AppKit for application-delegate and termination lifecycle ownership.
 - Target macOS 14.0 because `MenuBarExtra` is mature there and M1 has no evidenced need for a newer API.
 - Use XcodeGen 2.46.0 with `project.yml` as the editable source of truth.
-- Commit the generated `PetHalo.xcodeproj` so a checkout is inspectable in Xcode; CI regenerates it with the pinned tool and fails on drift.
+- Commit the generated `PetHalo.xcodeproj` so a checkout is inspectable in Xcode; local and CI checks regenerate it with the pinned tool and fail on modified, deleted, or untracked project drift.
+- Pin the CI checkout action by commit and disable persisted Git credentials. Download the XcodeGen 2.46.0 release with bounded retries and timeouts, and verify SHA-256 `4d9e34b62172d645eed6457cac13fc222569974098ef4ee9c3368bedf0196806` before extraction.
+- Treat a Release application as valid only when its executable contains both `arm64` and `x86_64`; keep Debug validation architecture-neutral.
 - Create one application target, `PetHalo`, and one hosted unit-test target, `PetHaloTests`. Do not create empty future framework targets.
 - Configure the app as an accessory application with `LSUIElement` and an AppKit accessory activation policy. It has no normal window or Dock icon.
 - Keep explicit coordinator start, termination-request, and stopped states. The coordinator is the future ownership boundary, but it does not contain or name speculative CodexBridge or Halo controllers.
@@ -28,4 +30,4 @@ Signing, notarization, packaging, updating, and distribution are also deferred. 
 
 ## Consequences
 
-Project changes are reproducible and reviewable, but contributors must use the pinned XcodeGen version and regenerate rather than edit the project file. The application provides a real lifecycle and menu shell while preserving the boundary that JSON-RPC, Usage, Halo UI, `NSPanel`, permissions, and Codex observation belong to later milestones.
+Project changes are reproducible and reviewable, but contributors must use the pinned XcodeGen version and regenerate rather than edit the project file. CI verifies the release asset's integrity; CI dependency identity, generated-project cleanliness, and Release architecture support are explicit checks. The application provides a real lifecycle and menu shell while preserving the boundary that JSON-RPC, Usage, Halo UI, `NSPanel`, permissions, and Codex observation belong to later milestones.
