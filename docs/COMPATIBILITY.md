@@ -14,6 +14,21 @@
 
 This table records one M0 host, not a compatibility guarantee. The app-server protocol is experimental. Generated schema bundles are versioned by CLI version, and unknown fields must remain forward-compatible while missing required semantics produce an unavailable state.
 
+## M1 application foundation
+
+| Component | M1 contract |
+| --- | --- |
+| Minimum deployment target | macOS 14.0 |
+| Swift language mode | Swift 6 |
+| UI and lifecycle | SwiftUI `MenuBarExtra` with AppKit application delegate/coordinator |
+| Project generation | XcodeGen 2.46.0 from `project.yml` |
+| Generated project | Committed and checked for regeneration drift in CI |
+| Runtime dependencies | Apple frameworks only; no third-party packages |
+| Signing | Disabled for command-line and CI validation; distribution decisions deferred |
+| Sandbox | Not enabled in M1; future child-process/window-observation implications require a separate decision |
+
+Local M1 builds were validated with Xcode 26.4.1 (17E202) and Swift 6.3.1. The project deployment target, not that validation host version, defines the intended minimum OS.
+
 ## Protocol matrix for Codex CLI 0.145.0-alpha.18
 
 | Capability | Generated shape | Runtime result |
