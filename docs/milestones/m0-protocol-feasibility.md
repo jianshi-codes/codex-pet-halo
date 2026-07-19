@@ -1,21 +1,37 @@
 # M0 Protocol Feasibility
 
-- Status: **BLOCKED**
+- Status: **PASS-CORE / PARTIAL-OPTIONALS**
 - Date: 2026-07-20
-- Scope: environment evidence, generated protocol schemas, read-only probe, redacted fixtures, tests, and PASS-A/B/C assessment
+- Scope: environment evidence, generated protocol schemas, read-only probe, redacted fixtures, tests, and core/optional capability assessment
 - Stop condition: M0 evidence complete; do not implement M1 or Halo UI
 
 ## Executive result
 
-M0 proves that an independently launched app-server can read account data, weekly rate limits, and account token-usage history on this machine. It does **not** prove the two core prerequisites for the product: the real response contained no five-hour window, and the CLI-supported shared control socket was not running, so Pet Halo could not observe Codex Desktop thread context.
+M0 proves that an independently launched stdio app-server can support the Pet Halo MVP account-data path: connection state, weekly rate limits, reset time, account usage summary, daily usage, and multiple rate-limit buckets. Missing five-hour and shared Context data are optional capabilities and do not block the ambient Halo product.
 
 | Gate | Requirement | Result | Evidence |
 | --- | --- | --- | --- |
-| PASS-A | Reliably read five-hour and weekly limits | **FAIL** | Weekly windows were real and parseable; no 300-minute window was present |
-| PASS-B | Receive context updates from the app-server used by Codex Desktop | **BLOCKED** | `app-server proxy` could not connect; no shared handshake or token-usage event |
-| PASS-C | Select the target thread reliably or provide a reliable user-selection fallback | **BLOCKED** | Shared loaded/active thread inventory was unavailable |
+| CORE-A | Own and connect to a read-only app-server transport | **PASS** | Independent stdio completed `initialize` / `initialized` and all probed requests |
+| CORE-B | Read at least one usable Codex rate-limit window | **PASS** | Real 10080-minute weekly windows returned with used percentage and reset time |
+| CORE-C | Read account usage for expanded presentation | **PASS** | Summary and daily usage buckets returned |
+| CORE-D | Degrade missing optional data safely | **PASS** | Missing buckets/context window, nulls, unknowns, timeout, and disconnect are tested |
+| OPTIONAL-5H | Read a 300-minute window when offered | **UNAVAILABLE** | No matching real window; the segment remains absent |
+| OPTIONAL-RATE-PUSH | Observe `account/rateLimits/updated` | **UNVERIFIED** | Generated schema exists; no runtime notification observed |
+| OPTIONAL-CONTEXT | Receive Desktop thread Context updates | **UNAVAILABLE** | Shared control socket was not running |
+| OPTIONAL-TARGET | Select a Desktop target thread | **UNAVAILABLE** | Required only for optional Context display |
 
-At least PASS-A is required to enter M1, so **M1 is not recommended or authorized**. Without PASS-B, future UI must display Context as unavailable and must never estimate it.
+The revised product gate is **PASS-CORE / PARTIAL-OPTIONALS**. M0 qualifies the repository for separately authorized M1 skeleton work; this M0 change does not start M1 or Halo UI. Optional data must appear only when supported and must never be estimated.
+
+## Recommended MVP data composition
+
+| Surface | Data | Behavior |
+| --- | --- | --- |
+| Primary halo | General Codex weekly remaining percentage | Prefer the exact `codex` bucket when present; never select by map order |
+| Primary details | Weekly reset time | Show in expanded/hover details |
+| Optional segment | Five-hour remaining percentage and reset time | Add only when a 300-minute window exists |
+| Status indicator | Halo-to-owned-app-server connection | Distinguish connected, disconnected, timeout, and protocol error |
+| Expanded view | Account usage summary, streaks, daily usage, and additional rate-limit buckets | Do not display account identity or raw credentials |
+| Optional segment | Target-thread Context remaining | Add only after a supported shared source and explicit target strategy are verified |
 
 ## Environment evidence
 
@@ -72,7 +88,7 @@ Results:
 | `initialize` / `initialized` | PASS |
 | `account/read` | PASS; account identity redacted |
 | `account/rateLimits/read` | PASS |
-| Five-hour / 300-minute limit | **Unavailable: no matching real window** |
+| Five-hour / 300-minute limit | Optional and currently absent; no matching real window |
 | Weekly / 10080-minute limit | PASS; two distinct buckets returned |
 | Multiple buckets | PASS; `codex` and `codex_bengalfox` observed |
 | `account/usage/read` | PASS; high-volume token metrics redacted and compacted in fixture |
@@ -99,9 +115,9 @@ python3 Tools/ProtocolProbe/probe.py \
 - `doctor` reported the background app server as not running in ephemeral mode.
 - The running Desktop app had no CLI-advertised pathname to attach to; observed Desktop↔Codex communication used unnamed socketpairs.
 
-The probe did not try unrelated IPC sockets, guess a private transport, launch a persistent daemon, modify Desktop, or inspect a Codex database. Therefore shared handshake, `thread/loaded/list`, `thread/status/changed`, and real-time `thread/tokenUsage/updated` are **not verified**.
+The probe did not try unrelated IPC sockets, guess a private transport, launch a persistent daemon, modify Desktop, or inspect a Codex database. Therefore shared handshake, `thread/loaded/list`, `thread/status/changed`, and real-time `thread/tokenUsage/updated` are **not verified**. This blocks only the optional Context segment, not the owned stdio account-data MVP.
 
-## Target-thread strategy
+## Optional target-thread strategy
 
 The generated `thread/loaded/list` response contains only thread IDs and a cursor. When a supported shared transport becomes available:
 
@@ -111,30 +127,30 @@ The generated `thread/loaded/list` response contains only thread IDs and a curso
 4. if multiple are loaded, require explicit user selection and persist the selected exact ID only for the local session;
 5. if the target unloads or the transport disconnects, clear Context to unavailable.
 
-This is a reliable design fallback, but PASS-C remains blocked because it could not be exercised against Desktop.
+This strategy remains unverified because it could not be exercised against Desktop. It is not needed while the Context segment is absent.
 
-## Recommended architecture after the gate is unblocked
+## Recommended MVP architecture
 
 - Stable internal `UsageSnapshot` model with nullable five-hour, weekly, and context fields.
-- Optional shared context backend using only a CLI-supported, discoverable control socket.
-- Independent stdio account backend as fallback for rate limits and account usage.
+- Owned independent stdio backend as the primary MVP source for account, rate limits, usage, and connection state.
+- Optional shared context backend only through a future CLI-supported, discoverable transport.
 - Explicit target-thread picker for multi-thread cases; no UI-focus inference.
-- Sparse rate-limit update merger that refetches on ambiguity.
+- Initial and periodic rate-limit reads; a future sparse-update merger must refetch on ambiguity.
 - Fail-closed version compatibility check keyed to generated schema bundles.
-- Context state becomes unavailable on missing `modelContextWindow`, disconnect, timeout, or unverified semantics.
+- Optional segments disappear or become unavailable on missing data, disconnect, timeout, or unverified semantics.
 
-Recommended production transport: a future CLI-supported shared control-socket transport after it is demonstrably associated with Codex Desktop. Recommended fallback: independent stdio for account data only, with Context unavailable.
+Recommended MVP transport: an owned `codex app-server --stdio` child process. A future shared control-socket transport may add Desktop Context, but it is not a prerequisite for the Halo.
 
 ## Risks and protocol assumptions
 
 - The app-server protocol and schema generators are experimental and may change without compatibility guarantees.
-- A five-hour window is not guaranteed for every account, plan, model, or bucket.
+- A five-hour window is currently absent and may return later; the UI must add or remove that segment dynamically.
 - Multiple rate-limit buckets must remain distinct; the project must not silently choose one by array or map order.
 - `account/rateLimits/updated` is sparse and cannot safely replace a complete snapshot.
 - `total.totalTokens / modelContextWindow` is the parser's provisional context calculation; the generated shape supports it, but shared runtime semantics remain unverified.
-- Desktop currently owns an ephemeral child transport with no supported external attachment evidence.
+- Desktop currently owns an ephemeral child transport with no supported external attachment evidence; only optional Context is affected.
 - Loaded/active protocol status does not prove Desktop UI selection.
-- Account usage history is sensitive behavioral data and should not be needed by the production Halo unless a later milestone explicitly justifies it.
+- Account usage history is sensitive behavioral data; the expanded view should minimize retention and never log or persist raw history unnecessarily.
 - The aggregate v2 schema definition order is non-deterministic across runs; canonical JSON was equal, so byte hashes of that aggregate are not a safe compatibility key.
 
 ## Fixtures and tests
@@ -198,7 +214,7 @@ git status -sb
 
 The generated schema bundle must also be checked separately for accidental local paths; generated protocol type names containing words such as “token” are expected and are not credentials.
 
-## Unfinished items
+## Optional follow-up items
 
 - Obtain a real 300-minute rate-limit window and verify reset/update behavior.
 - Observe a real `account/rateLimits/updated` notification.
@@ -207,4 +223,4 @@ The generated schema bundle must also be checked separately for accidental local
 - Exercise explicit target-thread selection with one and multiple loaded threads.
 - Validate context-token semantics across compaction and model changes.
 
-These items require a future environment or protocol change. No estimate or substitute data was used.
+These items require a future environment or protocol change. They do not block M1 eligibility or the account-data MVP. No estimate or substitute data was used.

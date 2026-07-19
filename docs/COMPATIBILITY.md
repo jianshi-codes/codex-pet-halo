@@ -28,15 +28,29 @@ This table records one M0 host, not a compatibility guarantee. The app-server pr
 
 `RateLimitWindow` is exactly `{ usedPercent, windowDurationMins, resetsAt }` in this generated version. Pet Halo identifies five-hour and weekly windows only as 300 and 10080 minutes respectively; `primary` and `secondary` are treated as storage slots, not semantic names.
 
+## MVP capability levels
+
+| Level | Capability | Current status | Display behavior |
+| --- | --- | --- | --- |
+| Core | Weekly Codex rate-limit window | PASS | Primary halo with remaining percentage and reset time |
+| Core | Halo-owned app-server connection | PASS | Connected/disconnected/timeout state indicator |
+| Core | Account usage summary and daily buckets | PASS | Expanded view; identity fields are never displayed |
+| Optional | Five-hour rate-limit window | Absent in the real response | Omit the segment; detect a future 300-minute window automatically |
+| Optional | Shared thread Context | Not verified | Omit or mark unavailable; never estimate |
+| Optional | Target-thread selection | Not verified | Required only when Context becomes available |
+| Optional | Rate-limit push update | Schema only | MVP may refetch the read snapshot; sparse pushes cannot replace it |
+
+For multiple rate-limit buckets, preserve every bucket. The exact `codex` bucket may be used as the general Codex primary halo when present; model-specific or other buckets belong in secondary/expanded presentation. Never choose a bucket by map order.
+
 ## Transport matrix
 
 | Transport | Discovery | Result | Suitable use |
 | --- | --- | --- | --- |
-| Independent stdio | `codex app-server --stdio` | PASS | Account and rate-limit fallback only |
-| Managed shared control socket | `codex app-server proxy` default discovery | BLOCKED: socket absent | Candidate production transport only after a supported shared server is available |
+| Independent stdio | `codex app-server --stdio` | PASS | **Recommended MVP transport** for account, limits, usage, and owned connection state |
+| Managed shared control socket | `codex app-server proxy` default discovery | Unavailable: socket absent | Optional future source for shared Desktop thread data |
 | Explicit socket path | operator-provided `proxy --sock` | Not tested; no evidenced Desktop socket path | Never infer or hardcode |
 | Codex internal SQLite | none | Prohibited | Never use |
 
-The official `codex doctor --json` `app_server.status` check reported `background server is not running` in ephemeral mode. Read-only socket inspection showed the running Desktop app and its Codex child communicating through unnamed Unix socketpairs, not an attachable path advertised by the CLI. Other IPC sockets were not assumed to be app-server transports.
+The official `codex doctor --json` `app_server.status` check reported `background server is not running` in ephemeral mode. Read-only socket inspection showed the running Desktop app and its Codex child communicating through unnamed Unix socketpairs, not an attachable path advertised by the CLI. Other IPC sockets were not assumed to be app-server transports. This limits optional shared Context only; it does not block the owned stdio MVP.
 
 The aggregate v2 JSON schema is not byte-deterministic in this CLI build because its `definitions` object order changes between runs. A second generation produced the same canonical sorted-JSON SHA-256 and identical individual JSON/TypeScript files. Consumers must treat JSON object ordering as insignificant.
