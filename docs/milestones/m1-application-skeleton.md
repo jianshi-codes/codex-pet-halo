@@ -1,6 +1,6 @@
 # M1 Application Skeleton
 
-- Status: **BLOCKED — DIRECT MENU/QUIT OBSERVATION REQUIRED**
+- Status: **PASS**
 - Date: 2026-07-20
 - Scope: native macOS accessory application, lifecycle boundary, menu-bar shell, unit tests, reproducible build commands, CI, and documentation
 - Stop condition: Draft M1 PR complete; do not implement M2 CodexBridge or M3 Halo UI
@@ -62,7 +62,7 @@ The Swift tests cover initial lifecycle state, idempotent start and shutdown tra
 
 The Debug application was launched with macOS Launch Services and remained running. Read-only AppKit/CoreGraphics inspection reported accessory activation policy (`NSApplication.ActivationPolicy.accessory`) and zero windows owned by the process; accessory policy excludes a normal Dock presence. A standard macOS application termination request was accepted and the process exited.
 
-The available Computer Use interface could not attach to this windowless `LSUIElement` process, and the helper accessibility tree likewise did not expose the status item. Therefore the menu contents and a direct click on `Quit Pet Halo` were **not manually observed**. The compiled menu model and coordinator tests prove the command wiring and single termination dispatch, but they are not presented as a substitute for the missing direct UI observation.
+The operator then opened the real menu-bar item, selected `Quit Pet Halo`, and confirmed that the application closed without issue. This completes the direct UI observation separately from the automated coordinator tests.
 
 ## Explicit non-goals preserved
 
@@ -76,4 +76,4 @@ The M1 application shell reads and stores no Codex data. Lifecycle logging uses 
 
 ## Gate
 
-The local automated portion and Draft PR CI pass. The M1 gate is **BLOCKED** because a direct menu/Quit smoke observation could not be completed with the available window-oriented UI tooling. After that observation passes, the next recommended milestone is a separately authorized **M2 — CodexBridge**; M1 does not authorize it.
+The local automated checks, Draft PR CI, and manual menu/Quit smoke test pass. The M1 gate is **PASS**. The exact next recommended milestone is a separately authorized **M2 — CodexBridge**; M1 does not authorize or start it.

@@ -16,7 +16,7 @@ Generate schemas from the installed Codex CLI, build a read-only protocol probe,
 
 ### M1 — Application skeleton
 
-**In progress.** After M0 PASS-CORE and separate implementation authorization: create the macOS/Xcode project, minimal application and test targets, CI, and accessory application lifecycle skeleton. Do not require optional five-hour or Context sources and do not implement CodexBridge or Halo UI. See [the M1 report](milestones/m1-application-skeleton.md).
+**Complete — PASS.** The macOS/Xcode project, minimal application and test targets, CI, and accessory application lifecycle skeleton are implemented and verified. M1 does not include CodexBridge or Halo UI. See [the M1 report](milestones/m1-application-skeleton.md).
 
 ### M2 — CodexBridge
 
