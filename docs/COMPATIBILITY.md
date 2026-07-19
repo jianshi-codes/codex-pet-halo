@@ -45,7 +45,7 @@ The public M2 domain exposes rate-limit and Account Usage freshness separately. 
 | --- | --- |
 | Window | One AppKit borderless `.nonactivatingPanel`; cannot become key or main |
 | Level and Spaces | Floating, all-Spaces, full-screen auxiliary, ignored by normal cycling |
-| Interaction | Compact and expanded are click-through and controlled by the menu bar |
+| Interaction | Compact is click-through; expanded accepts pointer/scroll events while remaining non-activating and unable to become key or main; both are controlled by the menu bar |
 | Sizes | Compact 176×176 points; expanded 360×520 points |
 | Initial position | Upper-right of one available screen's visible frame, fixed 24-point inset |
 | Presentation | SwiftUI hosted inside the panel; system materials, colors, and text styles |

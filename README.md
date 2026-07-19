@@ -6,7 +6,7 @@ Pet Halo is an independent, unofficial macOS companion that aims to display a tr
 
 ## Status
 
-**M3 Halo Window is complete with PASS.** The native Swift 6 accessory application presents a transparent, borderless, non-activating `NSPanel` with compact and expanded Usage layouts. It shows the real weekly remaining quota, capability-gates the optional five-hour quota, presents Account Usage without identity, and marks current, stale, and unavailable components explicitly. Menu commands show, hide, resize, and refresh the Halo; both modes remain click-through.
+**M3 Halo Window is complete with PASS.** The native Swift 6 accessory application presents a transparent, borderless, non-activating `NSPanel` with compact and expanded Usage layouts. It shows the real weekly remaining quota, capability-gates the optional five-hour quota, presents Account Usage without identity, and marks current, stale, and unavailable components explicitly. Menu commands show, hide, resize, and refresh the Halo; compact is click-through, while expanded accepts scrolling without becoming key, main, or activating the application.
 
 M0 protocol feasibility remains complete with **PASS-CORE / PARTIAL-OPTIONALS**. The validated future MVP uses capability-driven data:
 

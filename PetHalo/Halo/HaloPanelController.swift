@@ -81,6 +81,7 @@ final class HaloPanelController: HaloPanelControlling {
         guard self.mode != mode else { return }
         self.mode = mode
         viewState.mode = mode
+        panel.ignoresMouseEvents = mode == .compact
 
         let size = Self.size(for: mode)
         let oldFrame = panel.frame

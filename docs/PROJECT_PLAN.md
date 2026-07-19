@@ -24,7 +24,7 @@ Generate schemas from the installed Codex CLI, build a read-only protocol probe,
 
 ### M3 — Halo window
 
-**Complete — PASS.** A non-activating transparent `NSPanel`, deterministic compact/expanded Usage presentation, menu controls, accessibility states, Reduce Transparency support, panel lifecycle, tests, smoke validation, and boundary checks are implemented. See [the M3 report](milestones/m3-halo-window.md).
+**Complete — PASS.** A non-activating transparent `NSPanel`, compact click-through and expanded non-activating scrolling, deterministic Usage presentation, menu controls, accessibility states with a fully opaque Reduce Transparency fallback, panel lifecycle, tests, smoke validation, and boundary checks are implemented. See [the M3 report](milestones/m3-halo-window.md).
 
 ### M4 — Window following
 

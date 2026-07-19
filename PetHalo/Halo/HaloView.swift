@@ -40,7 +40,7 @@ struct HaloView: View {
     @ViewBuilder
     private var background: some View {
         if reduceTransparency {
-            Color(nsColor: .windowBackgroundColor).opacity(0.98)
+            Color(nsColor: .windowBackgroundColor)
         } else {
             Rectangle().fill(.ultraThinMaterial)
         }

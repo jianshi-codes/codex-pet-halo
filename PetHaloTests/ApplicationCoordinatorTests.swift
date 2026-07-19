@@ -295,7 +295,16 @@ final class ApplicationCoordinatorTests: XCTestCase {
             haloPanelController: panel,
             terminateApplication: {}
         )
+        XCTAssertFalse(coordinator.canRefreshUsage)
+        coordinator.refreshUsage()
+        let disconnectedRefreshCount = await service.refreshCount
+        XCTAssertEqual(disconnectedRefreshCount, 0)
         coordinator.start()
+
+        for _ in 0 ..< 100 where !coordinator.canRefreshUsage {
+            await Task.yield()
+        }
+        XCTAssertTrue(coordinator.canRefreshUsage)
 
         coordinator.setHaloMode(.expanded)
         coordinator.setHaloMode(.expanded)

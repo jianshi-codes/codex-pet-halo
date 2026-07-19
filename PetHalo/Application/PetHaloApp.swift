@@ -60,7 +60,7 @@ private struct ApplicationMenuContent: View {
         Button("Refresh Usage") {
             coordinator.refreshUsage()
         }
-        .disabled(!coordinator.acceptsUICommands)
+        .disabled(!coordinator.canRefreshUsage)
         Divider()
         Text(menuModel.versionText)
         Divider()

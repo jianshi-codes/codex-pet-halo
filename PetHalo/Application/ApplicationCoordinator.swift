@@ -90,7 +90,7 @@ final class ApplicationCoordinator: ObservableObject {
     }
 
     func refreshUsage() {
-        guard state == .running, refreshTask == nil else { return }
+        guard canRefreshUsage, refreshTask == nil else { return }
         refreshTask = Task { [weak self, usageService] in
             await usageService.refresh()
             guard let self else { return }
@@ -100,6 +100,10 @@ final class ApplicationCoordinator: ObservableObject {
 
     var acceptsUICommands: Bool {
         state == .running
+    }
+
+    var canRefreshUsage: Bool {
+        state == .running && latestUsageState.connection == .connected
     }
 
     func requestTermination() {
