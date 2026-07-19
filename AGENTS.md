@@ -2,14 +2,15 @@
 
 ## Purpose
 
-Pet Halo is an independent, unofficial macOS companion for Codex. The current application is a native menu-bar/accessory shell that will eventually host a transparent usage halo without modifying Codex Desktop or Codex Pet.
+Pet Halo is an independent, unofficial macOS companion for Codex. The current application is a native menu-bar/accessory app with a transparent usage Halo that does not modify Codex Desktop or Codex Pet.
 
 ## Milestone boundaries
 
 - Work only within the milestone explicitly authorized by the user.
 - M1 contains the application skeleton, lifecycle boundary, menu-bar shell, tests, build tooling, CI, and documentation.
 - M2 contains the stable Usage domain, read-only owned CodexBridge, JSON-RPC/process lifecycle, refresh/reconnect policy, tests, build tooling, CI, and documentation.
-- Do not begin Halo windows, Usage presentation, window tracking, or later milestone work without separate authorization.
+- M3 contains the non-activating click-through Halo panel, compact/expanded Usage presentation, accessibility, tests, smoke tooling, CI, and documentation.
+- Do not begin Codex/Pet discovery, calibration, saved placement, window following, final artwork, motion/themes, or later milestone work without separate authorization.
 
 ## Build and test
 
@@ -21,6 +22,8 @@ make test
 make m0-tests
 make m2-tests
 make m2-smoke
+make m3-tests
+make m3-smoke
 make check
 ```
 

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		06FF249CF73ABA9AFC9DAAB5 /* HaloPresentationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30A1747435125A348828A345 /* HaloPresentationModel.swift */; };
 		171B9C8965C06CA84D826CE4 /* PetHaloApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D8C3263630349D92C95DE2 /* PetHaloApp.swift */; };
 		18BF5FABFA1AA1392FF0FBEA /* UsageModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1796734DF0D23BDDEC73973A /* UsageModels.swift */; };
 		1989C171DE35638239CEFDB5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53D191FCB6E05C2EDFDD855C /* AppDelegate.swift */; };
@@ -14,15 +15,21 @@
 		277EB1F0053224E5DAB1DC9C /* ApplicationCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63D18F2C37C1D3D8A7A9C808 /* ApplicationCoordinatorTests.swift */; };
 		29E17286FD2FA6A43597418D /* JSONValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3CA016E9DEE0A716E42CABD /* JSONValue.swift */; };
 		2DF328ADE99FFFADADBBA921 /* CodexExecutableLocatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAF07A981EDA69C43A5C99A2 /* CodexExecutableLocatorTests.swift */; };
+		2E0AB5518FA0B350AD39B425 /* HaloView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88966A37DE9DA522A564D8C2 /* HaloView.swift */; };
 		3D5DCA9A5E3DFAB51BE9D536 /* PetHaloCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 31E285D59ED6AC3404B469E7 /* PetHaloCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		5059C97F0934FB6D1E3EDAFD /* HaloPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF530A39D0726A73894FBBCD /* HaloPanel.swift */; };
 		56C0090D0694F70E7A0A0235 /* JSONRPCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44D0290C78C6A5EE7675F17E /* JSONRPCClient.swift */; };
 		6098B69858EB884122CECCC8 /* CodexAppServerProcessTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA3E4DFDEC40E481489464C6 /* CodexAppServerProcessTests.swift */; };
 		6DF192CC2CB5DA0986C4A0A9 /* ApplicationMenuModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FCA91196BF97C117A6CE257 /* ApplicationMenuModel.swift */; };
+		711A8ABD501119D8AF2ADF46 /* HaloAccessibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FF5A8C4E94A3AE44C68AF30 /* HaloAccessibilityTests.swift */; };
 		73DEC04D011B8B201B7CD3DE /* PetHaloCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31E285D59ED6AC3404B469E7 /* PetHaloCore.framework */; };
+		79194AD7CDE5DA712CCCE378 /* HaloPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B79DFED08033272655037ED5 /* HaloPanelController.swift */; };
+		84BF97788759A2E86556F248 /* HaloExpandedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79DB39BA2C79C7F61966EFC7 /* HaloExpandedView.swift */; };
 		87EB7A8D40582EB085B22FA9 /* CodexProtocolCompatibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = B336F289A511EC4583E9A267 /* CodexProtocolCompatibility.swift */; };
 		8CBEED4568B022F8F1FC9A4F /* RealCodexSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD8F4A86160AFA059EB3FF32 /* RealCodexSmokeTests.swift */; };
 		95C38E0BF2EAD5A51FF92659 /* JSONRPCClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D91BC5FBCA2A93BA35D6400 /* JSONRPCClientTests.swift */; };
 		9AF8ABE12EA2B676FB68B516 /* AppVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F7170282579DD382F1DE12F /* AppVersionTests.swift */; };
+		9E4B2229D6BA2D232D11CDE3 /* HaloPresentationMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5788F94CC23AF66494992A09 /* HaloPresentationMapperTests.swift */; };
 		A3B0A5F98A48C63479A9750B /* fake_app_server.py in Resources */ = {isa = PBXBuildFile; fileRef = 564D571EA9AE99D8DB0DB512 /* fake_app_server.py */; };
 		A68F15C9B4840A0FDEEF24EE /* CodexProtocolDTOs.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4A3F8DF27D6125D701EA440 /* CodexProtocolDTOs.swift */; };
 		ACBB2FC8FA0B41B6934FD0E5 /* CodexUsageServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B83A95766F449B64D80D63C1 /* CodexUsageServiceTests.swift */; };
@@ -30,11 +37,16 @@
 		AEB5A21C391F288A8542FE6D /* UsageModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7AC9DBB942D9C5D65550E7F /* UsageModelsTests.swift */; };
 		B019390F2CB3AFFC26C82128 /* CodexUsageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59D323BA311C25ABC5C4EE14 /* CodexUsageService.swift */; };
 		B8C05825FDF8E1EFF062AFED /* JSONLFramer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A8A9107A340EC6D416F711 /* JSONLFramer.swift */; };
+		C176F4228526AF251652C480 /* HaloPresentationMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9AD2D98394E507F7140539 /* HaloPresentationMapper.swift */; };
+		CCC001B991CD1BDECCF7D095 /* HaloCompactView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED1ACAAEB08A3B1E076B246A /* HaloCompactView.swift */; };
 		CE8B089F62BD2B4E093BB7F9 /* PetHaloCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 31E285D59ED6AC3404B469E7 /* PetHaloCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D2FFBE559B6AB8DB3A6695E8 /* CodexExecutableLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 568D215FDD28F3C6E9B9345B /* CodexExecutableLocator.swift */; };
 		DDD45601CDD8492D15B983F2 /* CodexAppServerProcess.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE3BC6DE90D0B5E074A272EF /* CodexAppServerProcess.swift */; };
+		DDFCF83D34A93E9EAD1F0A03 /* HaloPanelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21E19CCC1190F7201522B1EA /* HaloPanelTests.swift */; };
 		EACA08B2BF7B74CE4252E07F /* AppVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B738427C1831977BD2BC5E /* AppVersion.swift */; };
+		ECAD4B41C98C961FF9B0B64C /* HaloAccessibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA44F384E73BA7EC21079D05 /* HaloAccessibility.swift */; };
 		F224D94140A1796351A75894 /* PetHaloCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31E285D59ED6AC3404B469E7 /* PetHaloCore.framework */; };
+		FEA6A99B54F0D33C0EC13A45 /* HaloPresentationMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86A525637B5693F3FDA11F32 /* HaloPresentationMode.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -90,31 +102,43 @@
 		155ECFB494EA4A907BF68C97 /* JSONLFramerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONLFramerTests.swift; sourceTree = "<group>"; };
 		1796734DF0D23BDDEC73973A /* UsageModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageModels.swift; sourceTree = "<group>"; };
 		1992ED33BCBCA92C41D8691B /* PetHaloTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PetHaloTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		21E19CCC1190F7201522B1EA /* HaloPanelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloPanelTests.swift; sourceTree = "<group>"; };
+		2FF5A8C4E94A3AE44C68AF30 /* HaloAccessibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloAccessibilityTests.swift; sourceTree = "<group>"; };
+		30A1747435125A348828A345 /* HaloPresentationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloPresentationModel.swift; sourceTree = "<group>"; };
 		31E285D59ED6AC3404B469E7 /* PetHaloCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PetHaloCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		44D0290C78C6A5EE7675F17E /* JSONRPCClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONRPCClient.swift; sourceTree = "<group>"; };
 		46B738427C1831977BD2BC5E /* AppVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppVersion.swift; sourceTree = "<group>"; };
 		53D191FCB6E05C2EDFDD855C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		564D571EA9AE99D8DB0DB512 /* fake_app_server.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = fake_app_server.py; sourceTree = "<group>"; };
 		568D215FDD28F3C6E9B9345B /* CodexExecutableLocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexExecutableLocator.swift; sourceTree = "<group>"; };
+		5788F94CC23AF66494992A09 /* HaloPresentationMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloPresentationMapperTests.swift; sourceTree = "<group>"; };
 		57A8A9107A340EC6D416F711 /* JSONLFramer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONLFramer.swift; sourceTree = "<group>"; };
 		59D323BA311C25ABC5C4EE14 /* CodexUsageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexUsageService.swift; sourceTree = "<group>"; };
 		5FCA91196BF97C117A6CE257 /* ApplicationMenuModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationMenuModel.swift; sourceTree = "<group>"; };
 		63D18F2C37C1D3D8A7A9C808 /* ApplicationCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationCoordinatorTests.swift; sourceTree = "<group>"; };
 		6D91BC5FBCA2A93BA35D6400 /* JSONRPCClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONRPCClientTests.swift; sourceTree = "<group>"; };
 		6F7170282579DD382F1DE12F /* AppVersionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppVersionTests.swift; sourceTree = "<group>"; };
+		79DB39BA2C79C7F61966EFC7 /* HaloExpandedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloExpandedView.swift; sourceTree = "<group>"; };
 		7AF1978CC2FC88E214BCA7F9 /* PetHaloCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PetHaloCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		86A525637B5693F3FDA11F32 /* HaloPresentationMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloPresentationMode.swift; sourceTree = "<group>"; };
+		88966A37DE9DA522A564D8C2 /* HaloView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloView.swift; sourceTree = "<group>"; };
+		8E9AD2D98394E507F7140539 /* HaloPresentationMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloPresentationMapper.swift; sourceTree = "<group>"; };
 		94248589065E76AD0F4ED8AC /* Pet Halo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Pet Halo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B336F289A511EC4583E9A267 /* CodexProtocolCompatibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexProtocolCompatibility.swift; sourceTree = "<group>"; };
 		B4A3F8DF27D6125D701EA440 /* CodexProtocolDTOs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexProtocolDTOs.swift; sourceTree = "<group>"; };
+		B79DFED08033272655037ED5 /* HaloPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloPanelController.swift; sourceTree = "<group>"; };
 		B83A95766F449B64D80D63C1 /* CodexUsageServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexUsageServiceTests.swift; sourceTree = "<group>"; };
 		BAF07A981EDA69C43A5C99A2 /* CodexExecutableLocatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexExecutableLocatorTests.swift; sourceTree = "<group>"; };
 		BD8F4A86160AFA059EB3FF32 /* RealCodexSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealCodexSmokeTests.swift; sourceTree = "<group>"; };
 		C2D8C3263630349D92C95DE2 /* PetHaloApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetHaloApp.swift; sourceTree = "<group>"; };
+		CF530A39D0726A73894FBBCD /* HaloPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloPanel.swift; sourceTree = "<group>"; };
 		D7AC9DBB942D9C5D65550E7F /* UsageModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageModelsTests.swift; sourceTree = "<group>"; };
 		E3CA016E9DEE0A716E42CABD /* JSONValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONValue.swift; sourceTree = "<group>"; };
+		ED1ACAAEB08A3B1E076B246A /* HaloCompactView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloCompactView.swift; sourceTree = "<group>"; };
 		EE3BC6DE90D0B5E074A272EF /* CodexAppServerProcess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexAppServerProcess.swift; sourceTree = "<group>"; };
 		F55331779FEB25CD5A3B9912 /* ApplicationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationCoordinator.swift; sourceTree = "<group>"; };
 		FA3E4DFDEC40E481489464C6 /* CodexAppServerProcessTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexAppServerProcessTests.swift; sourceTree = "<group>"; };
+		FA44F384E73BA7EC21079D05 /* HaloAccessibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloAccessibility.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -184,6 +208,22 @@
 				D7AC9DBB942D9C5D65550E7F /* UsageModelsTests.swift */,
 			);
 			path = Domain;
+			sourceTree = "<group>";
+		};
+		3F35DF196A48AD75C38838F4 /* Halo */ = {
+			isa = PBXGroup;
+			children = (
+				FA44F384E73BA7EC21079D05 /* HaloAccessibility.swift */,
+				ED1ACAAEB08A3B1E076B246A /* HaloCompactView.swift */,
+				79DB39BA2C79C7F61966EFC7 /* HaloExpandedView.swift */,
+				CF530A39D0726A73894FBBCD /* HaloPanel.swift */,
+				B79DFED08033272655037ED5 /* HaloPanelController.swift */,
+				8E9AD2D98394E507F7140539 /* HaloPresentationMapper.swift */,
+				86A525637B5693F3FDA11F32 /* HaloPresentationMode.swift */,
+				30A1747435125A348828A345 /* HaloPresentationModel.swift */,
+				88966A37DE9DA522A564D8C2 /* HaloView.swift */,
+			);
+			path = Halo;
 			sourceTree = "<group>";
 		};
 		4E8DB9DD68D6D3002F707E97 /* Domain */ = {
@@ -263,6 +303,9 @@
 			children = (
 				63D18F2C37C1D3D8A7A9C808 /* ApplicationCoordinatorTests.swift */,
 				6F7170282579DD382F1DE12F /* AppVersionTests.swift */,
+				2FF5A8C4E94A3AE44C68AF30 /* HaloAccessibilityTests.swift */,
+				21E19CCC1190F7201522B1EA /* HaloPanelTests.swift */,
+				5788F94CC23AF66494992A09 /* HaloPresentationMapperTests.swift */,
 			);
 			path = PetHaloTests;
 			sourceTree = "<group>";
@@ -296,6 +339,7 @@
 			isa = PBXGroup;
 			children = (
 				EFDFFBEE2338B199903FFC34 /* Application */,
+				3F35DF196A48AD75C38838F4 /* Halo */,
 				6D93A514CB5298F282799C65 /* MenuBar */,
 			);
 			path = PetHalo;
@@ -494,6 +538,9 @@
 			files = (
 				9AF8ABE12EA2B676FB68B516 /* AppVersionTests.swift in Sources */,
 				277EB1F0053224E5DAB1DC9C /* ApplicationCoordinatorTests.swift in Sources */,
+				711A8ABD501119D8AF2ADF46 /* HaloAccessibilityTests.swift in Sources */,
+				DDFCF83D34A93E9EAD1F0A03 /* HaloPanelTests.swift in Sources */,
+				9E4B2229D6BA2D232D11CDE3 /* HaloPresentationMapperTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -505,6 +552,15 @@
 				EACA08B2BF7B74CE4252E07F /* AppVersion.swift in Sources */,
 				AE3B8D535C6E223A5AFF1A6A /* ApplicationCoordinator.swift in Sources */,
 				6DF192CC2CB5DA0986C4A0A9 /* ApplicationMenuModel.swift in Sources */,
+				ECAD4B41C98C961FF9B0B64C /* HaloAccessibility.swift in Sources */,
+				CCC001B991CD1BDECCF7D095 /* HaloCompactView.swift in Sources */,
+				84BF97788759A2E86556F248 /* HaloExpandedView.swift in Sources */,
+				5059C97F0934FB6D1E3EDAFD /* HaloPanel.swift in Sources */,
+				79194AD7CDE5DA712CCCE378 /* HaloPanelController.swift in Sources */,
+				C176F4228526AF251652C480 /* HaloPresentationMapper.swift in Sources */,
+				FEA6A99B54F0D33C0EC13A45 /* HaloPresentationMode.swift in Sources */,
+				06FF249CF73ABA9AFC9DAAB5 /* HaloPresentationModel.swift in Sources */,
+				2E0AB5518FA0B350AD39B425 /* HaloView.swift in Sources */,
 				171B9C8965C06CA84D826CE4 /* PetHaloApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -39,6 +39,23 @@ The production method allowlist is limited to `initialize`, `initialized`, `acco
 
 The public M2 domain exposes rate-limit and Account Usage freshness separately. Aggregate freshness is current only when every available component in the snapshot is current. Retained Usage stays explicitly stale, with its safe failure reason, across successful rate-only reads and becomes current only after a successful Usage read. `UsageSnapshot.collectedAt` and `lastSuccessfulRefresh` identify the newest successful component mutation; they are not per-component collection timestamps and must not be used alone to infer Account Usage recency.
 
+## M3 presentation contract
+
+| Component | M3 contract |
+| --- | --- |
+| Window | One AppKit borderless `.nonactivatingPanel`; cannot become key or main |
+| Level and Spaces | Floating, all-Spaces, full-screen auxiliary, ignored by normal cycling |
+| Interaction | Compact and expanded are click-through and controlled by the menu bar |
+| Sizes | Compact 176×176 points; expanded 360×520 points |
+| Initial position | Upper-right of one available screen's visible frame, fixed 24-point inset |
+| Presentation | SwiftUI hosted inside the panel; system materials, colors, and text styles |
+| Accessibility | Deterministic textual states and reset values; Reduce Transparency and Differentiate Without Color |
+| State ownership | `ApplicationCoordinator` is the single bridge stream consumer and panel owner |
+
+The M3 mapper consumes only the stable M2 domain. Weekly/five-hour presentation follows rate-limit component freshness, while Account Usage follows its independent component freshness. Remaining percentage is not inverted again. Five-hour appears only for an available exact 300-minute capability. Context and account identity are omitted.
+
+The panel does not discover or inspect Codex, enumerate product windows, request Accessibility or Screen Recording permission, or use saved placement. M4 owns any future calibration/window-following compatibility work; M5 owns final artwork and visual themes.
+
 ## Protocol matrix for Codex CLI 0.145.0-alpha.18
 
 | Capability | Generated shape | Runtime result |

@@ -14,8 +14,31 @@ if grep -EnR 'import (SwiftUI|AppKit)' PetHaloCore; then
     exit 1
 fi
 
-if grep -EnR 'thread/|turn/|account/(login|logout|rateLimitResetCredit|workspaceMessages|sendAddCredits)|feedback/upload|command/exec|process/spawn|\.sqlite|NSPanel' PetHalo PetHaloCore Config; then
-    echo "error: production source contains a forbidden M2 capability" >&2
+if grep -EnR 'thread/|turn/|account/(login|logout|rateLimitResetCredit|workspaceMessages|sendAddCredits)|feedback/upload|command/exec|process/spawn|\.sqlite|UserDefaults' PetHalo PetHaloCore Config; then
+    echo "error: production source contains a forbidden M3 capability" >&2
+    exit 1
+fi
+
+if grep -EnR 'AXUIElement|AXObserver|AXIsProcessTrusted|CGWindowListCopyWindowInfo|ScreenCaptureKit|SCShareableContent|NSWorkspace' PetHalo PetHaloCore; then
+    echo "error: production source contains window discovery, Accessibility inspection, or screen capture" >&2
+    exit 1
+fi
+
+if grep -EnR 'write\(to:|createFile\(atPath:|FileHandle\(forWritingTo:|NSKeyedArchiver' PetHalo PetHaloCore; then
+    echo "error: production source contains a persistent storage write seam" >&2
+    exit 1
+fi
+
+if find PetHalo -type f \( \
+    -iname '*.png' -o \
+    -iname '*.jpg' -o \
+    -iname '*.jpeg' -o \
+    -iname '*.gif' -o \
+    -iname '*.webp' -o \
+    -iname '*.svg' -o \
+    -iname '*.pdf' \
+\) | grep -q .; then
+    echo "error: M3 production source must not contain final artwork assets" >&2
     exit 1
 fi
 
@@ -36,7 +59,7 @@ if grep -EnR 'Logger.*(stdout|stderr|payload|JSON)|logger\.(debug|info|notice|wa
 fi
 
 if grep -EnR 'com\.apple\.security\.|NSAppleEventsUsageDescription|NSAccessibilityUsageDescription|NSScreenCaptureUsageDescription' Config project.yml; then
-    echo "error: M2 must not enable sensitive entitlements or permissions" >&2
+    echo "error: M3 must not enable sensitive entitlements or permissions" >&2
     exit 1
 fi
 
