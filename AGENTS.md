@@ -10,7 +10,8 @@ Pet Halo is an independent, unofficial macOS companion for Codex. The current ap
 - M1 contains the application skeleton, lifecycle boundary, menu-bar shell, tests, build tooling, CI, and documentation.
 - M2 contains the stable Usage domain, read-only owned CodexBridge, JSON-RPC/process lifecycle, refresh/reconnect policy, tests, build tooling, CI, and documentation.
 - M3 contains the non-activating click-through Halo panel, compact/expanded Usage presentation, accessibility, tests, smoke tooling, CI, and documentation.
-- Do not begin Codex/Pet discovery, calibration, saved placement, window following, final artwork, motion/themes, or later milestone work without separate authorization.
+- M4 contains exact Codex application discovery, explicit Accessibility permission, deterministic window selection, calibrated relative placement, event-driven following, multi-display containment, placement preferences, fallback, tests, smoke tooling, CI, and documentation.
+- Do not begin Pet image recognition, screenshots/OCR, final artwork, motion/themes, or later milestone work without separate authorization.
 
 ## Build and test
 
@@ -24,6 +25,8 @@ make m2-tests
 make m2-smoke
 make m3-tests
 make m3-smoke
+make m4-tests
+make m4-smoke
 make check
 ```
 

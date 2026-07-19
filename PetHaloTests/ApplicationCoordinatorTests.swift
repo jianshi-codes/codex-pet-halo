@@ -6,11 +6,17 @@ import PetHaloCore
 private final class FakeHaloPanelController: HaloPanelControlling {
     private(set) var isVisible = false
     private(set) var mode: HaloPresentationMode = .compact
+    private(set) var frame = CGRect(x: 100, y: 100, width: 176, height: 176)
+    private(set) var isCalibrationEnabled = false
     private(set) var showCount = 0
     private(set) var hideCount = 0
     private(set) var stopCount = 0
     private(set) var models: [HaloPresentationModel] = []
     private var stopped = false
+
+    var referencePoint: CGPoint {
+        HaloPlacementGeometry.referencePoint(for: frame)
+    }
 
     func show() {
         guard !stopped, !isVisible else { return }
@@ -29,6 +35,21 @@ private final class FakeHaloPanelController: HaloPanelControlling {
         self.mode = mode
     }
 
+    func setReferencePoint(_ referencePoint: CGPoint) {
+        guard !stopped else { return }
+        frame = HaloPlacementGeometry.frame(referencePoint: referencePoint, size: frame.size)
+    }
+
+    func setCalibrationEnabled(_ enabled: Bool) {
+        guard !stopped else { return }
+        isCalibrationEnabled = enabled
+    }
+
+    func resetToDefaultPosition() {
+        guard !stopped else { return }
+        frame.origin = CGPoint(x: 0, y: 0)
+    }
+
     func update(model: HaloPresentationModel) {
         guard !stopped else { return }
         models.append(model)
@@ -39,6 +60,46 @@ private final class FakeHaloPanelController: HaloPanelControlling {
         stopped = true
         isVisible = false
         stopCount += 1
+    }
+}
+
+@MainActor
+private final class FakeWindowFollowingService: HaloWindowFollowing {
+    private let stream: AsyncStream<HaloWindowFollowingEvent>
+    private let continuation: AsyncStream<HaloWindowFollowingEvent>.Continuation
+    private(set) var startCount = 0
+    private(set) var stopCount = 0
+    private(set) var enableCount = 0
+    private(set) var disableCount = 0
+    private(set) var beginCount = 0
+    private(set) var finishCount = 0
+    private(set) var cancelCount = 0
+    private(set) var resetCount = 0
+
+    init() {
+        let pair = AsyncStream.makeStream(
+            of: HaloWindowFollowingEvent.self,
+            bufferingPolicy: .bufferingNewest(16)
+        )
+        stream = pair.stream
+        continuation = pair.continuation
+    }
+
+    func events() -> AsyncStream<HaloWindowFollowingEvent> { stream }
+    func start() {
+        startCount += 1
+        continuation.yield(.stateChanged(.disabled))
+    }
+    func stop() async { stopCount += 1 }
+    func enable() { enableCount += 1 }
+    func disable() { disableCount += 1 }
+    func beginCalibration(currentReferencePoint: CGPoint) { beginCount += 1 }
+    func finishCalibration(currentReferencePoint: CGPoint) { finishCount += 1 }
+    func cancelCalibration() { cancelCount += 1 }
+    func resetPosition() { resetCount += 1 }
+
+    func emit(_ event: HaloWindowFollowingEvent) {
+        continuation.yield(event)
     }
 }
 
@@ -325,5 +386,44 @@ final class ApplicationCoordinatorTests: XCTestCase {
         XCTAssertEqual(refreshCount, 1)
         coordinator.requestTermination()
         await coordinator.waitForShutdown()
+    }
+
+    @MainActor
+    func testFollowingCommandsMapEventsAndStopBeforePanelAndBridge() async {
+        let panel = FakeHaloPanelController()
+        let following = FakeWindowFollowingService()
+        let service = FakeUsageService(
+            panelStopped: { panel.stopCount == 1 && following.stopCount == 1 }
+        )
+        let coordinator = ApplicationCoordinator(
+            usageService: service,
+            haloPanelController: panel,
+            windowFollowingService: following,
+            terminateApplication: {}
+        )
+        coordinator.start()
+        XCTAssertEqual(following.startCount, 1)
+
+        following.emit(.stateChanged(.calibrationRequired))
+        for _ in 0 ..< 20 where coordinator.windowFollowingState != .calibrationRequired {
+            await Task.yield()
+        }
+        coordinator.beginWindowFollowingCalibration()
+        XCTAssertEqual(following.beginCount, 1)
+        following.emit(.stateChanged(.calibrating))
+        following.emit(.setCalibrationEnabled(true))
+        for _ in 0 ..< 20 where !panel.isCalibrationEnabled {
+            await Task.yield()
+        }
+        XCTAssertFalse(coordinator.canChangeHaloMode)
+        coordinator.finishWindowFollowingCalibration()
+        XCTAssertEqual(following.finishCount, 1)
+
+        coordinator.requestTermination()
+        await coordinator.waitForShutdown()
+        XCTAssertEqual(following.stopCount, 1)
+        XCTAssertEqual(panel.stopCount, 1)
+        let stoppedInOrder = await service.panelWasStoppedWhenServiceStopped
+        XCTAssertTrue(stoppedInOrder)
     }
 }

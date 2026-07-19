@@ -14,13 +14,31 @@ if grep -EnR 'import (SwiftUI|AppKit)' PetHaloCore; then
     exit 1
 fi
 
-if grep -EnR 'thread/|turn/|account/(login|logout|rateLimitResetCredit|workspaceMessages|sendAddCredits)|feedback/upload|command/exec|process/spawn|\.sqlite|UserDefaults' PetHalo PetHaloCore Config; then
-    echo "error: production source contains a forbidden M3 capability" >&2
+if grep -EnR 'thread/|turn/|account/(login|logout|rateLimitResetCredit|workspaceMessages|sendAddCredits)|feedback/upload|command/exec|process/spawn|\.sqlite' PetHalo PetHaloCore Config; then
+    echo "error: production source contains a forbidden capability" >&2
     exit 1
 fi
 
-if grep -EnR 'AXUIElement|AXObserver|AXIsProcessTrusted|CGWindowListCopyWindowInfo|ScreenCaptureKit|SCShareableContent|NSWorkspace' PetHalo PetHaloCore; then
-    echo "error: production source contains window discovery, Accessibility inspection, or screen capture" >&2
+if grep -EnR 'AXUIElement|AXObserver|AXIsProcessTrusted|NSWorkspace|NSRunningApplication\.runningApplications' PetHalo PetHaloCore \
+    | grep -Ev '^PetHalo/WindowFollowing/SystemWindowFollowing\.swift:'; then
+    echo "error: Accessibility or exact application discovery escaped the reviewed M4 boundary" >&2
+    exit 1
+fi
+
+if grep -EnR 'UserDefaults([.(]|[[:space:]])' PetHalo PetHaloCore \
+    | grep -Ev '^PetHalo/WindowFollowing/WindowFollowingPreferences\.swift:'; then
+    echo "error: preferences escaped the reviewed M4 boundary" >&2
+    exit 1
+fi
+
+if grep -EnR 'CGWindowListCopyWindowInfo|ScreenCaptureKit|SCShareableContent|CGDisplayStream|VNRecognizeTextRequest' PetHalo PetHaloCore; then
+    echo "error: production source contains screen capture, broad window enumeration, or OCR" >&2
+    exit 1
+fi
+
+if grep -En 'kAX(Title|Description|Value|Help|Identifier|SelectedText|VisibleCharacterRange|Children)Attribute' \
+    PetHalo/WindowFollowing/SystemWindowFollowing.swift; then
+    echo "error: M4 Accessibility boundary contains text or content inspection" >&2
     exit 1
 fi
 
@@ -58,8 +76,8 @@ if grep -EnR 'Logger.*(stdout|stderr|payload|JSON)|logger\.(debug|info|notice|wa
     exit 1
 fi
 
-if grep -EnR 'com\.apple\.security\.|NSAppleEventsUsageDescription|NSAccessibilityUsageDescription|NSScreenCaptureUsageDescription' Config project.yml; then
-    echo "error: M3 must not enable sensitive entitlements or permissions" >&2
+if grep -EnR 'com\.apple\.security\.|NSAppleEventsUsageDescription|NSScreenCaptureUsageDescription' Config project.yml; then
+    echo "error: M4 must not enable unrelated sensitive entitlements or permissions" >&2
     exit 1
 fi
 

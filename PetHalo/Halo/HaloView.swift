@@ -4,6 +4,7 @@ import SwiftUI
 final class HaloViewState: ObservableObject {
     @Published var model: HaloPresentationModel
     @Published var mode: HaloPresentationMode
+    @Published var isCalibrating = false
 
     init(model: HaloPresentationModel, mode: HaloPresentationMode) {
         self.model = model
@@ -29,7 +30,19 @@ struct HaloView: View {
         .background(background)
         .clipShape(RoundedRectangle(cornerRadius: state.mode == .compact ? 36 : 22))
         .overlay {
-            if differentiateWithoutColor {
+            if state.isCalibrating {
+                VStack {
+                    Spacer()
+                    Text("Position Halo, then finish calibration from the menu bar")
+                        .font(.caption2.weight(.semibold))
+                        .multilineTextAlignment(.center)
+                        .padding(8)
+                        .background(Color(nsColor: .windowBackgroundColor))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .padding(8)
+                }
+                .accessibilityLabel("Calibration active")
+            } else if differentiateWithoutColor {
                 RoundedRectangle(cornerRadius: state.mode == .compact ? 36 : 22)
                     .stroke(.primary.opacity(0.35), lineWidth: 1)
                     .accessibilityHidden(true)

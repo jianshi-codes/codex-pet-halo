@@ -30,7 +30,10 @@ final class HaloPanelTests: XCTestCase {
         let visibleFrame = NSRect(x: 100, y: 200, width: 800, height: 600)
         let controller = HaloPanelController(
             model: Self.maximumContentModel,
-            visibleFrameProvider: { visibleFrame }
+            visibleFrameProvider: { visibleFrame },
+            screenGeometryProvider: {
+                [ScreenGeometry(frame: visibleFrame, visibleFrame: visibleFrame)]
+            }
         )
         guard let panel = controller.panel else {
             return XCTFail("Expected panel")
@@ -85,6 +88,10 @@ final class HaloPanelTests: XCTestCase {
             model: model,
             visibleFrameProvider: {
                 NSRect(x: 0, y: 0, width: 1_024, height: 768)
+            },
+            screenGeometryProvider: {
+                let frame = NSRect(x: 0, y: 0, width: 1_024, height: 768)
+                return [ScreenGeometry(frame: frame, visibleFrame: frame)]
             }
         )
         controller.setMode(.expanded)
@@ -121,10 +128,84 @@ final class HaloPanelTests: XCTestCase {
     }
 
     @MainActor
+    func testCalibrationTemporarilyAcceptsDraggingWithoutKeyMainOrActivationEligibility() {
+        let controller = makeController()
+        guard let panel = controller.panel else {
+            return XCTFail("Expected panel")
+        }
+
+        controller.setCalibrationEnabled(true)
+        XCTAssertTrue(controller.isCalibrationEnabled)
+        XCTAssertTrue(panel.calibrationEnabled)
+        XCTAssertFalse(panel.ignoresMouseEvents)
+        XCTAssertFalse(panel.canBecomeKey)
+        XCTAssertFalse(panel.canBecomeMain)
+        XCTAssertTrue(panel.styleMask.contains(.nonactivatingPanel))
+
+        controller.setCalibrationEnabled(false)
+        XCTAssertFalse(controller.isCalibrationEnabled)
+        XCTAssertFalse(panel.calibrationEnabled)
+        XCTAssertTrue(panel.ignoresMouseEvents)
+        controller.stop()
+    }
+
+    @MainActor
+    func testReferencePointSurvivesModeChangesAndMovesAcrossSyntheticDisplays() {
+        let screens = [
+            ScreenGeometry(
+                frame: CGRect(x: 0, y: 0, width: 1_024, height: 768),
+                visibleFrame: CGRect(x: 0, y: 24, width: 1_024, height: 720)
+            ),
+            ScreenGeometry(
+                frame: CGRect(x: -800, y: 0, width: 800, height: 600),
+                visibleFrame: CGRect(x: -800, y: 0, width: 800, height: 580)
+            ),
+        ]
+        let controller = HaloPanelController(
+            visibleFrameProvider: { screens[0].visibleFrame },
+            screenGeometryProvider: { screens }
+        )
+        controller.setReferencePoint(CGPoint(x: -20, y: 560))
+        let compactReference = controller.referencePoint
+        XCTAssertTrue(screens[1].visibleFrame.contains(controller.frame))
+
+        controller.setMode(.expanded)
+        XCTAssertEqual(controller.referencePoint, compactReference)
+        XCTAssertTrue(screens[1].visibleFrame.contains(controller.frame))
+        controller.setMode(.compact)
+        XCTAssertEqual(controller.referencePoint, compactReference)
+        controller.stop()
+    }
+
+    @MainActor
+    func testLogicalReferenceDoesNotDriftWhenExpandedModeMustClamp() {
+        let screen = ScreenGeometry(
+            frame: CGRect(x: 0, y: 0, width: 500, height: 600),
+            visibleFrame: CGRect(x: 0, y: 0, width: 500, height: 600)
+        )
+        let controller = HaloPanelController(
+            visibleFrameProvider: { screen.visibleFrame },
+            screenGeometryProvider: { [screen] }
+        )
+        controller.setReferencePoint(CGPoint(x: 490, y: 200))
+        XCTAssertEqual(controller.referencePoint, CGPoint(x: 490, y: 200))
+
+        controller.setMode(.expanded)
+        XCTAssertNotEqual(controller.referencePoint, CGPoint(x: 490, y: 200))
+        controller.setMode(.compact)
+        XCTAssertEqual(controller.referencePoint, CGPoint(x: 490, y: 200))
+        controller.stop()
+    }
+
+    @MainActor
     private func makeController() -> HaloPanelController {
         HaloPanelController(
             visibleFrameProvider: {
                 NSRect(x: 0, y: 0, width: 1_024, height: 768)
+            },
+            screenGeometryProvider: {
+                let frame = NSRect(x: 0, y: 0, width: 1_024, height: 768)
+                return [ScreenGeometry(frame: frame, visibleFrame: frame)]
             }
         )
     }

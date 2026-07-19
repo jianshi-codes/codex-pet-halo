@@ -5,10 +5,16 @@ import SwiftUI
 protocol HaloPanelControlling: AnyObject {
     var isVisible: Bool { get }
     var mode: HaloPresentationMode { get }
+    var referencePoint: CGPoint { get }
+    var frame: CGRect { get }
+    var isCalibrationEnabled: Bool { get }
 
     func show()
     func hide()
     func setMode(_ mode: HaloPresentationMode)
+    func setReferencePoint(_ referencePoint: CGPoint)
+    func setCalibrationEnabled(_ enabled: Bool)
+    func resetToDefaultPosition()
     func update(model: HaloPresentationModel)
     func stop()
 }
@@ -20,12 +26,23 @@ final class HaloPanelController: HaloPanelControlling {
 
     private(set) var panel: HaloPanel?
     private(set) var mode: HaloPresentationMode = .compact
+    private(set) var isCalibrationEnabled = false
     private let viewState: HaloViewState
     private let visibleFrameProvider: () -> NSRect
+    private let screenGeometryProvider: () -> [ScreenGeometry]
+    private var desiredReferencePoint = CGPoint.zero
     private var stopped = false
 
     var isVisible: Bool {
         panel?.isVisible == true
+    }
+
+    var referencePoint: CGPoint {
+        panel.map { HaloPlacementGeometry.referencePoint(for: $0.frame) } ?? .zero
+    }
+
+    var frame: CGRect {
+        panel?.frame ?? .zero
     }
 
     init(
@@ -33,10 +50,21 @@ final class HaloPanelController: HaloPanelControlling {
         visibleFrameProvider: @escaping () -> NSRect = {
             (NSScreen.main ?? NSScreen.screens.first)?.visibleFrame
                 ?? NSRect(x: 0, y: 0, width: 1_024, height: 768)
-        }
+        },
+        screenGeometryProvider: (() -> [ScreenGeometry])? = nil
     ) {
         viewState = HaloViewState(model: model, mode: .compact)
         self.visibleFrameProvider = visibleFrameProvider
+        self.screenGeometryProvider = screenGeometryProvider ?? {
+            let screens = NSScreen.screens.map {
+                ScreenGeometry(frame: $0.frame, visibleFrame: $0.visibleFrame)
+            }
+            if !screens.isEmpty {
+                return screens
+            }
+            let visibleFrame = visibleFrameProvider()
+            return [ScreenGeometry(frame: visibleFrame, visibleFrame: visibleFrame)]
+        }
 
         let frame = Self.defaultFrame(
             size: Self.compactSize,
@@ -63,7 +91,11 @@ final class HaloPanelController: HaloPanelControlling {
         panel.ignoresMouseEvents = true
         panel.title = "Pet Halo"
         panel.contentView = NSHostingView(rootView: HaloView(state: viewState))
+        panel.calibrationDragHandler = { [weak self] origin in
+            self?.moveCalibration(to: origin)
+        }
         self.panel = panel
+        desiredReferencePoint = HaloPlacementGeometry.referencePoint(for: frame)
     }
 
     func show() {
@@ -81,20 +113,33 @@ final class HaloPanelController: HaloPanelControlling {
         guard self.mode != mode else { return }
         self.mode = mode
         viewState.mode = mode
-        panel.ignoresMouseEvents = mode == .compact
+        panel.ignoresMouseEvents = !isCalibrationEnabled && mode == .compact
 
         let size = Self.size(for: mode)
-        let oldFrame = panel.frame
-        let proposed = NSRect(
-            x: oldFrame.maxX - size.width,
-            y: oldFrame.maxY - size.height,
-            width: size.width,
-            height: size.height
-        )
+        setFrame(referencePoint: desiredReferencePoint, size: size)
+    }
+
+    func setReferencePoint(_ referencePoint: CGPoint) {
+        guard !stopped, panel != nil else { return }
+        desiredReferencePoint = referencePoint
+        setFrame(referencePoint: referencePoint, size: Self.size(for: mode))
+    }
+
+    func setCalibrationEnabled(_ enabled: Bool) {
+        guard !stopped, let panel, isCalibrationEnabled != enabled else { return }
+        isCalibrationEnabled = enabled
+        viewState.isCalibrating = enabled
+        panel.calibrationEnabled = enabled
+        panel.ignoresMouseEvents = enabled ? false : mode == .compact
+    }
+
+    func resetToDefaultPosition() {
+        guard !stopped, let panel else { return }
         panel.setFrame(
-            Self.frame(proposed, containedIn: visibleFrameProvider()),
+            Self.defaultFrame(size: Self.size(for: mode), visibleFrame: visibleFrameProvider()),
             display: true
         )
+        desiredReferencePoint = HaloPlacementGeometry.referencePoint(for: panel.frame)
     }
 
     func update(model: HaloPresentationModel) {
@@ -105,6 +150,8 @@ final class HaloPanelController: HaloPanelControlling {
     func stop() {
         guard !stopped else { return }
         stopped = true
+        panel?.calibrationEnabled = false
+        panel?.calibrationDragHandler = nil
         panel?.orderOut(nil)
         panel?.close()
         panel?.contentView = nil
@@ -129,6 +176,29 @@ final class HaloPanelController: HaloPanelControlling {
             height: size.height
         )
         return frame(proposed, containedIn: visibleFrame)
+    }
+
+    private func setFrame(referencePoint: CGPoint, size: CGSize) {
+        guard let panel,
+              let frame = HaloPlacementGeometry.containedFrame(
+                  referencePoint: referencePoint,
+                  size: size,
+                  screens: screenGeometryProvider()
+              )
+        else {
+            return
+        }
+        panel.setFrame(frame, display: true)
+    }
+
+    private func moveCalibration(to proposedOrigin: NSPoint) {
+        guard isCalibrationEnabled, let panel else { return }
+        let referencePoint = CGPoint(
+            x: proposedOrigin.x + panel.frame.width,
+            y: proposedOrigin.y + panel.frame.height
+        )
+        setFrame(referencePoint: referencePoint, size: panel.frame.size)
+        desiredReferencePoint = self.referencePoint
     }
 
     private static func frame(_ proposed: NSRect, containedIn visibleFrame: NSRect) -> NSRect {

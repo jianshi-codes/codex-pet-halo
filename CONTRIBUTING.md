@@ -1,6 +1,6 @@
 # Contributing
 
-M0 protocol feasibility, M1 application skeleton, M2 CodexBridge, and M3 Halo Window are complete. Contributions must remain within the M3 boundary until a later milestone receives separate authorization.
+M0 through M3 are complete. M4 Window Following is implemented and awaits direct Accessibility/manual movement validation. Contributions must remain within the M4 boundary until a later milestone receives separate authorization.
 
 ## Development rules
 
@@ -11,8 +11,9 @@ M0 protocol feasibility, M1 application skeleton, M2 CodexBridge, and M3 Halo Wi
 5. Keep all protocol work read-only: do not call `thread/start`, `turn/start`, account mutation, or any other mutation method.
 6. Do not make production Swift code depend on the M0 probe, schemas, or fixtures.
 7. Do not read or depend on Codex internal SQLite databases.
-8. Keep the Halo non-activating, click-through, account-identity-free, and driven by component freshness rather than aggregate timestamps.
-9. Do not implement Codex/Pet discovery, Accessibility inspection, screen capture, calibration, saved placement, window following, final artwork, motion/themes, or later milestone behavior during M3.
+8. Keep the Halo non-activating, compact click-through outside calibration, account-identity-free, and driven by component freshness rather than aggregate timestamps.
+9. M4 Accessibility access is restricted to the exact Codex bundle and reviewed window role/subrole, minimized, position, and size attributes plus lifecycle/geometry notifications. Never inspect titles, labels, values, document text, prompts, or responses.
+10. Do not add screenshots, ScreenCaptureKit, OCR, automatic Pet recognition, Apple Events, private IPC, final artwork, animation, themes, or later milestone behavior during M4.
 
 ## Validation
 
@@ -20,6 +21,6 @@ M0 protocol feasibility, M1 application skeleton, M2 CodexBridge, and M3 Halo Wi
 make check
 ```
 
-Use `make m2-tests` for deterministic fake-transport coverage and `make m3-tests` for presentation, accessibility, panel, and coordinator coverage. `make m2-smoke` and `make m3-smoke` are explicit local authenticated checks, are not CI commands, and print only sanitized status.
+Use `make m4-tests` for deterministic process/window selection, geometry, anchor, calibration, fallback, observer, panel, and coordinator coverage. `make m2-smoke`, `make m3-smoke`, and `make m4-smoke` are local-only checks and print sanitized status.
 
 Describe the Codex CLI version used to generate schemas and redact all captured protocol fixtures before committing them.

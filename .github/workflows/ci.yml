@@ -74,7 +74,7 @@ jobs:
           mkdir -p /tmp/xcodegen-release
           ditto -x -k "$archive" /tmp/xcodegen-release
           echo "/tmp/xcodegen-release/xcodegen/bin" >> "$GITHUB_PATH"
-      - name: Validate M0 through M3 deterministic gates
+      - name: Validate M0 through M4 deterministic gates
         run: make check
       - name: Check whitespace
         run: git diff --check

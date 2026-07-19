@@ -3,6 +3,29 @@ import Combine
 import OSLog
 import PetHaloCore
 
+#if DEBUG
+@MainActor
+private final class XCTestDisabledWindowFollowingService: HaloWindowFollowing {
+    private let stream: AsyncStream<HaloWindowFollowingEvent>
+
+    init() {
+        stream = AsyncStream { continuation in
+            continuation.yield(.stateChanged(.disabled))
+        }
+    }
+
+    func events() -> AsyncStream<HaloWindowFollowingEvent> { stream }
+    func start() {}
+    func stop() async {}
+    func enable() {}
+    func disable() {}
+    func beginCalibration(currentReferencePoint: CGPoint) {}
+    func finishCalibration(currentReferencePoint: CGPoint) {}
+    func cancelCalibration() {}
+    func resetPosition() {}
+}
+#endif
+
 @MainActor
 final class ApplicationCoordinator: ObservableObject {
     enum State: Equatable {
@@ -18,13 +41,17 @@ final class ApplicationCoordinator: ObservableObject {
     @Published private(set) var haloPresentationModel: HaloPresentationModel
     @Published private(set) var haloMode: HaloPresentationMode = .compact
     @Published private(set) var haloIsVisible = false
+    @Published private(set) var windowFollowingState: WindowFollowingState = .disabled
+    @Published private(set) var followingStatusText = WindowFollowingState.disabled.statusText
 
     private let logger = Logger(subsystem: "io.github.jianshicodes.PetHalo", category: "lifecycle")
     private let usageService: any CodexUsageServing
+    private let windowFollowingService: any HaloWindowFollowing
     private let presentationMapper: HaloPresentationMapper
     private let terminateApplication: @MainActor () -> Void
     private var haloPanelController: (any HaloPanelControlling)?
     private var bridgeStateTask: Task<Void, Never>?
+    private var windowFollowingEventTask: Task<Void, Never>?
     private var bridgeStartTask: Task<Void, Never>?
     private var refreshTask: Task<Void, Never>?
     private var shutdownTask: Task<Void, Never>?
@@ -33,6 +60,7 @@ final class ApplicationCoordinator: ObservableObject {
     init(
         usageService: (any CodexUsageServing)? = nil,
         haloPanelController: (any HaloPanelControlling)? = nil,
+        windowFollowingService: (any HaloWindowFollowing)? = nil,
         presentationMapper: HaloPresentationMapper = HaloPresentationMapper(),
         terminateApplication: @escaping @MainActor () -> Void = {
             NSApplication.shared.terminate(nil)
@@ -41,6 +69,22 @@ final class ApplicationCoordinator: ObservableObject {
         self.usageService = usageService ?? CodexUsageService(
             applicationVersion: AppVersion.current().marketingVersion
         )
+        if let windowFollowingService {
+            self.windowFollowingService = windowFollowingService
+        } else {
+            #if DEBUG
+            let environment = ProcessInfo.processInfo.environment
+            if environment["XCTestConfigurationFilePath"] != nil
+                || environment["XCTestBundlePath"] != nil
+            {
+                self.windowFollowingService = XCTestDisabledWindowFollowingService()
+            } else {
+                self.windowFollowingService = WindowFollowingService()
+            }
+            #else
+            self.windowFollowingService = WindowFollowingService()
+            #endif
+        }
         self.presentationMapper = presentationMapper
         self.terminateApplication = terminateApplication
         latestUsageState = .stopped
@@ -61,11 +105,19 @@ final class ApplicationCoordinator: ObservableObject {
                 self.updateUsageState(bridgeState)
             }
         }
+        let followingEvents = windowFollowingService.events()
+        windowFollowingEventTask = Task { [weak self] in
+            for await event in followingEvents {
+                guard let self else { return }
+                self.handleWindowFollowingEvent(event)
+            }
+        }
         updateUsageState(Self.startingUsageState)
         haloPanelController?.setMode(.compact)
         haloMode = .compact
         haloPanelController?.show()
         haloIsVisible = haloPanelController?.isVisible == true
+        windowFollowingService.start()
         bridgeStartTask = Task { [usageService] in
             await usageService.start()
         }
@@ -84,7 +136,7 @@ final class ApplicationCoordinator: ObservableObject {
     }
 
     func setHaloMode(_ mode: HaloPresentationMode) {
-        guard state == .running else { return }
+        guard canChangeHaloMode else { return }
         haloPanelController?.setMode(mode)
         haloMode = haloPanelController?.mode ?? mode
     }
@@ -100,6 +152,67 @@ final class ApplicationCoordinator: ObservableObject {
 
     var acceptsUICommands: Bool {
         state == .running
+    }
+
+    var canChangeHaloMode: Bool {
+        state == .running && windowFollowingState != .calibrating
+    }
+
+    var canEnableWindowFollowing: Bool {
+        state == .running
+            && (windowFollowingState == .disabled || windowFollowingState == .permissionRequired)
+    }
+
+    var canCalibrateWindowFollowing: Bool {
+        guard state == .running else { return false }
+        return switch windowFollowingState {
+        case .calibrationRequired, .following, .suspended:
+            true
+        default:
+            false
+        }
+    }
+
+    var canFinishCalibration: Bool {
+        state == .running && windowFollowingState == .calibrating
+    }
+
+    var canDisableWindowFollowing: Bool {
+        state == .running && windowFollowingState != .disabled
+    }
+
+    func enableWindowFollowing() {
+        guard state == .running else { return }
+        windowFollowingService.enable()
+    }
+
+    func disableWindowFollowing() {
+        guard state == .running else { return }
+        windowFollowingService.disable()
+    }
+
+    func beginWindowFollowingCalibration() {
+        guard state == .running, let haloPanelController else { return }
+        windowFollowingService.beginCalibration(
+            currentReferencePoint: haloPanelController.referencePoint
+        )
+    }
+
+    func finishWindowFollowingCalibration() {
+        guard state == .running, let haloPanelController else { return }
+        windowFollowingService.finishCalibration(
+            currentReferencePoint: haloPanelController.referencePoint
+        )
+    }
+
+    func cancelWindowFollowingCalibration() {
+        guard state == .running else { return }
+        windowFollowingService.cancelCalibration()
+    }
+
+    func resetHaloPosition() {
+        guard state == .running else { return }
+        windowFollowingService.resetPosition()
     }
 
     var canRefreshUsage: Bool {
@@ -127,6 +240,11 @@ final class ApplicationCoordinator: ObservableObject {
     func didTerminate() {
         guard state != .stopped else { return }
         state = .stopped
+        windowFollowingEventTask?.cancel()
+        windowFollowingEventTask = nil
+        Task { [windowFollowingService] in
+            await windowFollowingService.stop()
+        }
         haloPanelController?.stop()
         haloPanelController = nil
         haloIsVisible = false
@@ -149,15 +267,18 @@ final class ApplicationCoordinator: ObservableObject {
 
     private func beginShutdown(completion: @escaping @MainActor () -> Void) {
         guard shutdownTask == nil else { return }
-        haloPanelController?.stop()
-        haloIsVisible = false
         refreshTask?.cancel()
         refreshTask = nil
         bridgeStartTask?.cancel()
         bridgeStartTask = nil
-        shutdownTask = Task { [weak self, usageService] in
-            await usageService.stop()
+        shutdownTask = Task { [weak self, usageService, windowFollowingService] in
+            await windowFollowingService.stop()
             guard let self else { return }
+            self.windowFollowingEventTask?.cancel()
+            self.windowFollowingEventTask = nil
+            self.haloPanelController?.stop()
+            self.haloIsVisible = false
+            await usageService.stop()
             self.bridgeStateTask?.cancel()
             self.bridgeStateTask = nil
             self.shutdownComplete = true
@@ -166,6 +287,21 @@ final class ApplicationCoordinator: ObservableObject {
             self.bridgeStatusText = "Bridge: Unavailable"
             self.haloPanelController = nil
             completion()
+        }
+    }
+
+    private func handleWindowFollowingEvent(_ event: HaloWindowFollowingEvent) {
+        guard state == .running else { return }
+        switch event {
+        case let .stateChanged(newState):
+            windowFollowingState = newState
+            followingStatusText = newState.statusText
+        case let .setCalibrationEnabled(enabled):
+            haloPanelController?.setCalibrationEnabled(enabled)
+        case let .placeReferencePoint(referencePoint):
+            haloPanelController?.setReferencePoint(referencePoint)
+        case .resetToDefaultPosition:
+            haloPanelController?.resetToDefaultPosition()
         }
     }
 
