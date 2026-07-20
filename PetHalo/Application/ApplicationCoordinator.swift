@@ -195,13 +195,17 @@ final class ApplicationCoordinator: ObservableObject {
             && windowFollowingState != .calibrating
     }
 
+    var canResetPetPosition: Bool {
+        state == .running && windowFollowingState != .calibrating
+    }
+
     func enablePetFollowing() {
-        guard state == .running else { return }
+        guard canEnablePetFollowing else { return }
         windowFollowingService.enable()
     }
 
     func useWindowFallback() {
-        guard state == .running else { return }
+        guard canUseWindowFallback else { return }
         windowFollowingService.useWindowFallback()
     }
 
@@ -211,14 +215,14 @@ final class ApplicationCoordinator: ObservableObject {
     }
 
     func beginPetFollowingCalibration() {
-        guard state == .running, let haloPanelController else { return }
+        guard canCalibratePetFollowing, let haloPanelController else { return }
         windowFollowingService.beginPetCalibration(
             currentReferencePoint: haloPanelController.referencePoint
         )
     }
 
     func beginWindowFallbackCalibration() {
-        guard state == .running, let haloPanelController else { return }
+        guard canCalibrateWindowFallback, let haloPanelController else { return }
         windowFollowingService.beginWindowCalibration(
             currentReferencePoint: haloPanelController.referencePoint
         )
@@ -237,7 +241,7 @@ final class ApplicationCoordinator: ObservableObject {
     }
 
     func resetPetPosition() {
-        guard state == .running else { return }
+        guard canResetPetPosition else { return }
         windowFollowingService.resetPetPosition()
     }
 

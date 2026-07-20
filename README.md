@@ -8,7 +8,7 @@ Pet Halo is an independent, unofficial macOS companion that aims to display a tr
 
 **M5 Pet Target Discovery & Pet-relative Following is implemented through `ROUTE_A — PET_ACCESSIBILITY_WINDOW`.** Pet Halo remains free-floating by default and requests Accessibility only after an explicit enable action. On the validated Codex build, it resolves the independently movable Pet as one logical near-square `AXWindow/AXDialog` frame without reading titles, labels, identifiers, or content.
 
-The product target hierarchy is: Pet target following is preferred; calibrated Codex standard-window following is the permanent fallback; and a free-floating Halo is the final fallback. Pet and window placement use separate versioned anchors. Pet disappearance or ambiguity preserves Pet calibration and falls back safely; deterministic rediscovery resumes Pet-relative following without recalibration.
+The product target hierarchy is: Pet target following is preferred; calibrated Codex standard-window following is the permanent fallback; and a free-floating Halo is the final fallback. M5 provides target discovery and optional manual Pet-relative calibration using separate versioned Pet and window anchors. Pet disappearance or ambiguity preserves Pet calibration and falls back safely; deterministic rediscovery resumes Pet-relative following without recalibration.
 
 The M3 non-activating panel behavior remains intact: compact is click-through outside calibration, expanded accepts scrolling, and neither mode can become key or main. Direct local validation passed permission, calibration, move/resize, focus, interaction, fallback, Codex and Pet Halo restart recovery, cleanup, and multi-display checks. The Codex launch-before-window-ready race found during validation was fixed and passed focused physical revalidation without recalibration.
 
@@ -45,7 +45,7 @@ XcodeGen 2.46.0 is required. `project.yml` is the editable project source of tru
 
 `make m2-tests`, `make m3-tests`, `make m4-tests`, and `make m5-tests` are deterministic and require neither Accessibility permission nor a running Codex application. `make m5-smoke` adds sanitized live Route A resolution and direct independent-Pet-movement observation.
 
-M6 owns final branding, motion, themes, and game-like visual design; M7 owns compatibility hardening, packaging, privacy audits, and release readiness. M5 does not authorize either milestone.
+M6 owns automatic first-use Pet attachment and adaptive above/below placement. M7 replaces the demo card with the final original semicircular Halo, percentage label, semantic status treatment, themes, and motion. M8 owns compatibility hardening, packaging, privacy audits, and release readiness. M5 does not authorize any of these later milestones.
 
 See [the M5 report](docs/milestones/m5-pet-target-following.md), [discovery evidence](docs/milestones/m5-pet-target-discovery-report.md), [Pet-target ADR](docs/adr/0007-pet-target-discovery.md), [compatibility contract](docs/COMPATIBILITY.md), and [privacy policy](docs/PRIVACY.md).
 

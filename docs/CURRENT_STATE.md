@@ -2,7 +2,7 @@
 
 - Milestone: M5 — Pet Target Discovery & Pet-relative Following
 - Route: `ROUTE_A — PET_ACCESSIBILITY_WINDOW`
-- Status: **PASS locally**; Draft PR CI verification is the remaining external gate
+- Status: **PASS locally**; Draft PR remains unmerged and each pushed Head requires green CI
 - M0 status: **PASS-CORE / PARTIAL-OPTIONALS**
 - Core gate: owned stdio bridge ✅ / weekly quota ✅ / Account Usage ✅ / non-activating Halo ✅ / component freshness ✅ / clean shutdown ✅
 - Optional capabilities: five-hour window unavailable on the validation account and omitted / Context unsupported and omitted
@@ -12,8 +12,8 @@
 - Pet discovery: exact `com.openai.codex` only / unique near-square `AXWindow/AXDialog` logical frame / no title, identifier, content, array-order, activity-position, or button-count logic
 - Placement: separate version-1 Pet and window anchors / one logical Halo reference point / visible-display containment / no animation
 - Persisted UI preferences only: following enabled, versioned Pet anchor, and versioned M4 window anchor; no PID, AX identity, frame snapshot, screen index, Usage, account, title, identifier, or path
-- Local automated validation: 122 Swift tests ✅ (51 Core + 71 application; 1 local-only bridge smoke skipped in deterministic runs) / 14 retained M0 tests ✅
-- Focused M5 validation: 58 Pet/window selection, geometry, anchor, hierarchy, fallback/recovery, persistence, observer, panel, and coordinator tests ✅
+- Local automated validation: 126 Swift tests ✅ (51 Core + 75 application; 1 local-only bridge smoke skipped in deterministic runs) / 14 retained M0 tests ✅
+- Focused M5 validation: 62 Pet/window selection, geometry, anchor, hierarchy, fallback/recovery, persistence, calibration lifecycle, observer, panel, and coordinator tests ✅
 - M5 live smoke: exact process ✅ / Route A unique target ✅ / independent Pet movement ✅ / standard Codex window stationary ✅ / sanitized output ✅
 - Deterministic CI path: fake app-server and synthetic target accessors only; no Codex installation, authentication, Accessibility permission, Screen Recording, or network required after dependency bootstrap
 - Local real bridge smoke: executable discovery ✅ / exact version ✅ / handshake ✅ / weekly available ✅ / optional five-hour unavailable ✅ / Account Usage available ✅ / clean child shutdown ✅
@@ -31,8 +31,8 @@ M5 adds a separate `PetTargetSnapshot` abstraction and never exposes AX objects,
 
 The direct discovery run observed independent Pet movement while the standard Codex window remained stationary. Pet Tuck Away removed the Route A target; Wake recreated the surface set. A selected-target run recorded 175 unique samples, zero unavailable samples, and two transient ambiguous samples caused by non-atomic movement of overlapping layers. Production coalesces geometry events for 80 ms and rechecks at 160 ms; persistent ambiguity is never guessed and activates M4/M3 fallback.
 
-The Pet-relative anchor is persisted only after Finish Calibration. Cancel restores the previous Halo reference and target preference. Reset Pet Position clears only the Pet anchor. Pet loss retains calibration, uses the M4 window anchor when valid, and otherwise leaves the Halo free-floating. A five-second recovery loop resumes Pet following without recalibration after deterministic rediscovery and ignores stale generations.
+The Pet-relative anchor is persisted only after Finish Calibration. Cancel exits calibration exactly once, restores the previous Halo reference and target preference, writes no anchor, and restores compact click-through. Enable Pet Following, Use Codex Window Fallback, Reset Pet Position, and both begin-calibration commands are no-ops while calibration is active; Finish, Cancel, Disable Following, and Quit remain the intentional exit paths. Reset Pet Position otherwise clears only the Pet anchor. Pet loss retains calibration, uses the M4 window anchor when valid, and otherwise leaves the Halo free-floating. A five-second recovery loop resumes Pet following without recalibration after deterministic rediscovery and ignores stale generations.
 
 M5 uses the existing explicit Accessibility permission and does not add an automatic prompt. Production reads only the exact process window list, role, subrole, minimized, hidden, position, and size and observes created/moved/resized/destroyed notifications. It does not read title, label, description, identifier, value, document text, conversation content, prompt, response, screenshot, or Pet pixels. Screen Recording, ScreenCaptureKit, OCR, visual detection, analytics, telemetry, private IPC, and Codex database access remain absent.
 
-The Route A AX composition is not an official compatibility API. If a future Codex build changes the roles, geometry layering, or notification behavior, Pet Halo fails closed to M4 and M3. M6 final branding, artwork, motion, themes, particles, glow, sound, and game-like visual design remain separately gated and are not authorized by M5.
+The Route A AX composition is not an official compatibility API. If a future Codex build changes the roles, geometry layering, or notification behavior, Pet Halo fails closed to M4 and M3. M6 owns automatic first-use Pet attachment and adaptive above/below placement; M7 owns the final semicircular Halo, percentage label, semantic status treatment, themes, and motion; M8 owns compatibility, packaging, privacy audit, and release readiness. None is authorized by M5.

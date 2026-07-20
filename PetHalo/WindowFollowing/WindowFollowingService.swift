@@ -146,7 +146,7 @@ final class WindowFollowingService: HaloWindowFollowing {
     }
 
     func enable() {
-        guard acceptsCommands else { return }
+        guard acceptsCommands, state != .calibrating else { return }
         petFollowingSuppressed = false
         if !followingEnabled {
             followingEnabled = true
@@ -164,7 +164,7 @@ final class WindowFollowingService: HaloWindowFollowing {
     }
 
     func useWindowFallback() {
-        guard acceptsCommands, followingEnabled else { return }
+        guard acceptsCommands, followingEnabled, state != .calibrating else { return }
         petFollowingSuppressed = true
         petGeneration += 1
         petSnapshot = nil
@@ -186,7 +186,7 @@ final class WindowFollowingService: HaloWindowFollowing {
     }
 
     func beginPetCalibration(currentReferencePoint: CGPoint) {
-        guard acceptsCommands, followingEnabled else { return }
+        guard acceptsCommands, followingEnabled, state != .calibrating else { return }
         guard permissionProvider.state() == .granted else {
             transition(to: .permissionRequired)
             return
@@ -196,7 +196,7 @@ final class WindowFollowingService: HaloWindowFollowing {
             petFollowingSuppressed = false
             resolvePreferredTarget()
         }
-        guard petSnapshot != nil, state != .calibrating else {
+        guard petSnapshot != nil else {
             petFollowingSuppressed = previousSuppression
             return
         }
@@ -208,7 +208,7 @@ final class WindowFollowingService: HaloWindowFollowing {
     }
 
     func beginWindowCalibration(currentReferencePoint: CGPoint) {
-        guard acceptsCommands, followingEnabled else { return }
+        guard acceptsCommands, followingEnabled, state != .calibrating else { return }
         guard permissionProvider.state() == .granted else {
             transition(to: .permissionRequired)
             return
@@ -218,7 +218,7 @@ final class WindowFollowingService: HaloWindowFollowing {
         if windowFrame == nil {
             resolveWindowFallback()
         }
-        guard windowFrame != nil, state != .calibrating else {
+        guard windowFrame != nil else {
             petFollowingSuppressed = preCalibrationPetFollowingSuppressed ?? false
             preCalibrationPetFollowingSuppressed = nil
             return
@@ -279,14 +279,12 @@ final class WindowFollowingService: HaloWindowFollowing {
 
     func cancelCalibration() {
         guard acceptsCommands, state == .calibrating else { return }
+        suspendCalibrationIfNeeded()
         resolvePreferredTarget()
     }
 
     func resetPetPosition() {
-        guard acceptsCommands else { return }
-        if calibrationTarget == .pet {
-            suspendCalibrationIfNeeded()
-        }
+        guard acceptsCommands, state != .calibrating else { return }
         petAnchor = nil
         preferences.setPetAnchor(nil)
         if followingEnabled {
@@ -623,6 +621,7 @@ final class WindowFollowingService: HaloWindowFollowing {
         preCalibrationReferencePoint = nil
         preCalibrationPetFollowingSuppressed = nil
         calibrationTarget = nil
+        transition(to: .searching)
     }
 
     private func transition(to newState: WindowFollowingState) {

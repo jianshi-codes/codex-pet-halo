@@ -8,6 +8,7 @@ private final class FakeHaloPanelController: HaloPanelControlling {
     private(set) var mode: HaloPresentationMode = .compact
     private(set) var frame = CGRect(x: 100, y: 100, width: 176, height: 176)
     private(set) var isCalibrationEnabled = false
+    private(set) var ignoresMouseEvents = true
     private(set) var showCount = 0
     private(set) var hideCount = 0
     private(set) var stopCount = 0
@@ -33,6 +34,7 @@ private final class FakeHaloPanelController: HaloPanelControlling {
     func setMode(_ mode: HaloPresentationMode) {
         guard !stopped else { return }
         self.mode = mode
+        ignoresMouseEvents = !isCalibrationEnabled && mode == .compact
     }
 
     func setReferencePoint(_ referencePoint: CGPoint) {
@@ -43,6 +45,7 @@ private final class FakeHaloPanelController: HaloPanelControlling {
     func setCalibrationEnabled(_ enabled: Bool) {
         guard !stopped else { return }
         isCalibrationEnabled = enabled
+        ignoresMouseEvents = enabled ? false : mode == .compact
     }
 
     func resetToDefaultPosition() {
@@ -77,6 +80,7 @@ private final class FakeWindowFollowingService: HaloWindowFollowing {
     private(set) var finishCount = 0
     private(set) var cancelCount = 0
     private(set) var resetCount = 0
+    var eventsOnCancel: [HaloWindowFollowingEvent] = []
 
     init() {
         let pair = AsyncStream.makeStream(
@@ -99,7 +103,12 @@ private final class FakeWindowFollowingService: HaloWindowFollowing {
     func beginPetCalibration(currentReferencePoint: CGPoint) { beginPetCount += 1 }
     func beginWindowCalibration(currentReferencePoint: CGPoint) { beginWindowCount += 1 }
     func finishCalibration(currentReferencePoint: CGPoint) { finishCount += 1 }
-    func cancelCalibration() { cancelCount += 1 }
+    func cancelCalibration() {
+        cancelCount += 1
+        for event in eventsOnCancel {
+            continuation.yield(event)
+        }
+    }
     func resetPetPosition() { resetCount += 1 }
 
     func emit(_ event: HaloWindowFollowingEvent) {
@@ -437,5 +446,87 @@ final class ApplicationCoordinatorTests: XCTestCase {
         XCTAssertEqual(panel.stopCount, 1)
         let stoppedInOrder = await service.panelWasStoppedWhenServiceStopped
         XCTAssertTrue(stoppedInOrder)
+    }
+
+    @MainActor
+    func testCancelCalibrationRestoresCompactClickThroughAndReferencePoint() async {
+        let panel = FakeHaloPanelController()
+        let following = FakeWindowFollowingService()
+        let coordinator = ApplicationCoordinator(
+            usageService: FakeUsageService(),
+            haloPanelController: panel,
+            windowFollowingService: following,
+            terminateApplication: {}
+        )
+        coordinator.start()
+        let originalReferencePoint = panel.referencePoint
+        following.emit(.stateChanged(.calibrating))
+        following.emit(.setCalibrationEnabled(true))
+        for _ in 0 ..< 20 where !panel.isCalibrationEnabled {
+            await Task.yield()
+        }
+        panel.setReferencePoint(CGPoint(x: 700, y: 500))
+        following.eventsOnCancel = [
+            .setCalibrationEnabled(false),
+            .placeReferencePoint(originalReferencePoint),
+            .stateChanged(.following),
+        ]
+
+        coordinator.cancelWindowFollowingCalibration()
+        for _ in 0 ..< 100
+            where panel.isCalibrationEnabled
+                || panel.referencePoint != originalReferencePoint
+                || coordinator.windowFollowingState != .following
+        {
+            await Task.yield()
+        }
+
+        XCTAssertEqual(following.cancelCount, 1)
+        XCTAssertFalse(panel.isCalibrationEnabled)
+        XCTAssertEqual(panel.mode, .compact)
+        XCTAssertTrue(panel.ignoresMouseEvents)
+        XCTAssertEqual(panel.referencePoint, originalReferencePoint)
+        XCTAssertEqual(coordinator.windowFollowingState, .following)
+        coordinator.requestTermination()
+        await coordinator.waitForShutdown()
+    }
+
+    @MainActor
+    func testCalibrationBlocksUnrelatedCoordinatorCommandsAndReset() async {
+        let panel = FakeHaloPanelController()
+        let following = FakeWindowFollowingService()
+        let coordinator = ApplicationCoordinator(
+            usageService: FakeUsageService(),
+            haloPanelController: panel,
+            windowFollowingService: following,
+            terminateApplication: {}
+        )
+        coordinator.start()
+        following.emit(.stateChanged(.calibrating))
+        following.emit(.petDiscoveryStateChanged(.found))
+        following.emit(.targetSourceChanged(.pet))
+        for _ in 0 ..< 20 where coordinator.windowFollowingState != .calibrating {
+            await Task.yield()
+        }
+
+        XCTAssertFalse(coordinator.canEnablePetFollowing)
+        XCTAssertFalse(coordinator.canUseWindowFallback)
+        XCTAssertFalse(coordinator.canResetPetPosition)
+        XCTAssertFalse(coordinator.canCalibratePetFollowing)
+        XCTAssertFalse(coordinator.canCalibrateWindowFallback)
+        coordinator.enablePetFollowing()
+        coordinator.useWindowFallback()
+        coordinator.resetPetPosition()
+        coordinator.beginPetFollowingCalibration()
+        coordinator.beginWindowFallbackCalibration()
+
+        XCTAssertEqual(following.enableCount, 0)
+        XCTAssertEqual(following.useWindowFallbackCount, 0)
+        XCTAssertEqual(following.resetCount, 0)
+        XCTAssertEqual(following.beginPetCount, 0)
+        XCTAssertEqual(following.beginWindowCount, 0)
+        XCTAssertEqual(coordinator.windowFollowingState, .calibrating)
+        coordinator.requestTermination()
+        await coordinator.waitForShutdown()
     }
 }

@@ -184,6 +184,26 @@ private final class FakeFollowingPreferences: WindowFollowingPreferenceStoring {
     }
 }
 
+@MainActor
+private final class FollowingEventRecorder {
+    private(set) var events: [HaloWindowFollowingEvent] = []
+    private var task: Task<Void, Never>?
+
+    func start(_ stream: AsyncStream<HaloWindowFollowingEvent>) {
+        task = Task { @MainActor [weak self] in
+            for await event in stream {
+                guard let self else { return }
+                events.append(event)
+            }
+        }
+    }
+
+    func stop() {
+        task?.cancel()
+        task = nil
+    }
+}
+
 final class WindowFollowingServiceTests: XCTestCase {
     @MainActor
     func testStartupNeverPromptsAndKeepsFreeFloatingWithoutPermission() async {
@@ -231,6 +251,133 @@ final class WindowFollowingServiceTests: XCTestCase {
         XCTAssertEqual(context.preferences.windowAnchorWrites.count, 1)
         XCTAssertTrue(context.preferences.snapshot.windowAnchor?.isValid == true)
         await context.service.stop()
+    }
+
+    @MainActor
+    func testCancellingWindowCalibrationCleansUpOnceAndRestoresSuppression() async {
+        let originalReferencePoint = CGPoint(x: 900, y: 700)
+        let petAnchor = PetRelativeAnchor(
+            version: 1,
+            normalizedPetPoint: UnitPointValue(x: 0.5, y: 0.5),
+            pointOffset: PointOffsetValue(width: 10, height: 10)
+        )
+        let windowAnchor = HaloWindowAnchor(
+            version: 1,
+            normalizedWindowPoint: UnitPointValue(x: 0.5, y: 0.5),
+            pointOffset: PointOffsetValue(width: 10, height: 10)
+        )
+        let context = makeContext(
+            petAccessResult: .selected(PetTargetSnapshot(
+                generation: 0,
+                frame: CGRect(x: 500, y: 300, width: 120, height: 110)
+            )),
+            enabled: true,
+            anchor: windowAnchor,
+            petAnchor: petAnchor
+        )
+        let recorder = FollowingEventRecorder()
+        recorder.start(context.service.events())
+        context.service.start()
+        context.service.useWindowFallback()
+        XCTAssertEqual(context.service.targetSource, .codexWindowFallback)
+
+        context.service.beginWindowCalibration(currentReferencePoint: originalReferencePoint)
+        for _ in 0 ..< 100 where !recorder.events.contains(.setCalibrationEnabled(true)) {
+            await Task.yield()
+        }
+        XCTAssertEqual(context.service.state, .calibrating)
+        XCTAssertEqual(
+            recorder.events.filter { $0 == .setCalibrationEnabled(true) }.count,
+            1
+        )
+        XCTAssertTrue(context.preferences.windowAnchorWrites.isEmpty)
+        XCTAssertTrue(context.preferences.petAnchorWrites.isEmpty)
+        let eventCountBeforeCancel = recorder.events.count
+
+        context.service.cancelCalibration()
+        for _ in 0 ..< 100
+            where context.service.state == .calibrating
+                || !recorder.events.dropFirst(eventCountBeforeCancel).contains(.setCalibrationEnabled(false))
+                || !recorder.events.dropFirst(eventCountBeforeCancel).contains(.stateChanged(.following))
+        {
+            await Task.yield()
+        }
+
+        let cancelEvents = Array(recorder.events.dropFirst(eventCountBeforeCancel))
+        XCTAssertEqual(
+            cancelEvents.filter { $0 == .setCalibrationEnabled(false) }.count,
+            1
+        )
+        XCTAssertEqual(
+            cancelEvents.filter { $0 == .placeReferencePoint(originalReferencePoint) }.count,
+            1
+        )
+        XCTAssertEqual(context.service.targetSource, .codexWindowFallback)
+        XCTAssertEqual(context.service.state, .following)
+        XCTAssertTrue(context.preferences.windowAnchorWrites.isEmpty)
+        XCTAssertTrue(context.preferences.petAnchorWrites.isEmpty)
+
+        let eventCountAfterCancel = recorder.events.count
+        context.service.cancelCalibration()
+        for _ in 0 ..< 20 { await Task.yield() }
+        XCTAssertEqual(recorder.events.count, eventCountAfterCancel)
+        XCTAssertEqual(context.service.state, .following)
+        XCTAssertTrue(context.preferences.windowAnchorWrites.isEmpty)
+        XCTAssertTrue(context.preferences.petAnchorWrites.isEmpty)
+        recorder.stop()
+        await context.service.stop()
+    }
+
+    @MainActor
+    func testResetAndUnrelatedCommandsAreNoOpDuringCalibration() async {
+        let petAnchor = PetRelativeAnchor(
+            version: 1,
+            normalizedPetPoint: UnitPointValue(x: 0.5, y: 0.5),
+            pointOffset: PointOffsetValue(width: 10, height: 10)
+        )
+        let petSnapshot = PetTargetSnapshot(
+            generation: 0,
+            frame: CGRect(x: 500, y: 300, width: 120, height: 110)
+        )
+        let petContext = makeContext(
+            petAccessResult: .selected(petSnapshot),
+            enabled: true,
+            petAnchor: petAnchor
+        )
+        petContext.service.start()
+        petContext.service.beginPetCalibration(currentReferencePoint: CGPoint(x: 600, y: 400))
+        XCTAssertEqual(petContext.service.state, .calibrating)
+
+        petContext.service.enable()
+        petContext.service.useWindowFallback()
+        petContext.service.resetPetPosition()
+        petContext.service.beginPetCalibration(currentReferencePoint: .zero)
+        petContext.service.beginWindowCalibration(currentReferencePoint: .zero)
+
+        XCTAssertEqual(petContext.service.state, .calibrating)
+        XCTAssertEqual(petContext.preferences.snapshot.petAnchor, petAnchor)
+        XCTAssertTrue(petContext.preferences.petAnchorWrites.isEmpty)
+        petContext.service.cancelCalibration()
+        await petContext.service.stop()
+
+        let windowContext = makeContext(
+            petAccessResult: .selected(petSnapshot),
+            enabled: true,
+            petAnchor: petAnchor
+        )
+        windowContext.service.start()
+        windowContext.service.beginWindowCalibration(
+            currentReferencePoint: CGPoint(x: 900, y: 700)
+        )
+        XCTAssertEqual(windowContext.service.state, .calibrating)
+
+        windowContext.service.resetPetPosition()
+
+        XCTAssertEqual(windowContext.service.state, .calibrating)
+        XCTAssertEqual(windowContext.preferences.snapshot.petAnchor, petAnchor)
+        XCTAssertTrue(windowContext.preferences.petAnchorWrites.isEmpty)
+        windowContext.service.cancelCalibration()
+        await windowContext.service.stop()
     }
 
     @MainActor

@@ -104,7 +104,7 @@ private struct ApplicationMenuContent: View {
         Button("Reset Pet Position") {
             coordinator.resetPetPosition()
         }
-        .disabled(!coordinator.acceptsUICommands)
+        .disabled(!coordinator.canResetPetPosition)
         Divider()
         Text(menuModel.versionText)
         Divider()
