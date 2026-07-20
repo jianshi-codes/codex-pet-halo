@@ -10,6 +10,7 @@ protocol HaloPanelControlling: AnyObject {
     var frame: CGRect { get }
     var isCalibrationEnabled: Bool { get }
     var attachmentLayout: PetAttachmentLayout? { get }
+    var petRingLabelSide: PetRingLabelSide { get }
 
     func show()
     func hide()
@@ -42,6 +43,7 @@ final class HaloPanelController: HaloPanelControlling {
     private(set) var mode: HaloPresentationMode = .compact
     private(set) var surfaceMode: HaloSurfaceMode = .compactCard
     private(set) var isCalibrationEnabled = false
+    private(set) var petRingLabelSide: PetRingLabelSide = .right
     private let viewState: HaloViewState
     private let visibleFrameProvider: () -> NSRect
     private let screenGeometryProvider: () -> [ScreenGeometry]
@@ -75,6 +77,7 @@ final class HaloPanelController: HaloPanelControlling {
             cardModel: model,
             petRingModel: .starting,
             petRingOrientation: .fixedDefault,
+            petRingLabelSide: .right,
             surfaceMode: .compactCard
         )
         self.visibleFrameProvider = visibleFrameProvider
@@ -197,6 +200,9 @@ final class HaloPanelController: HaloPanelControlling {
     func setPetRingOrientation(_ orientation: PetRingOrientation) {
         guard !stopped else { return }
         viewState.petRingOrientation = orientation
+        if let panel {
+            updatePetRingLabelSide(for: panel.frame)
+        }
     }
 
     func setCalibrationEnabled(_ enabled: Bool) {
@@ -230,6 +236,9 @@ final class HaloPanelController: HaloPanelControlling {
         guard !stopped else { return }
         viewState.cardModel = cardModel
         viewState.petRingModel = petRingModel
+        if let panel {
+            updatePetRingLabelSide(for: panel.frame)
+        }
     }
 
     func stop() {
@@ -321,7 +330,32 @@ final class HaloPanelController: HaloPanelControlling {
         guard !stopped, let panel else { return }
         attachmentLayout = layout
         desiredReferencePoint = layout.referencePoint
+        updatePetRingLabelSide(for: layout.panelFrame)
         panel.setFrame(layout.panelFrame, display: true)
+    }
+
+    private func updatePetRingLabelSide(for panelFrame: CGRect) {
+        guard surfaceMode == .petRing else { return }
+        let center = CGPoint(x: panelFrame.midX, y: panelFrame.midY)
+        guard let screen = HaloPlacementGeometry.selectedScreen(
+            for: center,
+            screens: screenGeometryProvider()
+        ) else {
+            return
+        }
+        var metrics: [PetRingMetricKind] = [.weekly]
+        if viewState.petRingModel.fiveHour != nil { metrics.append(.fiveHour) }
+        if viewState.petRingModel.todayTokens != nil { metrics.append(.today) }
+        let side = PetRingLabelPlacementPolicy.side(
+            panelFrame: panelFrame,
+            visibleFrame: screen.visibleFrame,
+            visibleMetrics: metrics,
+            preferredSide: viewState.petRingOrientation.preferredLabelSide,
+            currentSide: petRingLabelSide
+        )
+        guard side != petRingLabelSide else { return }
+        petRingLabelSide = side
+        viewState.petRingLabelSide = side
     }
 
     private static func frame(_ proposed: NSRect, containedIn visibleFrame: NSRect) -> NSRect {

@@ -84,7 +84,7 @@ required_live_lines=(
     'Pet Wake: observed'
     'Pet Halo Quit: observed'
     'Pet Ring selected: observed'
-    'Fallback card restored: observed'
+    'Pet loss Halo hidden: observed'
     'Application remained inactive: yes'
 )
 for required_line in "${required_live_lines[@]}"; do
@@ -108,12 +108,12 @@ fi
 
 echo "Pet Ring target selection: direct pass"
 echo "Pet/Halo visual-center offset and independent movement: direct pass"
-echo "Tuck Away fallback and Wake recovery: direct pass"
+echo "Tuck Away default hide and Wake recovery: direct pass"
 echo "Transparent center and card-background exclusion: deterministic pass"
 echo "Independent Weekly, optional 5h, and Today rings: deterministic pass"
 echo "Dialog-aware partial-arc orientation: deterministic/direct pass"
 echo "Pet Ring click-through and non-activation: deterministic/direct pass"
-echo "Fallback cards and Expanded rejection on Pet: deterministic pass"
+echo "Explicit fallback cards, default hide, and Expanded rejection on Pet: deterministic/direct pass"
 echo "Observer, panel, and owned app-server shutdown: direct pass"
 echo "Visual Pet containment, concentric rings, complementary dialog side, and no card: observer confirmation required"
 

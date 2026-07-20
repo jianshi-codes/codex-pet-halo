@@ -7,7 +7,7 @@ struct PetHaloApp: App {
     private let menuModel = ApplicationMenuModel(version: .current())
 
     var body: some Scene {
-        MenuBarExtra(menuModel.applicationName, systemImage: "circle.dashed") {
+        MenuBarExtra(menuModel.applicationName, image: "MenuBarIcon") {
             ApplicationMenuContent(
                 coordinator: appDelegate.coordinator,
                 menuModel: menuModel

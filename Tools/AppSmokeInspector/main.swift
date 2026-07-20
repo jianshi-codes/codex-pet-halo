@@ -32,7 +32,9 @@ guard ownedWindows.count == 1 else {
 guard let bounds = ownedWindows[0][kCGWindowBounds as String] as? [String: NSNumber],
       let width = bounds["Width"]?.doubleValue,
       let height = bounds["Height"]?.doubleValue,
-      (width == 176 && height == 176 || width == 208 && height == 208)
+      (width == 176 && height == 176
+          || width == 208 && height == 208
+          || width == 448 && height == 252)
 else {
     fputs("error: visible window is not a supported Halo surface\n", stderr)
     exit(1)

@@ -8,6 +8,22 @@ enum PetRingOrientation: Equatable, Sendable {
     static let fixedDefault: PetRingOrientation = .openingTop
 }
 
+enum PetRingLabelSide: Equatable, Sendable {
+    case left
+    case right
+}
+
+extension PetRingOrientation {
+    var preferredLabelSide: PetRingLabelSide {
+        switch self {
+        case .openingTop:
+            .right
+        case .openingBottom:
+            .left
+        }
+    }
+}
+
 #if DEBUG
 enum PetRingOrientationPreview: String, CaseIterable, Equatable, Sendable {
     case auto
@@ -111,7 +127,8 @@ struct PetRingGeometry: Equatable, Sendable {
 
     func labelPosition(
         for metric: PetRingMetricKind,
-        orientation: PetRingOrientation
+        side: PetRingLabelSide,
+        visibleMetrics: [PetRingMetricKind]
     ) -> CGPoint {
         let size = labelSize(for: metric)
         let center = ringCenter(in: panelSize)
@@ -119,21 +136,17 @@ struct PetRingGeometry: Equatable, Sendable {
         let rightStackLeadingEdge = center.x + outerRadius + connectorGap
         let leftStackTrailingEdge = center.x - outerRadius - connectorGap
         let x: Double
-        switch orientation {
-        case .openingTop:
+        switch side {
+        case .right:
             x = rightStackLeadingEdge + size.width / 2
-        case .openingBottom:
+        case .left:
             x = leftStackTrailingEdge - size.width / 2
         }
-        let y: Double
-        switch metric {
-        case .weekly:
-            y = 160
-        case .fiveHour:
-            y = 126
-        case .today:
-            y = 92
-        }
+        let metrics = visibleMetrics.isEmpty ? [metric] : visibleMetrics
+        let index = metrics.firstIndex(of: metric) ?? 0
+        let stackSpacing = 30.0
+        let y = center.y
+            + (Double(metrics.count - 1) / 2 - Double(index)) * stackSpacing
         return CGPoint(
             x: x,
             y: y
@@ -143,19 +156,24 @@ struct PetRingGeometry: Equatable, Sendable {
     func labelSize(for metric: PetRingMetricKind) -> CGSize {
         switch metric {
         case .weekly:
-            CGSize(width: 64, height: 22)
+            CGSize(width: 64, height: 24)
         case .fiveHour:
-            CGSize(width: 72, height: 22)
+            CGSize(width: 72, height: 24)
         case .today:
-            CGSize(width: 106, height: 22)
+            CGSize(width: 106, height: 24)
         }
     }
 
     func labelFrame(
         for metric: PetRingMetricKind,
-        orientation: PetRingOrientation
+        side: PetRingLabelSide,
+        visibleMetrics: [PetRingMetricKind]
     ) -> CGRect {
-        let position = labelPosition(for: metric, orientation: orientation)
+        let position = labelPosition(
+            for: metric,
+            side: side,
+            visibleMetrics: visibleMetrics
+        )
         let size = labelSize(for: metric)
         return CGRect(
             x: position.x - size.width / 2,
@@ -167,9 +185,14 @@ struct PetRingGeometry: Equatable, Sendable {
 
     func connectorSegment(
         for metric: PetRingMetricKind,
-        orientation: PetRingOrientation
+        side: PetRingLabelSide,
+        visibleMetrics: [PetRingMetricKind]
     ) -> PetRingConnectorSegment {
-        let frame = labelFrame(for: metric, orientation: orientation)
+        let frame = labelFrame(
+            for: metric,
+            side: side,
+            visibleMetrics: visibleMetrics
+        )
         let center = ringCenter(in: panelSize)
         let radius = radius(for: metric)
         let ringY = frame.midY
@@ -177,11 +200,11 @@ struct PetRingGeometry: Equatable, Sendable {
         let horizontalDistance = sqrt(max(radius * radius - verticalDistance * verticalDistance, 0))
         let ringX: Double
         let capsuleX: Double
-        switch orientation {
-        case .openingTop:
+        switch side {
+        case .right:
             ringX = center.x + horizontalDistance
             capsuleX = frame.minX
-        case .openingBottom:
+        case .left:
             ringX = center.x - horizontalDistance
             capsuleX = frame.maxX
         }
@@ -198,4 +221,73 @@ struct PetRingGeometry: Equatable, Sendable {
         panelWidth: 448,
         panelDiameter: 252
     )
+}
+
+enum PetRingLabelPlacementPolicy {
+    static let hysteresisInset = 8.0
+
+    static func side(
+        panelFrame: CGRect,
+        visibleFrame: CGRect,
+        visibleMetrics: [PetRingMetricKind],
+        preferredSide: PetRingLabelSide,
+        currentSide: PetRingLabelSide?,
+        geometry: PetRingGeometry = .standard
+    ) -> PetRingLabelSide {
+        let leftFrame = globalLabelFrame(
+            side: .left,
+            panelFrame: panelFrame,
+            visibleMetrics: visibleMetrics,
+            geometry: geometry
+        )
+        let rightFrame = globalLabelFrame(
+            side: .right,
+            panelFrame: panelFrame,
+            visibleMetrics: visibleMetrics,
+            geometry: geometry
+        )
+        let leftFits = visibleFrame.contains(leftFrame)
+        let rightFits = visibleFrame.contains(rightFrame)
+
+        if leftFits != rightFits {
+            return leftFits ? .left : .right
+        }
+        if leftFits, rightFits,
+           let currentSide,
+           currentSide != preferredSide
+        {
+            let preferredFrame = preferredSide == .left ? leftFrame : rightFrame
+            let settledFrame = visibleFrame.insetBy(
+                dx: hysteresisInset,
+                dy: 0
+            )
+            return settledFrame.contains(preferredFrame) ? preferredSide : currentSide
+        }
+        if leftFits, rightFits {
+            return preferredSide
+        }
+        return overflow(of: leftFrame, outside: visibleFrame)
+            <= overflow(of: rightFrame, outside: visibleFrame) ? .left : .right
+    }
+
+    static func globalLabelFrame(
+        side: PetRingLabelSide,
+        panelFrame: CGRect,
+        visibleMetrics: [PetRingMetricKind],
+        geometry: PetRingGeometry = .standard
+    ) -> CGRect {
+        visibleMetrics.reduce(CGRect.null) { result, metric in
+            let local = geometry.labelFrame(
+                for: metric,
+                side: side,
+                visibleMetrics: visibleMetrics
+            )
+            return result.union(local.offsetBy(dx: panelFrame.minX, dy: panelFrame.minY))
+        }
+    }
+
+    private static func overflow(of frame: CGRect, outside visibleFrame: CGRect) -> Double {
+        max(visibleFrame.minX - frame.minX, 0)
+            + max(frame.maxX - visibleFrame.maxX, 0)
+    }
 }

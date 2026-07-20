@@ -5,6 +5,7 @@ final class HaloViewState: ObservableObject {
     @Published var cardModel: HaloPresentationModel
     @Published var petRingModel: PetRingPresentationModel
     @Published var petRingOrientation: PetRingOrientation
+    @Published var petRingLabelSide: PetRingLabelSide
     @Published var surfaceMode: HaloSurfaceMode
     @Published var isCalibrating = false
 
@@ -12,11 +13,13 @@ final class HaloViewState: ObservableObject {
         cardModel: HaloPresentationModel,
         petRingModel: PetRingPresentationModel,
         petRingOrientation: PetRingOrientation = .fixedDefault,
+        petRingLabelSide: PetRingLabelSide = .right,
         surfaceMode: HaloSurfaceMode
     ) {
         self.cardModel = cardModel
         self.petRingModel = petRingModel
         self.petRingOrientation = petRingOrientation
+        self.petRingLabelSide = petRingLabelSide
         self.surfaceMode = surfaceMode
     }
 }
@@ -33,6 +36,7 @@ struct HaloView: View {
                 PetRingView(
                     model: state.petRingModel,
                     orientation: state.petRingOrientation,
+                    labelSide: state.petRingLabelSide,
                     isCalibrating: state.isCalibrating
                 )
             case .compactCard:

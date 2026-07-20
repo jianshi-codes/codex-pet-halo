@@ -106,6 +106,11 @@ final class PetFrameFollower {
         guard !stopped else { return }
         latestLayout = layout
         stableRefreshCount = 0
+        if reduceMotion() {
+            applyDirectly(layout)
+            stopDisplayLinkIfStarted()
+            return
+        }
         guard let currentFrame else {
             snap(to: layout)
             return
@@ -113,7 +118,7 @@ final class PetFrameFollower {
         if policy.shouldSnap(
             current: currentFrame,
             target: layout.panelFrame,
-            reduceMotion: reduceMotion()
+            reduceMotion: false
         ) {
             snap(to: layout)
             return
@@ -140,7 +145,7 @@ final class PetFrameFollower {
         stopped = true
         latestLayout = nil
         currentFrame = nil
-        displayLink.stop()
+        stopDisplayLinkIfStarted()
     }
 
     private func startDisplayLinkIfNeeded() {
@@ -161,6 +166,11 @@ final class PetFrameFollower {
         }
         let newestLayout = sampleLatest() ?? pendingLayout
         latestLayout = newestLayout
+        if reduceMotion() {
+            applyDirectly(newestLayout)
+            stopDisplayLinkIfStarted()
+            return
+        }
         if newestLayout.panelFrame == currentFrame {
             stableRefreshCount += 1
         } else {
@@ -171,5 +181,17 @@ final class PetFrameFollower {
         if stableRefreshCount >= policy.stableRefreshCount {
             displayLink.setPaused(true)
         }
+    }
+
+    private func applyDirectly(_ layout: PetAttachmentLayout) {
+        currentFrame = layout.panelFrame
+        stableRefreshCount = 0
+        apply(layout)
+    }
+
+    private func stopDisplayLinkIfStarted() {
+        guard displayLinkStarted else { return }
+        displayLink.stop()
+        displayLinkStarted = false
     }
 }

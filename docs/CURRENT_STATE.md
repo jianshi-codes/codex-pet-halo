@@ -1,37 +1,38 @@
 # Current State
 
-- Milestone: M7 — Pet Ring Surface & Target-aware Presentation
+- Milestone: M8 — Release UI Polish
 - Route: `ROUTE_A — PET_ACCESSIBILITY_WINDOW`
-- Status: **PASS**
-- Implementation: complete on `m7/pet-ring-presentation`; automated checks, direct M7 interaction, live smoke, independent review, publication, and current-head CI validation pass
-- Gate: M7 is closed; Draft PR #8 remains unmerged, and M8 requires separate authorization
-- Target hierarchy: Pet / explicitly shown calibrated Codex standard window / free-floating Halo; Pet loss hides Halo by default instead of automatically exposing a fallback card
-- Pet core selection: prefer the unique stable near-square `AXSystemDialog`; use near-square `AXDialog` only as a compatibility fallback; ambiguity fails closed to the preserved fallback hierarchy
-- Pet placement invariant: the AX Pet midpoint remains the stable tracking basis; the shared visual ring center is `petFrame.center + PetVisualCenterOffset`
-- Geometry boundary: `PetTargetSnapshot` carries the Pet frame, generation, and content-free activity-geometry hint; the fixed M7 surface is `448×252`, centered on the same visual Pet point, with three unchanged 104/94/84-point rings and a `162`-point transparent center while the extra transparent width holds labels and fallback cards retain `176×176` Compact and `360×520` Expanded sizing
-- Persistence: startup deletes the legacy normalized Pet anchor; the M4 Codex-window anchor and the current versioned fixed visual-center `dx/dy` offset are preserved, while offsets written for the incompatible earlier Pet-core basis are ignored
-- Visual-center calibration: `Adjust Ring Center` temporarily enables drag/4-point nudges with a center crosshair; Save persists only `PetVisualCenterOffset`, Cancel restores it, Reset persists zero, and normal mode immediately returns to click-through
-- Presentation state: Pet selects `petRing` only; Codex-window/free-floating targets select `compactCard` or `expandedCard`; atomic activation switches surface before applying the centered ring frame, and fallback restores the previous card mode
-- Stability: Pet callbacks have no fixed 80 ms sleep; a missing event-path sample retries after 16 ms, while one display-linked latest-value follower samples only the selected Pet core during active movement, stops after four unchanged refreshes, applies the newest medium-distance target exactly, snaps within 1.25 points or at a 96-point discontinuity, and uses immediate updates for Reduce Motion. A bounded recovery health check detects Codex process replacement and silent selected-frame changes, rejects stale generations, and snaps to the newest attachment without waiting for the first message event
-- Panel: Pet Ring transparent and shadowless / no card material, title container, or scrolling / click-through outside explicit calibration / always non-activating / cannot become key or main; fallback cards remain intact
-- Safe placement status: `Pet placement: Centered` or `Pet placement: Unavailable`
-- Privacy: exact `com.openai.codex` only / role, subrole, minimized, hidden, position, size only / activity geometry is an optional post-selection direction hint / no content attributes, screenshots, OCR, databases, analytics, or telemetry
-- Pet metrics: outer Weekly and middle exact-300-minute 5h use `remainingPercent`; inner Today uses the Codex UTC account day's tokens divided by nonzero historical peak, shows compact localized K/M/B plus truthful ratio, clamps progress only, and retains exact tokens in accessibility
-- Labels/orientation: fixed-identity capsules use the top-to-bottom order Today / optional 5h / Weekly in a leading-edge-aligned absolute right stack with short neutral dashed connectors and mirror as a trailing-edge-aligned left stack without reversing that order, while ring progress keeps semantic system colors; Auto prefers the current unique wide `AXSystemDialog`, falls back to a unique wide `AXDialog`, and compares it with the calibrated visual Pet center; activity above opens top, activity below opens bottom, no activity uses the fixed default, and ambiguous/transient geometry retains the prior 180 ms-debounced direction without moving the panel; DEBUG can force either gap without persistence
-- Focused M7 validation: 106 application/presentation/following tests pass with fakes and synthetic geometry; no Codex process or Accessibility permission required
-- Full validation: generated-project/source/privacy scans, Debug build/bundle, universal arm64+x86_64 Release build/bundle, and whitespace checks pass; the complete Swift suite executed 160 tests with 159 passed and one designed local-only authenticated Codex integration smoke skipped; all 14 retained M0 protocol tests pass
-- Draft PR CI: the latest Protocol evidence and macOS application jobs pass on the complete M7 head; the PR remains Draft
-- M2 timing validation: `testSparseNotificationBurstDebouncesToOneCompleteRefreshSeam` passes 30/30 fail-fast repetitions without retry
-- Live validation: `make m7-smoke` directly passes exact-process/Pet selection, automatic Pet Ring attachment, fast independent movement with the saved visual-center offset and bounded selected-frame sampling, Tuck Away/Wake recovery, non-activation, explicit fallback-card restoration, Quit, observer shutdown, and owned app-server cleanup. Restart/idle validation confirmed attachment without a first-message trigger, stable centering across the direct Pet core and selected positions, Pet-loss hiding, and Today recovery across the local UTC+8 midnight boundary
-- Manual visual acceptance: PASS — user-operated calibration confirmed visible Pet containment, concentric transparent-center geometry, mirrored forced/Auto openings, and the final capsule-label screenshot with Today / optional 5h / Weekly ordering, identity dots, and connectors
-- Independent review: PASS; PR #8 has no unresolved review threads
-- Retained protocol boundary: M0 remains PASS-CORE / PARTIAL-OPTIONALS; production remains fail-closed to CLI `0.145.0-alpha.18`; no Codex internal database dependency
-- Next milestone: M8 — Visual Polish, Themes & Motion. It owns advanced polish beyond the fixed M7 arc/color policy, themes, decorative low-usage styling, glow, motion preferences, and animations, and has not started; M9 owns hardening/release readiness
+- Status: **LOCAL VALIDATION COMPLETE — DRAFT PR CI PENDING**
+- Branch: `m8/release-ui-polish`
+- Gate: Draft PR CI is the only remaining requirement before M8 is PASS
+- Next milestone: M9 — Public Beta Release Readiness; not started and not authorized by M8
 
-M6 removes the M5 first-use Pet calibration detour and all runtime normalized Pet anchors. Once Accessibility following has been explicitly enabled, a unique Pet target attaches immediately. Pet loss, Tuck Away, ambiguity, permission loss, or observer failure retains the preserved M4/M3 target hierarchy but hides Halo unless the Codex-window fallback is explicitly shown. Wake or deterministic rediscovery restores centered Pet placement without user action.
+## Preserved contracts
 
-Target discovery and tracking use no screen lookup, activity-dialog geometry, fit calculation, clamp, or side choice. Direct visual acceptance showed that the rendered character center can differ from the padded Route A AX midpoint, so M7 adds only a constant presentation offset to the complete panel. Activity geometry is evaluated after core selection relative to that calibrated visual center and changes only partial-arc angles.
+- Target hierarchy: Pet / explicitly shown calibrated Codex standard window / free-floating Halo; Pet loss hides Halo by default
+- Discovery: exact `com.openai.codex`; unique stable near-square `AXSystemDialog`, with near-square `AXDialog` only as a compatibility fallback; ambiguity fails closed
+- Placement: `panel.center = petFrame.center + PetVisualCenterOffset`; no M8 screen-space policy can move that center
+- Geometry: transparent `448×252` Pet Ring panel, 104/94/84-point radii, 6-point strokes, and `162`-point transparent center unchanged; fallback cards remain `176×176` Compact and `360×520` Expanded
+- Usage: Weekly remaining, optional exact-300-minute 5h remaining, and Codex UTC Today tokens versus nonzero historical peak; missing values are omitted/unavailable and never estimated
+- Bridge/freshness: one read-only owned app-server, independent rate and Account Usage freshness, exact supported CLI `0.145.0-alpha.18`, no Codex database access
+- Privacy: Accessibility geometry/structure only; no titles, content, screenshots/OCR, Screen Recording, analytics, telemetry, or new network/cloud service
 
-The fine-tune API writes only `PetVisualCenterOffset(horizontal, vertical)`. It never creates a normalized Pet anchor or changes discovery, selected target, dialog hint, or fallback. Absolute overlay labels and all concentric rings move together because their center remains the panel midpoint.
+## M8 implementation
 
-M7 replaces only the Pet-target demo card. Compact/Expanded cards and full Account Usage remain available on Codex-window and free-floating fallbacks. The Pet model uses peak daily tokens only as Today's denominator and contains no lifetime, streak, longest-turn, or seven-day presentation. Fixed partial arcs, semantic system colors, textual freshness, and per-ring accessibility are functional M7 treatment only; there is no final artwork, theme system, glow, particle, pulse, sound, or animation work.
+- Appearance: live light/dark, Increase Contrast, Differentiate Without Color, and Reduce Transparency inputs update system-based Pet Ring, capsule, connector, track, and fallback treatment; stale/unavailable use dash/glyph/text/accessibility semantics rather than color alone
+- Capsule identity: dots remain Weekly `#5865F2`, 5h `#00B8D9`, Today `#A855F7`; related key-text variants meet the deterministic 4.5:1 practical contrast floor; values remain system label text
+- Capsule side: dialog geometry chooses only arc opening; selected-display `visibleFrame` separately chooses the fully contained label side, supports negative/multi-display coordinates, adds an 8-point no-clipping settle inset, and persists no screen identity
+- Spacing: 24-point capsules, 30-point visible-metric stack, 6-point identity dots, 4-point text spacing, and 10-point Ring gap; optional 5h/Today omission recenters the remaining stack; fixed scaling keeps compact K/M/B values on one line
+- Motion: normal latest-value display-linked following is unchanged; Reduce Motion updates directly, starts no display link, and invalidates an active callback on a runtime setting change
+- Icons: original Core Graphics AppIcon sizes 16–1024 plus a separate 18/36-pixel monochrome template MenuBarIcon; no official/copied artwork or third-party font/library
+- Non-goals: no theme system, decorative animation, particles, glow, sound, packaging, signing, notarization, GitHub Release automation, protocol change, target change, or fallback change
+
+## Validation
+
+- Focused M8: PASS — 105 Swift tests and 2 deterministic asset checks
+- Covers: appearance policies, key-text contrast, safe left/right edges, visible-frame containment, negative displays, dialog/side separation, center invariance, hysteresis, Reduce Motion runtime changes, normal follower regression, optional metrics, large values/text, icon catalog, and template configuration
+- Full `make check`: PASS — source/privacy/bundle boundaries, Debug, universal `arm64+x86_64` Release, 51 Core tests with one designed local-only skip, 116 App tests, and 16 Python tests
+- Retained M2–M7 smoke: PASS — M7 harness follows the current default-hide contract rather than requiring an obsolete automatic fallback card
+- `make m8-smoke`: PASS — appearance, contrast, edge placement, motion, layout, and compiled icon checks
+- Manual: PASS — light/dark, Increase Contrast, Reduce Motion, both screen edges, menu/App icon surfaces, Pet movement, Tuck Away default hide, Wake, and Quit; current Today-present/5h-absent capability state observed without estimating unavailable combinations
+- Draft PR CI: pending publication

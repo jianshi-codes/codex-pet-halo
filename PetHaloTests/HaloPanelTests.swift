@@ -198,6 +198,38 @@ final class HaloPanelTests: XCTestCase {
     }
 
     @MainActor
+    func testRuntimeReduceMotionStopsAndNormalModeRestartsDisplayLink() {
+        let displayLink = FakeDisplayLinkDriver()
+        var applied: [PetAttachmentLayout] = []
+        var reduceMotion = false
+        var sampledLayout = petLayout(x: 20)
+        let follower = PetFrameFollower(
+            displayLink: displayLink,
+            reduceMotion: { reduceMotion },
+            sampleLatest: { sampledLayout },
+            apply: { applied.append($0) }
+        )
+        follower.snap(to: petLayout(x: 0))
+        follower.follow(to: petLayout(x: 10))
+        XCTAssertEqual(displayLink.startCount, 1)
+
+        reduceMotion = true
+        displayLink.fire()
+        XCTAssertEqual(applied.last?.panelFrame.origin.x, 20)
+        XCTAssertEqual(displayLink.stopCount, 1)
+        XCTAssertFalse(displayLink.hasActiveCallback)
+
+        reduceMotion = false
+        sampledLayout = petLayout(x: 40)
+        follower.follow(to: petLayout(x: 30))
+        XCTAssertEqual(displayLink.startCount, 2)
+        XCTAssertNotEqual(applied.last?.panelFrame.origin.x, 30)
+        displayLink.fire()
+        XCTAssertEqual(applied.last?.panelFrame.origin.x, 40)
+        follower.stop()
+    }
+
+    @MainActor
     func testDisplayLinkedFollowerRejectsCallbacksAfterShutdown() {
         let displayLink = FakeDisplayLinkDriver()
         var applied: [PetAttachmentLayout] = []
@@ -364,9 +396,13 @@ private final class FakeDisplayLinkDriver: DisplayLinkDriving {
     private var callback: (@MainActor () -> Void)?
     private var capturedCallback: (@MainActor () -> Void)?
     private(set) var isPaused = true
+    private(set) var startCount = 0
     private(set) var stopCount = 0
 
+    var hasActiveCallback: Bool { callback != nil }
+
     func start(callback: @escaping @MainActor () -> Void) {
+        startCount += 1
         self.callback = callback
         capturedCallback = callback
     }

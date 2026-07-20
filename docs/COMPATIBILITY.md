@@ -54,7 +54,7 @@ The public M2 domain exposes rate-limit and Account Usage freshness separately. 
 
 The M3 mapper consumes only the stable M2 domain. Weekly/five-hour presentation follows rate-limit component freshness, while Account Usage follows its independent component freshness. Remaining percentage is not inverted again. Five-hour appears only for an available exact 300-minute capability. Context and account identity are omitted.
 
-The M3 panel itself does not discover or inspect Codex. M4 through M6 own the separately gated target-following and placement compatibility layers. M7 owns the functional Pet ring and basic Usage presentation, M8 owns advanced visual treatment, and M9 owns release hardening.
+The M3 panel itself does not discover or inspect Codex. M4 through M6 own the separately gated target-following and placement compatibility layers. M7 owns the functional Pet ring and basic Usage presentation, M8 owns release UI/accessibility polish, and M9 owns public-beta release readiness.
 
 ## M7 target-aware presentation contract
 
@@ -74,7 +74,21 @@ The M3 panel itself does not discover or inspect Codex. M4 through M6 own the se
 
 `ApplicationCoordinator` remains the single owner of target, Usage, and presentation state. It records both the fallback card choice and non-Pet reference before entering Pet. On Pet loss, a delivered M4 reference is retained; otherwise the pre-Pet free-floating reference is restored before the card is resized. A direct Compact/Expanded command cannot change the Pet Ring, and `360×520` can never be applied at the Pet midpoint.
 
-Activity orientation is derived only after the near-square Pet core has been selected and cannot change discovery, tracking, placement, offset, or fallback. A unique wide `AXSystemDialog` is the preferred current activity hint, with a unique wide `AXDialog` retained as a compatibility fallback; the vertical comparison includes the saved visual-center offset so Auto matches the rendered Pet rather than the padded raw AX midpoint. Pet movement uses one latest-value display-linked direct follower without queued `NSWindow` animations. During an active movement burst it re-reads only the coincident selected core frames and stops after four unchanged refreshes; this fast path cannot enumerate candidates or change selection. This requested tracking behavior is separate from decorative motion. Advanced polish beyond the fixed functional arc/color policy, themes, decorative low-usage styling, glow, motion preferences, and animations are M8 work.
+Activity orientation is derived only after the near-square Pet core has been selected and cannot change discovery, tracking, placement, offset, or fallback. A unique wide `AXSystemDialog` is the preferred current activity hint, with a unique wide `AXDialog` retained as a compatibility fallback; the vertical comparison includes the saved visual-center offset so Auto matches the rendered Pet rather than the padded raw AX midpoint. Pet movement uses one latest-value display-linked direct follower without queued `NSWindow` animations. During an active movement burst it re-reads only the coincident selected core frames and stops after four unchanged refreshes; this fast path cannot enumerate candidates or change selection.
+
+## M8 release UI compatibility contract
+
+| Component | M8 contract |
+| --- | --- |
+| System appearance | SwiftUI/system colors update live for light/dark, Increase Contrast, Differentiate Without Color, and Reduce Transparency; there is no theme system |
+| Identity colors | Dot palette remains Weekly `#5865F2`, 5h `#00B8D9`, Today `#A855F7`; appearance-aware related key text has a tested practical contrast floor; numeric values use system label text |
+| Freshness/status | Stale remains dashed and visibly glyph-marked; unavailable uses `N/A`, a missing arc, and a glyph; semantic status colors remain system green/orange/red and Differentiate Without Color adds a shape glyph |
+| Edge placement | The already-centered panel and selected display `visibleFrame` choose only capsule side; negative coordinates work and screen identity is not stored |
+| Dialog geometry | Continues to choose only the shared arc opening; it does not override an edge-safe capsule side |
+| Reduce Motion | New positions apply directly without interpolation; an active display-link callback is invalidated; normal mode retains latest-value following |
+| Icons | Complete original AppIcon catalog plus separate monochrome template menu asset; no official artwork or generic `circle.dashed` symbol |
+
+M8 does not alter Route A discovery, Pet core selection, panel midpoint, visual-center persistence, Usage semantics, bridge behavior, fallback hierarchy, or M7 ring radii. When either capsule side fits, every visible capsule is contained in `visibleFrame`; if neither fits, the smaller-overflow side is selected without clamping the Ring center. M9 remains the separately gated compatibility-hardening and public-beta milestone.
 
 ## M4 window-following contract
 
