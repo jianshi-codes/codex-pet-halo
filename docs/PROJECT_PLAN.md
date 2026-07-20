@@ -28,7 +28,7 @@ Generate schemas from the installed Codex CLI, build a read-only protocol probe,
 
 ### M4 — Window following
 
-**Implemented — manual Accessibility validation pending.** Exact bundle-ID discovery, explicit Accessibility permission, deterministic standard-window selection, coordinate conversion, explicit calibration, a versioned relative anchor, event-driven move/resize following, multi-display visible-frame containment, safe preferences, free-floating fallback, lifecycle cleanup, tests, and smoke tooling are present. The gate remains `PARTIAL — ACCESSIBILITY PERMISSION MANUAL VALIDATION REQUIRED` until real calibration and movement/focus behavior are observed. See [the M4 report](milestones/m4-window-following.md).
+**Implemented — focused relaunch revalidation pending.** Exact bundle-ID discovery, explicit Accessibility permission, deterministic standard-window selection, coordinate conversion, explicit calibration, a versioned relative anchor, event-driven move/resize following, multi-display visible-frame containment, safe preferences, free-floating fallback, lifecycle cleanup, tests, and smoke tooling are present. Direct validation passed all items except automatic recovery when Codex relaunched before its standard window was ready. That race has a deterministic fix and test; the gate remains `PARTIAL — ACCESSIBILITY PERMISSION MANUAL VALIDATION REQUIRED` until the real relaunch scenario is rechecked. See [the M4 report](milestones/m4-window-following.md).
 
 ### M5 — Original visual design
 

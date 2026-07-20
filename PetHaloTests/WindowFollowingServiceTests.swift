@@ -248,6 +248,42 @@ final class WindowFollowingServiceTests: XCTestCase {
     }
 
     @MainActor
+    func testRelaunchRecoversWhenCodexWindowBecomesAvailableAfterLaunchEvent() async {
+        let anchor = HaloWindowAnchor(
+            version: 1,
+            normalizedWindowPoint: UnitPointValue(x: 0.5, y: 0.5),
+            pointOffset: PointOffsetValue(width: 10, height: 10)
+        )
+        let context = makeContext(enabled: true, anchor: anchor)
+        context.service.start()
+
+        context.locator.selection = .unavailable
+        context.events.emit(.codexEnvironmentChanged)
+        for _ in 0 ..< 20 where context.service.state != .unavailable(.codexUnavailable) {
+            await Task.yield()
+        }
+        XCTAssertEqual(context.service.state, .unavailable(.codexUnavailable))
+
+        context.locator.selection = .selected(processIdentifier: 42)
+        context.accessor.result = .unavailable
+        context.events.emit(.codexEnvironmentChanged)
+        for _ in 0 ..< 20 where context.service.state != .suspended(.windowUnavailable) {
+            await Task.yield()
+        }
+        XCTAssertEqual(context.service.state, .suspended(.windowUnavailable))
+
+        context.accessor.result = .selected(
+            frame: CGRect(x: 200, y: 300, width: 1_000, height: 700)
+        )
+        context.service.recoverStateIfNeeded()
+
+        XCTAssertEqual(context.service.state, .following)
+        XCTAssertEqual(context.preferences.snapshot.anchor, anchor)
+        XCTAssertTrue(context.preferences.anchorWrites.isEmpty)
+        await context.service.stop()
+    }
+
+    @MainActor
     func testDisableResetAndRepeatedCommandsAreIdempotent() async {
         let context = makeContext(enabled: true)
         context.service.start()

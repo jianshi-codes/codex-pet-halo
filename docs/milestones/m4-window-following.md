@@ -13,7 +13,7 @@ The exact `com.openai.codex` application is selected without name matching, shel
 
 The coordinate boundary converts AX Y-down geometry to AppKit Y-up geometry once. Calibration persists version 1: a normalized point inside the Codex window plus a fixed point offset to the Halo upper-right reference. Compact/expanded mode changes preserve that reference. Placement uses the anchor screen's visible frame, supports negative display origins and screen removal, and never persists a screen index.
 
-Movement bursts are coalesced to one main-actor delivery per 50 ms. Process/window generations reject stale callbacks. Free-floating fallback preserves the visible Halo when permission, Codex, a deterministic window, or an observer is unavailable. Temporary Codex loss retains calibration. Shutdown stops and releases window observation before closing the panel and awaiting bridge shutdown.
+Movement bursts are coalesced to one main-actor delivery per 50 ms. Process/window generations reject stale callbacks. Free-floating fallback preserves the visible Halo when permission, Codex, a deterministic window, or an observer is unavailable. Temporary Codex loss retains calibration. Exact lifecycle events resolve immediately; the single five-second recovery task retries a transient launch-before-window-ready state without recalibration. Shutdown cancels recovery and stops window observation before closing the panel and awaiting bridge shutdown.
 
 ## Privacy and persisted fields
 
@@ -25,8 +25,8 @@ M4 introduces no Screen Recording, screenshots, OCR, Pet recognition, Apple Even
 
 | Evidence | Result |
 | --- | --- |
-| `make m4-tests` | PASS — 35 focused process/window/geometry/anchor/persistence/service/panel/coordinator tests |
-| `make test` | PASS — 51 Core tests plus 48 application tests; 1 local-only bridge smoke skipped normally |
+| `make m4-tests` | PASS — 36 focused process/window/geometry/anchor/persistence/service/panel/coordinator tests |
+| `make test` | PASS — 51 Core tests plus 49 application tests; 1 local-only bridge smoke skipped normally |
 | `make check` | PASS — Debug build, universal Release build (`arm64` + `x86_64`), all automated tests, generated-project drift, source boundary, bundle, privacy, and absolute-path gates |
 | `make m2-smoke` | PASS — exact supported Codex CLI, read-only handshake/Usage, one accessory Halo, unchanged activation, clean owned-child shutdown |
 | `make m3-smoke` | PASS — deterministic presentation plus authenticated non-activating Halo lifecycle regression |
@@ -35,9 +35,10 @@ M4 introduces no Screen Recording, screenshots, OCR, Pet recognition, Apple Even
 | Coordinates/multi-display | PASS — primary, negative X, negative Y, mixed sizes, boundary crossing, screen removal, oversized frame |
 | Calibration/persistence | PASS — begin/finish/cancel, no pre-Finish write, old-version/numeric validation, compact restoration |
 | Observation/lifecycle | PASS — burst coalescing, invalidation priority, stale generation, post-stop rejection, coordinator shutdown order |
+| Relaunch race regression | PASS — process launch may precede window availability; a later recovery tick reuses the saved anchor and returns to following without another system event or calibration write |
 
-Draft PR CI is recorded on the PR. Direct interactive observations remain outside the evidence completed in this session.
+Draft PR CI is recorded on the PR. The initial direct observations and remaining focused relaunch recheck are recorded below.
 
-## Manual gate still required
+## Focused manual gate still required
 
-Automation proves architecture and deterministic behavior but cannot prove the current host's TCC grant, real drag calibration, physical Codex move/resize response, focus retention, click-through, or expanded scrolling. Until those are directly observed, the M4 gate must remain **PARTIAL — ACCESSIBILITY PERMISSION MANUAL VALIDATION REQUIRED** and M5 must not begin.
+Direct validation on commit `60cc14b353f9e3d5ab1ca2ddcb5bec13951bc2f6` passed explicit permission, target resolution, calibration/Cancel, physical move/resize, compact/expanded stability, click-through, scrolling, focus retention, permission recovery, Codex termination fallback, Pet Halo restart, cleanup, and multi-display behavior. It exposed one defect: a Codex relaunch could remain suspended when the launch event arrived before the new standard window. The deterministic recovery fix and regression test pass, but that physical relaunch scenario must be rechecked on the new commit. Until then, M4 remains **PARTIAL — ACCESSIBILITY PERMISSION MANUAL VALIDATION REQUIRED** and M5 must not begin.

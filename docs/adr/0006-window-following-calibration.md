@@ -40,7 +40,7 @@ Calibration is menu-controlled. The panel temporarily receives pointer events an
 
 Only following enabled and the version-1 anchor are stored in a dedicated namespaced preferences component. Decoding rejects unsupported versions, non-finite numbers, normalized points outside `0...1`, and offsets beyond 10,000 points. PID, AX identity, titles, paths, screen identity, account data, and Usage are not stored.
 
-Absent permission, Codex, a deterministic window, valid calibration, or a working observer leaves the Halo visible at its last valid frame or M3 default. Temporary Codex loss does not erase calibration. Exact-bundle lifecycle events permit deterministic resumption without guessing. A five-second low-frequency trust check recognizes permission grant or revocation without prompting; it is a recovery path only, not the primary geometry tracker.
+Absent permission, Codex, a deterministic window, valid calibration, or a working observer leaves the Halo visible at its last valid frame or M3 default. Temporary Codex loss does not erase calibration. Exact-bundle lifecycle events trigger immediate deterministic resumption without guessing. Because a launch notification may precede creation of the new standard window, the existing single five-second low-frequency recovery task also retries only permission-required, Codex-unavailable, and transient window-unavailable states. It remains a bounded-frequency recovery path, not the primary geometry tracker, and is cancelled during service shutdown.
 
 ## Rejected alternatives and scope
 

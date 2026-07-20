@@ -8,7 +8,7 @@ Pet Halo is an independent, unofficial macOS companion that aims to display a tr
 
 **M4 Window Following is implemented with `PARTIAL — ACCESSIBILITY PERMISSION MANUAL VALIDATION REQUIRED`.** Pet Halo now remains free-floating by default, requests Accessibility only after `Enable Window Following`, discovers only the exact `com.openai.codex` application, selects a standard window deterministically, and supports explicit drag calibration. A versioned normalized-window-point plus point-offset anchor follows move/resize events and remains contained in multi-display visible frames. Missing permission, Codex, an unambiguous window, or a valid observer leaves Usage visible in safe free-floating fallback.
 
-The M3 non-activating panel behavior remains intact: compact is click-through outside calibration, expanded accepts scrolling, and neither mode can become key or main. Real permission grant, physical calibration, Codex move/resize following, and focus retention still require direct local observation before M4 may be marked PASS.
+The M3 non-activating panel behavior remains intact: compact is click-through outside calibration, expanded accepts scrolling, and neither mode can become key or main. Direct local validation passed permission, calibration, move/resize, focus, interaction, fallback, Pet Halo restart, cleanup, and multi-display checks. That validation exposed a Codex relaunch race; the deterministic fix is present, but its real relaunch scenario must be rechecked before M4 may be marked PASS.
 
 M0 protocol feasibility remains complete with **PASS-CORE / PARTIAL-OPTIONALS**. The validated future MVP uses capability-driven data:
 

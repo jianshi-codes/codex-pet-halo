@@ -9,10 +9,10 @@
 - Halo: one transparent borderless floating panel / compact click-through / expanded scrollable without activation or key/main eligibility / menu controlled
 - Placement: fixed upper-right free-floating default / exact `com.openai.codex` lookup only after following is enabled / explicit calibration / versioned relative anchor / no Pet detection
 - Persisted UI preferences only: following enabled and version-1 normalized point plus point offset; no PID, window identity, screen index, Usage, account, title, path, or AX element
-- Local automated validation: 99 Swift tests ✅ (51 Core + 48 application; 1 local-only bridge smoke skipped in deterministic runs) / 14 retained M0 tests ✅
+- Local automated validation: 100 Swift tests ✅ (51 Core + 49 application; 1 local-only bridge smoke skipped in deterministic runs) / 14 retained M0 tests ✅
 - Focused M3 validation: 21 presentation/accessibility/panel/coordinator tests ✅
 - Deterministic CI path: fake app-server only; no Codex installation, authentication, Accessibility permission, Screen Recording, or network required after dependency bootstrap
-- Focused M4 validation: 35 process/window/geometry/anchor/persistence/service/panel/coordinator tests ✅
+- Focused M4 validation: 36 process/window/geometry/anchor/persistence/service/panel/coordinator tests ✅
 - Local real bridge smoke: executable discovery ✅ / exact version ✅ / handshake ✅ / weekly available ✅ / optional five-hour unavailable ✅ / Account Usage available ✅ / clean child shutdown ✅
 - Application smoke: accessory policy ✅ / exactly one compact Halo ✅ / real weekly content ✅ / optional five-hour omission ✅ / click-through and inactive application ✅ / no regular window beyond Halo ✅ / no Dock icon ✅ / panel and owned child exit ✅
 - Build and static gates: Debug ✅ / universal Release (`arm64` + `x86_64`) ✅ / generated-project drift ✅ / source boundary ✅ / privacy and absolute-path scans ✅
@@ -28,4 +28,6 @@ The M3 presentation uses remaining percentages without a second inversion, whole
 
 M4 uses Accessibility only for exact Codex process/window geometry and observation. It does not read window titles, labels, document text, conversation content, prompts, responses, screenshots, or Pet pixels. Free-floating Usage remains available whenever permission or a deterministic target is unavailable.
 
-Automated and sanitized live checks do not substitute for direct observation of permission grant, calibration drag, physical Codex move/resize following, compact/expanded reference stability, and focus retention. M5 must not start until M4 reaches PASS and receives separate authorization.
+Direct M4 validation passed every manual item except automatic Codex relaunch recovery. The observed launch notification could precede the new standard window, leaving following suspended. The existing single five-second recovery task now retries exact Codex/window resolution only for permission-required, Codex-unavailable, and transient window-unavailable states while preserving the anchor. A deterministic launch-before-window-ready regression test passes; the physical relaunch scenario remains the only focused recheck before the gate may close.
+
+Automated and sanitized live checks do not substitute for the remaining direct Codex relaunch recovery recheck. M5 must not start until M4 reaches PASS and receives separate authorization.

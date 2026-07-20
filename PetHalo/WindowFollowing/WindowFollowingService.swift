@@ -38,7 +38,7 @@ final class WindowFollowingService: HaloWindowFollowing {
     private var preCalibrationReferencePoint: CGPoint?
     private var generation = 0
     private var systemEventTask: Task<Void, Never>?
-    private var permissionRecoveryTask: Task<Void, Never>?
+    private var recoveryTask: Task<Void, Never>?
     private var started = false
     private var stopping = false
 
@@ -80,11 +80,11 @@ final class WindowFollowingService: HaloWindowFollowing {
                 self.handleSystemEvent(event)
             }
         }
-        permissionRecoveryTask = Task { @MainActor [weak self] in
+        recoveryTask = Task { @MainActor [weak self] in
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(5))
                 guard !Task.isCancelled, let self else { return }
-                self.recoverPermissionStateIfNeeded()
+                self.recoverStateIfNeeded()
             }
         }
         guard followingEnabled else {
@@ -111,8 +111,8 @@ final class WindowFollowingService: HaloWindowFollowing {
         systemEvents.stop()
         systemEventTask?.cancel()
         systemEventTask = nil
-        permissionRecoveryTask?.cancel()
-        permissionRecoveryTask = nil
+        recoveryTask?.cancel()
+        recoveryTask = nil
         started = false
         stopping = false
     }
@@ -308,7 +308,7 @@ final class WindowFollowingService: HaloWindowFollowing {
         }
     }
 
-    private func recoverPermissionStateIfNeeded() {
+    func recoverStateIfNeeded() {
         guard acceptsCommands, followingEnabled else { return }
         if permissionProvider.state() != .granted {
             suspendCalibrationIfNeeded()
@@ -316,8 +316,15 @@ final class WindowFollowingService: HaloWindowFollowing {
             targetFrame = nil
             windowAccessor.stop()
             transition(to: .permissionRequired)
-        } else if state == .permissionRequired {
-            resolveTarget()
+        } else {
+            switch state {
+            case .permissionRequired,
+                 .unavailable(.codexUnavailable),
+                 .suspended(.windowUnavailable):
+                resolveTarget()
+            default:
+                break
+            }
         }
     }
 
