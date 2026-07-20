@@ -153,8 +153,20 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
         let selection: Selection
         switch selectionResult {
         case .unavailable:
+            _ = observeApplicationWindowCreation(
+                application: application,
+                processIdentifier: processIdentifier,
+                generation: generation,
+                onEvent: onEvent
+            )
             return .unavailable
         case .ambiguous:
+            _ = observeApplicationWindowCreation(
+                application: application,
+                processIdentifier: processIdentifier,
+                generation: generation,
+                onEvent: onEvent
+            )
             return .ambiguous
         case let .selected(selected):
             selection = selected
@@ -252,6 +264,51 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
             activityGeometryHint: selection.activityGeometryHint,
             activityVerticalDelta: selection.activityVerticalDelta
         ))
+    }
+
+    private func observeApplicationWindowCreation(
+        application: AXUIElement,
+        processIdentifier: Int32,
+        generation: Int,
+        onEvent: @escaping @MainActor (PetTargetObservationEvent, Int) -> Void
+    ) -> Bool {
+        var newObserver: AXObserver?
+        guard AXObserverCreate(
+            processIdentifier,
+            { _, element, notification, reference in
+                guard let reference else { return }
+                let box = Unmanaged<PetAXCallbackBox>.fromOpaque(reference)
+                    .takeUnretainedValue()
+                box.enqueue(notification: notification as String, element: element)
+            },
+            &newObserver
+        ) == .success,
+            let newObserver
+        else {
+            return false
+        }
+
+        let box = PetAXCallbackBox(generation: generation, handler: onEvent)
+        let reference = Unmanaged.passUnretained(box).toOpaque()
+        guard AXObserverAddNotification(
+            newObserver,
+            application,
+            kAXWindowCreatedNotification as CFString,
+            reference
+        ) == .success else {
+            box.deactivate()
+            return false
+        }
+        CFRunLoopAddSource(
+            CFRunLoopGetMain(),
+            AXObserverGetRunLoopSource(newObserver),
+            .commonModes
+        )
+        applicationElement = application
+        observer = newObserver
+        callbackBox = box
+        self.generation = generation
+        return true
     }
 
     func currentSnapshot() -> PetTargetSnapshot? {

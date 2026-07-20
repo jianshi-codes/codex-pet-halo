@@ -785,7 +785,8 @@ final class WindowFollowingServiceTests: XCTestCase {
     }
 
     @MainActor
-    func testBothTargetsUnavailableRemainFreeFloating() async {
+    func testBothTargetsUnavailableRemainFreeFloatingUntilPetWindowCreationRecovers() async throws {
+        let petFrame = CGRect(x: 500, y: 300, width: 120, height: 110)
         let context = makeContext(
             petAccessResult: .unavailable,
             accessResult: .unavailable,
@@ -796,6 +797,23 @@ final class WindowFollowingServiceTests: XCTestCase {
 
         XCTAssertEqual(context.service.targetSource, .freeFloating)
         XCTAssertEqual(context.service.petPlacementStatus, .unavailable)
+        XCTAssertEqual(context.petAccessor.resolveCount, 1)
+
+        context.petAccessor.result = .selected(PetTargetSnapshot(
+            generation: 0,
+            frame: petFrame
+        ))
+        context.petAccessor.emit(.selectionChanged)
+        for _ in 0 ..< 100 where context.service.targetSource != .pet {
+            await Task.yield()
+        }
+
+        let layout = try XCTUnwrap(context.service.samplePetAttachmentLayout())
+        XCTAssertEqual(context.petAccessor.resolveCount, 2)
+        XCTAssertEqual(context.service.petDiscoveryState, .found)
+        XCTAssertEqual(context.service.targetSource, .pet)
+        XCTAssertEqual(layout.panelFrame.midX, petFrame.midX)
+        XCTAssertEqual(layout.panelFrame.midY, petFrame.midY)
         await context.service.stop()
     }
 

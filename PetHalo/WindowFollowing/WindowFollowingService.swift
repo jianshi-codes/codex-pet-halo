@@ -533,6 +533,10 @@ final class WindowFollowingService: HaloWindowFollowing {
             }
             schedulePetRingOrientation(for: snapshot)
         case .selectionChanged:
+            guard petDiscoveryState == .found, petSnapshot != nil else {
+                resolvePreferredTarget()
+                return
+            }
             if let snapshot = petAccessor.currentSnapshot(),
                snapshot.generation == petGeneration
             {
