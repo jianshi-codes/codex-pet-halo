@@ -30,16 +30,17 @@ guard ownedWindows.count == 1 else {
 }
 
 guard let bounds = ownedWindows[0][kCGWindowBounds as String] as? [String: NSNumber],
-      bounds["Width"]?.doubleValue == 176,
-      bounds["Height"]?.doubleValue == 176
+      let width = bounds["Width"]?.doubleValue,
+      let height = bounds["Height"]?.doubleValue,
+      (width == 176 && height == 176 || width == 208 && height == 208)
 else {
-    fputs("error: visible window is not the compact Halo\n", stderr)
+    fputs("error: visible window is not a supported Halo surface\n", stderr)
     exit(1)
 }
 
 print("Application running: yes")
 print("Activation policy: accessory")
-print("Halo window: one compact panel")
+print("Halo window: one supported panel")
 print("Application activation: unchanged")
 print("Normal windows: none beyond Halo")
 print("Dock icon: absent by accessory policy")

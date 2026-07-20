@@ -5,6 +5,7 @@ import SwiftUI
 protocol HaloPanelControlling: AnyObject {
     var isVisible: Bool { get }
     var mode: HaloPresentationMode { get }
+    var surfaceMode: HaloSurfaceMode { get }
     var referencePoint: CGPoint { get }
     var frame: CGRect { get }
     var isCalibrationEnabled: Bool { get }
@@ -13,11 +14,15 @@ protocol HaloPanelControlling: AnyObject {
     func show()
     func hide()
     func setMode(_ mode: HaloPresentationMode)
+    func setSurfaceMode(_ mode: HaloSurfaceMode)
     func setReferencePoint(_ referencePoint: CGPoint)
     func setAttachmentLayout(_ layout: PetAttachmentLayout)
     func setCalibrationEnabled(_ enabled: Bool)
     func resetToDefaultPosition()
-    func update(model: HaloPresentationModel)
+    func update(
+        cardModel: HaloPresentationModel,
+        petRingModel: PetRingPresentationModel
+    )
     func stop()
 }
 
@@ -25,9 +30,14 @@ protocol HaloPanelControlling: AnyObject {
 final class HaloPanelController: HaloPanelControlling {
     static let compactSize = NSSize(width: 176, height: 176)
     static let expandedSize = NSSize(width: 360, height: 520)
+    static let petRingSize = NSSize(
+        width: PetRingGeometry.standard.panelDiameter,
+        height: PetRingGeometry.standard.panelDiameter
+    )
 
     private(set) var panel: HaloPanel?
     private(set) var mode: HaloPresentationMode = .compact
+    private(set) var surfaceMode: HaloSurfaceMode = .compactCard
     private(set) var isCalibrationEnabled = false
     private let viewState: HaloViewState
     private let visibleFrameProvider: () -> NSRect
@@ -56,7 +66,11 @@ final class HaloPanelController: HaloPanelControlling {
         },
         screenGeometryProvider: (() -> [ScreenGeometry])? = nil
     ) {
-        viewState = HaloViewState(model: model, mode: .compact)
+        viewState = HaloViewState(
+            cardModel: model,
+            petRingModel: .starting,
+            surfaceMode: .compactCard
+        )
         self.visibleFrameProvider = visibleFrameProvider
         self.screenGeometryProvider = screenGeometryProvider ?? {
             let screens = NSScreen.screens.map {
@@ -112,11 +126,25 @@ final class HaloPanelController: HaloPanelControlling {
     }
 
     func setMode(_ mode: HaloPresentationMode) {
-        guard !stopped, let panel else { return }
-        guard self.mode != mode else { return }
+        guard !stopped else { return }
         self.mode = mode
-        viewState.mode = mode
-        panel.ignoresMouseEvents = !isCalibrationEnabled && mode == .compact
+        setSurfaceMode(HaloSurfaceMode(cardMode: mode))
+    }
+
+    func setSurfaceMode(_ mode: HaloSurfaceMode) {
+        guard !stopped, let panel else { return }
+        guard surfaceMode != mode else { return }
+        surfaceMode = mode
+        if let cardMode = mode.cardMode {
+            self.mode = cardMode
+        } else {
+            isCalibrationEnabled = false
+            viewState.isCalibrating = false
+            panel.calibrationEnabled = false
+        }
+        viewState.surfaceMode = mode
+        panel.hasShadow = mode.hasPanelShadow
+        updateMousePolicy(panel: panel)
 
         let size = Self.size(for: mode)
         setFrame(referencePoint: desiredReferencePoint, size: size)
@@ -126,7 +154,7 @@ final class HaloPanelController: HaloPanelControlling {
         guard !stopped, panel != nil else { return }
         attachmentLayout = nil
         desiredReferencePoint = referencePoint
-        setFrame(referencePoint: referencePoint, size: Self.size(for: mode))
+        setFrame(referencePoint: referencePoint, size: Self.size(for: surfaceMode))
     }
 
     func setAttachmentLayout(_ layout: PetAttachmentLayout) {
@@ -153,22 +181,29 @@ final class HaloPanelController: HaloPanelControlling {
         isCalibrationEnabled = enabled
         viewState.isCalibrating = enabled
         panel.calibrationEnabled = enabled
-        panel.ignoresMouseEvents = enabled ? false : mode == .compact
+        updateMousePolicy(panel: panel)
     }
 
     func resetToDefaultPosition() {
         guard !stopped, let panel else { return }
         attachmentLayout = nil
         panel.setFrame(
-            Self.defaultFrame(size: Self.size(for: mode), visibleFrame: visibleFrameProvider()),
+            Self.defaultFrame(
+                size: Self.size(for: surfaceMode),
+                visibleFrame: visibleFrameProvider()
+            ),
             display: true
         )
         desiredReferencePoint = HaloPlacementGeometry.referencePoint(for: panel.frame)
     }
 
-    func update(model: HaloPresentationModel) {
+    func update(
+        cardModel: HaloPresentationModel,
+        petRingModel: PetRingPresentationModel
+    ) {
         guard !stopped else { return }
-        viewState.model = model
+        viewState.cardModel = cardModel
+        viewState.petRingModel = petRingModel
     }
 
     func stop() {
@@ -183,10 +218,16 @@ final class HaloPanelController: HaloPanelControlling {
     }
 
     static func size(for mode: HaloPresentationMode) -> NSSize {
+        size(for: HaloSurfaceMode(cardMode: mode))
+    }
+
+    static func size(for mode: HaloSurfaceMode) -> NSSize {
         switch mode {
-        case .compact:
+        case .petRing:
+            petRingSize
+        case .compactCard:
             compactSize
-        case .expanded:
+        case .expandedCard:
             expandedSize
         }
     }
@@ -224,6 +265,16 @@ final class HaloPanelController: HaloPanelControlling {
         )
         setFrame(referencePoint: referencePoint, size: panel.frame.size)
         desiredReferencePoint = self.referencePoint
+    }
+
+    private func updateMousePolicy(panel: HaloPanel) {
+        if surfaceMode == .petRing {
+            panel.ignoresMouseEvents = true
+        } else if isCalibrationEnabled {
+            panel.ignoresMouseEvents = false
+        } else {
+            panel.ignoresMouseEvents = surfaceMode != .expandedCard
+        }
     }
 
     private static func frame(_ proposed: NSRect, containedIn visibleFrame: NSRect) -> NSRect {

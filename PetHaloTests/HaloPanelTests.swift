@@ -109,6 +109,33 @@ final class HaloPanelTests: XCTestCase {
     }
 
     @MainActor
+    func testPetRingUsesTransparentShadowlessClickThroughPanelPolicy() {
+        let controller = makeController()
+        guard let panel = controller.panel else {
+            return XCTFail("Expected panel")
+        }
+
+        controller.setSurfaceMode(.petRing)
+
+        XCTAssertEqual(controller.surfaceMode, .petRing)
+        XCTAssertEqual(panel.frame.size, HaloPanelController.petRingSize)
+        XCTAssertEqual(panel.backgroundColor, .clear)
+        XCTAssertFalse(panel.isOpaque)
+        XCTAssertFalse(panel.hasShadow)
+        XCTAssertTrue(panel.ignoresMouseEvents)
+        XCTAssertFalse(panel.canBecomeKey)
+        XCTAssertFalse(panel.canBecomeMain)
+        XCTAssertTrue(panel.styleMask.contains(.nonactivatingPanel))
+
+        controller.setCalibrationEnabled(true)
+        XCTAssertTrue(panel.ignoresMouseEvents)
+        controller.setMode(.expanded)
+        XCTAssertTrue(panel.hasShadow)
+        XCTAssertFalse(panel.ignoresMouseEvents)
+        controller.stop()
+    }
+
+    @MainActor
     func testStopClosesPanelAndReleasesOwnedContent() {
         weak var releasedPanel: HaloPanel?
         autoreleasepool {

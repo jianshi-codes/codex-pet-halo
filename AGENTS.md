@@ -36,6 +36,8 @@ make m5-tests
 make m5-smoke
 make m6-tests
 make m6-smoke
+make m7-tests
+make m7-smoke
 make check
 ```
 

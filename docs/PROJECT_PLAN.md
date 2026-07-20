@@ -41,7 +41,7 @@ Generate schemas from the installed Codex CLI, build a read-only protocol probe,
 
 ### M7 — Pet Ring Surface & Target-aware Presentation
 
-Replace the demo card with the functional Pet ring and basic Usage metrics, with target-aware presentation that removes the temporary M6 compact guard.
+**Implemented — final gate validation pending.** Pet uses only a transparent, click-through, center-locked vector ring. A target-aware surface state preserves Compact/Expanded cards for Codex-window and free-floating fallbacks, rejects card requests on Pet, and restores the prior card mode on loss. The Pet-specific mapper exposes weekly remaining, an exact capability-gated five-hour window, and only the current calendar-day token bucket with independent component freshness. See [the M7 report](milestones/m7-pet-ring-presentation.md).
 
 ### M8 — Visual Polish, Themes & Motion
 

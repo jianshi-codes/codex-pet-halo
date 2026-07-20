@@ -56,6 +56,23 @@ The M3 mapper consumes only the stable M2 domain. Weekly/five-hour presentation 
 
 The M3 panel itself does not discover or inspect Codex. M4 through M6 own the separately gated target-following and placement compatibility layers. M7 owns the functional Pet ring and basic Usage presentation, M8 owns advanced visual treatment, and M9 owns release hardening.
 
+## M7 target-aware presentation contract
+
+| Component | M7 contract |
+| --- | --- |
+| Surface state | Pet selects `petRing`; Codex-window/free-floating select `compactCard` or `expandedCard` |
+| Ring geometry | Fixed `208×208` center-locked panel, 84-point radius, 10/5-point vector strokes, and 158-point transparent center |
+| Pet interaction | Always click-through, shadowless, non-activating, and unable to become key or main |
+| Card fallback | Compact/Expanded, Account Usage, scrolling, and non-activation remain unchanged outside Pet |
+| Weekly | Domain `remainingPercent` with rate-limit component freshness |
+| Five-hour | Present only for an available exact 300-minute capability |
+| Today tokens | Exactly one daily bucket matching the injected Calendar day; missing/ambiguous is unavailable and explicit zero remains zero |
+| Accessibility | One coherent ring group; text exposes freshness and normal/low/critical state; decorative arcs are hidden |
+
+`ApplicationCoordinator` remains the single owner of target, Usage, and presentation state. It records both the fallback card choice and non-Pet reference before entering Pet. On Pet loss, a delivered M4 reference is retained; otherwise the pre-Pet free-floating reference is restored before the card is resized. A direct Compact/Expanded command cannot change the Pet Ring, and `360×520` can never be applied at the Pet midpoint.
+
+M7 uses one fixed full-ring orientation and no animation. Advanced polish, arc angle/orientation changes, themes, low-usage styling, glow, motion preferences, and animations are M8 work.
+
 ## M4 window-following contract
 
 | Component | M4 contract |

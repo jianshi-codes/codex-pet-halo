@@ -2,15 +2,15 @@
 
 Pet Halo is designed to expose only the minimum local usage state needed for its display.
 
-The M6 application launches one owned local `codex app-server --stdio` child and requests only account availability, rate-limit windows, and Account Usage. It keeps normalized Usage and UI presentation state in memory and stores none of it. It makes no direct network request and includes no analytics, telemetry, crash upload, or cloud service.
+The M7 application launches one owned local `codex app-server --stdio` child and requests only account availability, rate-limit windows, and Account Usage. It keeps normalized Usage and UI presentation state in memory and stores none of it. It makes no direct network request and includes no analytics, telemetry, crash upload, or cloud service.
 
 ## Data boundaries
 
-Production M6 may display read-only account availability, rate-limit windows, Account Usage summaries/daily buckets, and the owned connection state from the Codex app-server protocol. It does not display account identity, Context, raw errors, or raw protocol data. It must not refresh credentials, log in or out, purchase/reset credits, execute tasks, mutate threads, inspect conversation content, read Codex internal SQLite databases, or modify Codex Desktop or Codex Pet.
+Production M7 may display read-only account availability, rate-limit windows, Account Usage summaries/daily buckets, and the owned connection state from the Codex app-server protocol. The Pet Ring receives only weekly remaining, an optional exact 300-minute five-hour remaining value, and the current Calendar day's token bucket; detailed Account Usage remains confined to the Expanded fallback card. It does not display account identity, Context, raw errors, or raw protocol data. It must not refresh credentials, log in or out, purchase/reset credits, execute tasks, mutate threads, inspect conversation content, read Codex internal SQLite databases, or modify Codex Desktop or Codex Pet.
 
-Following is off by default. After an explicit user command, M6 may use Accessibility inside the exact `com.openai.codex` application. The M4 fallback identifies the standard window; the preferred target identifies a unique near-square `AXWindow/AXDialog` logical frame. Production reads only the application window list, role/subrole, minimized/hidden state, position, and size and observes the selected target's geometry plus window lifecycle notifications needed for recreation. It does not select or interpret activity dialogs. It never reads window titles, accessibility labels, descriptions, identifiers, values, document text, conversation content, prompts, or responses. It does not capture the screen, use OCR, or request Screen Recording or Apple Events permission.
+Following is off by default. After an explicit user command, M7 may use Accessibility inside the exact `com.openai.codex` application. The M4 fallback identifies the standard window; the preferred target identifies a unique near-square `AXWindow/AXDialog` logical frame. Production reads only the application window list, role/subrole, minimized/hidden state, position, and size and observes the selected target's geometry plus window lifecycle notifications needed for recreation. It does not select or interpret activity dialogs. It never reads window titles, accessibility labels, descriptions, identifiers, values, document text, conversation content, prompts, or responses. It does not capture the screen, use OCR, or request Screen Recording or Apple Events permission.
 
-M6 persists only these namespaced local UI preferences:
+M7 persists only these namespaced local UI preferences:
 
 - `io.github.jianshicodes.PetHalo.windowFollowing.enabled`: Boolean user choice;
 - `io.github.jianshicodes.PetHalo.windowFollowing.anchor.v1`: M4 JSON containing `version`, normalized window `x/y`, and point-offset `width/height`.
@@ -32,4 +32,4 @@ Account identity is neither decoded into the domain model nor retained. `account
 - thread content, prompts, or responses;
 - local home directories, project absolute paths, or other user-identifying data.
 
-Committed fixtures are recursively redacted. A fixture is evidence of payload structure, not a replay of a user's account or thread. M6 discovery and smoke output also omit coordinates, PIDs, titles, identifiers, paths, raw AX trees/failures, and Usage values. User-supplied screenshots used during discovery are not committed or consumed by production.
+Committed fixtures are recursively redacted. A fixture is evidence of payload structure, not a replay of a user's account or thread. M7 discovery and smoke output also omit coordinates, PIDs, titles, identifiers, paths, raw AX trees/failures, and Usage values. User-supplied screenshots used during discovery are not committed or consumed by production.

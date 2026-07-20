@@ -42,7 +42,9 @@ final class ApplicationCoordinator: ObservableObject {
     @Published private(set) var bridgeStatusText: String
     @Published private(set) var latestUsageState: CodexUsageState
     @Published private(set) var haloPresentationModel: HaloPresentationModel
+    @Published private(set) var petRingPresentationModel: PetRingPresentationModel
     @Published private(set) var haloMode: HaloPresentationMode = .compact
+    @Published private(set) var haloSurfaceMode: HaloSurfaceMode = .compactCard
     @Published private(set) var haloIsVisible = false
     @Published private(set) var windowFollowingState: WindowFollowingState = .disabled
     @Published private(set) var followingStatusText = WindowFollowingState.disabled.statusText
@@ -57,6 +59,8 @@ final class ApplicationCoordinator: ObservableObject {
     private let usageService: any CodexUsageServing
     private let windowFollowingService: any HaloWindowFollowing
     private let presentationMapper: HaloPresentationMapper
+    private let petRingPresentationMapper: PetRingPresentationMapper
+    private let currentDate: @MainActor () -> Date
     private let terminateApplication: @MainActor () -> Void
     private var haloPanelController: (any HaloPanelControlling)?
     private var bridgeStateTask: Task<Void, Never>?
@@ -66,15 +70,18 @@ final class ApplicationCoordinator: ObservableObject {
     private var shutdownTask: Task<Void, Never>?
     private var shutdownComplete = false
     private var previousNonPetHaloMode: HaloPresentationMode?
+    private var previousNonPetReferencePoint: CGPoint?
 
     init(
         usageService: (any CodexUsageServing)? = nil,
         haloPanelController: (any HaloPanelControlling)? = nil,
         windowFollowingService: (any HaloWindowFollowing)? = nil,
         presentationMapper: HaloPresentationMapper = HaloPresentationMapper(),
+        petRingPresentationMapper: PetRingPresentationMapper = PetRingPresentationMapper(),
         terminateApplication: @escaping @MainActor () -> Void = {
             NSApplication.shared.terminate(nil)
-        }
+        },
+        currentDate: @escaping @MainActor () -> Date = { Date() }
     ) {
         self.usageService = usageService ?? CodexUsageService(
             applicationVersion: AppVersion.current().marketingVersion
@@ -96,9 +103,12 @@ final class ApplicationCoordinator: ObservableObject {
             #endif
         }
         self.presentationMapper = presentationMapper
+        self.petRingPresentationMapper = petRingPresentationMapper
+        self.currentDate = currentDate
         self.terminateApplication = terminateApplication
         latestUsageState = .stopped
         haloPresentationModel = presentationMapper.map(.stopped)
+        petRingPresentationModel = petRingPresentationMapper.map(.stopped, date: currentDate())
         bridgeStatusText = "Bridge: Starting"
         self.haloPanelController = haloPanelController
             ?? HaloPanelController(model: haloPresentationModel)
@@ -123,8 +133,9 @@ final class ApplicationCoordinator: ObservableObject {
             }
         }
         updateUsageState(Self.startingUsageState)
-        haloPanelController?.setMode(.compact)
+        haloPanelController?.setSurfaceMode(.compactCard)
         haloMode = .compact
+        haloSurfaceMode = .compactCard
         haloPanelController?.show()
         haloIsVisible = haloPanelController?.isVisible == true
         windowFollowingService.start()
@@ -154,6 +165,7 @@ final class ApplicationCoordinator: ObservableObject {
         windowFollowingService.beginPresentationTransition()
         haloPanelController?.setMode(mode)
         haloMode = haloPanelController?.mode ?? mode
+        haloSurfaceMode = haloPanelController?.surfaceMode ?? HaloSurfaceMode(cardMode: mode)
         windowFollowingService.finishPresentationTransition(
             panelSize: haloPanelController?.frame.size ?? HaloPanelController.size(for: mode)
         )
@@ -313,6 +325,10 @@ final class ApplicationCoordinator: ObservableObject {
             self.shutdownComplete = true
             self.latestUsageState = .stopped
             self.haloPresentationModel = self.presentationMapper.map(.stopped)
+            self.petRingPresentationModel = self.petRingPresentationMapper.map(
+                .stopped,
+                date: self.currentDate()
+            )
             self.bridgeStatusText = "Bridge: Unavailable"
             self.haloPanelController = nil
             completion()
@@ -354,17 +370,21 @@ final class ApplicationCoordinator: ObservableObject {
         if newSource == .pet {
             if previousSource != .pet {
                 previousNonPetHaloMode = haloMode
+                previousNonPetReferencePoint = haloPanelController?.referencePoint
             }
-            if haloMode != .compact {
-                applyHaloMode(.compact)
-            }
+            haloPanelController?.setSurfaceMode(.petRing)
+            haloSurfaceMode = .petRing
         } else if previousSource == .pet,
                   let mode = previousNonPetHaloMode
         {
-            previousNonPetHaloMode = nil
-            if haloMode != mode {
-                applyHaloMode(mode)
+            if haloPanelController?.attachmentLayout != nil,
+               let referencePoint = previousNonPetReferencePoint
+            {
+                haloPanelController?.setReferencePoint(referencePoint)
             }
+            previousNonPetHaloMode = nil
+            previousNonPetReferencePoint = nil
+            applyHaloMode(mode)
         }
     }
 
@@ -372,7 +392,14 @@ final class ApplicationCoordinator: ObservableObject {
         guard state == .running else { return }
         latestUsageState = usageState
         haloPresentationModel = presentationMapper.map(usageState)
-        haloPanelController?.update(model: haloPresentationModel)
+        petRingPresentationModel = petRingPresentationMapper.map(
+            usageState,
+            date: currentDate()
+        )
+        haloPanelController?.update(
+            cardModel: haloPresentationModel,
+            petRingModel: petRingPresentationModel
+        )
         switch usageState.connection {
         case .connected:
             bridgeStatusText = "Bridge: Connected"

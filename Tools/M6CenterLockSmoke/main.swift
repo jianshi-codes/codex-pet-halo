@@ -116,6 +116,7 @@ private func haloPanelFrame() -> CGRect? {
     let candidates = windows(from: application).filter {
         !$0.minimized && !$0.hidden
             && ((abs($0.frame.width - 176) <= 1 && abs($0.frame.height - 176) <= 1)
+                || (abs($0.frame.width - 208) <= 1 && abs($0.frame.height - 208) <= 1)
                 || (abs($0.frame.width - 360) <= 1 && abs($0.frame.height - 520) <= 1))
     }
     guard candidates.count == 1 else { return nil }
@@ -182,11 +183,19 @@ var quitObserved = false
 var initialAlignmentObserved = false
 var movementAlignmentObserved = false
 var wakeAlignmentObserved = false
+var petRingObserved = false
+var fallbackCardObserved = false
+var applicationRemainedInactive = true
 
 while Date() < deadline {
     let petHaloRunning = NSRunningApplication.runningApplications(
         withBundleIdentifier: petHaloBundleIdentifier
     ).count == 1
+    if let petHaloApplication = NSRunningApplication.runningApplications(
+        withBundleIdentifier: petHaloBundleIdentifier
+    ).only {
+        applicationRemainedInactive = applicationRemainedInactive && !petHaloApplication.isActive
+    }
     if !petHaloRunning {
         quitObserved = true
         if disappearanceObserved && wakeObserved { break }
@@ -206,6 +215,8 @@ while Date() < deadline {
 
         if let panelFrame = haloPanelFrame() {
             attachmentObserved = true
+            petRingObserved = petRingObserved
+                || (abs(panelFrame.width - 208) <= 1 && abs(panelFrame.height - 208) <= 1)
             if centersAreAligned(panelFrame: panelFrame, petFrame: petFrame) {
                 initialAlignmentObserved = true
                 if movementObserved {
@@ -221,6 +232,11 @@ while Date() < deadline {
         lastPetPresent = false
         if disappearanceObserved, savedWindowAnchor, haloPanelFrame() != nil {
             fallbackObserved = true
+            if let panelFrame = haloPanelFrame() {
+                fallbackCardObserved = fallbackCardObserved
+                    || (abs(panelFrame.width - 176) <= 1 && abs(panelFrame.height - 176) <= 1)
+                    || (abs(panelFrame.width - 360) <= 1 && abs(panelFrame.height - 520) <= 1)
+            }
         }
     }
     Thread.sleep(forTimeInterval: 0.1)
@@ -240,6 +256,9 @@ print("Pet Tuck Away: \(disappearanceObserved ? "observed" : "not observed")")
 print("Codex-window fallback: \(fallbackObserved ? "observed" : "not observed")")
 print("Pet Wake: \(wakeObserved ? "observed" : "not observed")")
 print("Pet Halo Quit: \(quitObserved ? "observed" : "not observed")")
+print("Pet Ring selected: \(petRingObserved ? "observed" : "not observed")")
+print("Fallback card restored: \(fallbackCardObserved ? "observed" : "not observed")")
+print("Application remained inactive: \(applicationRemainedInactive ? "yes" : "no")")
 
 private extension Array {
     var only: Element? { count == 1 ? self[0] : nil }

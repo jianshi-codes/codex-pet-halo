@@ -133,7 +133,7 @@ enum PetWindowSelector {
 }
 
 enum PetAttachmentLayoutPolicy {
-    static let petAttachmentSize = CGSize(width: 176, height: 176)
+    static let petAttachmentSize = PetRingGeometry.standard.panelSize
 
     static func centeredLayout(
         petFrame: CGRect,

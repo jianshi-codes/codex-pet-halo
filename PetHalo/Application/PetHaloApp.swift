@@ -35,27 +35,31 @@ private struct ApplicationMenuContent: View {
         }
         .disabled(!coordinator.haloIsVisible || !coordinator.acceptsUICommands)
 
-        Button {
-            coordinator.setHaloMode(.compact)
-        } label: {
-            if coordinator.haloMode == .compact {
-                Label("Compact", systemImage: "checkmark")
-            } else {
-                Text("Compact")
+        if coordinator.haloSurfaceMode == .petRing {
+            Text("Display: Pet Ring")
+        } else {
+            Button {
+                coordinator.setHaloMode(.compact)
+            } label: {
+                if coordinator.haloMode == .compact {
+                    Label("Compact", systemImage: "checkmark")
+                } else {
+                    Text("Compact")
+                }
             }
-        }
-        .disabled(!coordinator.canChangeHaloMode)
+            .disabled(!coordinator.canChangeHaloMode)
 
-        Button {
-            coordinator.setHaloMode(.expanded)
-        } label: {
-            if coordinator.haloMode == .expanded {
-                Label("Expanded", systemImage: "checkmark")
-            } else {
-                Text("Expanded")
+            Button {
+                coordinator.setHaloMode(.expanded)
+            } label: {
+                if coordinator.haloMode == .expanded {
+                    Label("Expanded", systemImage: "checkmark")
+                } else {
+                    Text("Expanded")
+                }
             }
+            .disabled(!coordinator.canChangeHaloMode)
         }
-        .disabled(!coordinator.canChangeHaloMode)
 
         Button("Refresh Usage") {
             coordinator.refreshUsage()

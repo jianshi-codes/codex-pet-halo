@@ -3,14 +3,15 @@ import PetHaloCore
 @testable import PetHalo
 
 private enum FakePanelOperation: Equatable {
-    case setMode(HaloPresentationMode)
-    case setAttachment(PetAttachmentLayout, mode: HaloPresentationMode)
+    case setSurfaceMode(HaloSurfaceMode)
+    case setAttachment(PetAttachmentLayout, surfaceMode: HaloSurfaceMode)
 }
 
 @MainActor
 private final class FakeHaloPanelController: HaloPanelControlling {
     private(set) var isVisible = false
     private(set) var mode: HaloPresentationMode = .compact
+    private(set) var surfaceMode: HaloSurfaceMode = .compactCard
     private(set) var frame = CGRect(x: 100, y: 100, width: 176, height: 176)
     private(set) var isCalibrationEnabled = false
     private(set) var attachmentLayout: PetAttachmentLayout?
@@ -19,7 +20,9 @@ private final class FakeHaloPanelController: HaloPanelControlling {
     private(set) var hideCount = 0
     private(set) var stopCount = 0
     private(set) var models: [HaloPresentationModel] = []
+    private(set) var petRingModels: [PetRingPresentationModel] = []
     private(set) var operations: [FakePanelOperation] = []
+    private(set) var lastSetReferencePoint: CGPoint?
     var onSetAttachment: (@MainActor (PetAttachmentLayout) -> Void)?
     private var stopped = false
 
@@ -42,14 +45,27 @@ private final class FakeHaloPanelController: HaloPanelControlling {
     func setMode(_ mode: HaloPresentationMode) {
         guard !stopped else { return }
         self.mode = mode
+        setSurfaceMode(HaloSurfaceMode(cardMode: mode))
+    }
+
+    func setSurfaceMode(_ mode: HaloSurfaceMode) {
+        guard !stopped else { return }
+        surfaceMode = mode
+        if let cardMode = mode.cardMode {
+            self.mode = cardMode
+        } else {
+            isCalibrationEnabled = false
+        }
         frame.size = HaloPanelController.size(for: mode)
-        ignoresMouseEvents = !isCalibrationEnabled && mode == .compact
-        operations.append(.setMode(mode))
+        ignoresMouseEvents = mode == .petRing
+            || (!isCalibrationEnabled && mode == .compactCard)
+        operations.append(.setSurfaceMode(mode))
     }
 
     func setReferencePoint(_ referencePoint: CGPoint) {
         guard !stopped else { return }
         attachmentLayout = nil
+        lastSetReferencePoint = referencePoint
         frame = HaloPlacementGeometry.frame(referencePoint: referencePoint, size: frame.size)
     }
 
@@ -57,14 +73,15 @@ private final class FakeHaloPanelController: HaloPanelControlling {
         guard !stopped else { return }
         attachmentLayout = layout
         frame = layout.panelFrame
-        operations.append(.setAttachment(layout, mode: mode))
+        operations.append(.setAttachment(layout, surfaceMode: surfaceMode))
         onSetAttachment?(layout)
     }
 
     func setCalibrationEnabled(_ enabled: Bool) {
         guard !stopped else { return }
         isCalibrationEnabled = enabled
-        ignoresMouseEvents = enabled ? false : mode == .compact
+        ignoresMouseEvents = surfaceMode == .petRing
+            || (!enabled && surfaceMode == .compactCard)
     }
 
     func resetToDefaultPosition() {
@@ -72,9 +89,13 @@ private final class FakeHaloPanelController: HaloPanelControlling {
         frame.origin = CGPoint(x: 0, y: 0)
     }
 
-    func update(model: HaloPresentationModel) {
+    func update(
+        cardModel: HaloPresentationModel,
+        petRingModel: PetRingPresentationModel
+    ) {
         guard !stopped else { return }
-        models.append(model)
+        models.append(cardModel)
+        petRingModels.append(petRingModel)
     }
 
     func resetOperations() {
@@ -549,7 +570,7 @@ final class ApplicationCoordinatorTests: XCTestCase {
     }
 
     @MainActor
-    func testExpandedFallbackRecoversToAtomicCompactPetAttachmentAndRestoresMode() async throws {
+    func testExpandedFallbackRecoversToAtomicPetRingAttachmentAndRestoresMode() async throws {
         let panel = FakeHaloPanelController()
         let following = FakeWindowFollowingService()
         let coordinator = ApplicationCoordinator(
@@ -575,13 +596,13 @@ final class ApplicationCoordinatorTests: XCTestCase {
         panel.resetOperations()
         panel.onSetAttachment = { _ in
             XCTAssertEqual(coordinator.targetSource, .pet)
-            XCTAssertEqual(coordinator.haloMode, .compact)
+            XCTAssertEqual(coordinator.haloSurfaceMode, .petRing)
         }
         following.emit(.activatePetAttachment(compactLayout))
         following.emit(.petPlacementStatusChanged(.centered))
         for _ in 0 ..< 100
             where panel.attachmentLayout != compactLayout
-                || panel.mode != .compact
+                || panel.surfaceMode != .petRing
                 || coordinator.petPlacementStatus != .centered
         {
             await Task.yield()
@@ -589,19 +610,20 @@ final class ApplicationCoordinatorTests: XCTestCase {
         XCTAssertEqual(
             panel.operations,
             [
-                .setMode(.compact),
-                .setAttachment(compactLayout, mode: .compact),
+                .setSurfaceMode(.petRing),
+                .setAttachment(compactLayout, surfaceMode: .petRing),
             ]
         )
         XCTAssertFalse(panel.operations.contains { operation in
-            if case let .setAttachment(layout, mode) = operation {
-                return mode == .expanded || layout.panelFrame.size == CGSize(width: 360, height: 520)
+            if case let .setAttachment(layout, surfaceMode) = operation {
+                return surfaceMode == .expandedCard
+                    || layout.panelFrame.size == CGSize(width: 360, height: 520)
             }
             return false
         })
         XCTAssertEqual(coordinator.petPlacementStatusText, "Pet placement: Centered")
         XCTAssertEqual(coordinator.targetSource, .pet)
-        XCTAssertEqual(panel.mode, .compact)
+        XCTAssertEqual(panel.surfaceMode, .petRing)
         XCTAssertEqual(panel.frame.size, PetAttachmentLayoutPolicy.petAttachmentSize)
         XCTAssertEqual(panel.frame.midX, petFrame.midX)
         XCTAssertEqual(panel.frame.midY, petFrame.midY)
@@ -609,17 +631,53 @@ final class ApplicationCoordinatorTests: XCTestCase {
         XCTAssertFalse(coordinator.canChangeHaloMode)
 
         coordinator.setHaloMode(.expanded)
-        XCTAssertEqual(panel.mode, .compact)
+        XCTAssertEqual(panel.surfaceMode, .petRing)
 
         following.emit(.targetSourceChanged(.codexWindowFallback))
-        for _ in 0 ..< 100 where panel.mode != .expanded {
+        for _ in 0 ..< 100 where panel.surfaceMode != .expandedCard {
             await Task.yield()
         }
         XCTAssertEqual(panel.mode, .expanded)
+        XCTAssertEqual(panel.surfaceMode, .expandedCard)
         XCTAssertTrue(coordinator.canChangeHaloMode)
         coordinator.setHaloMode(.compact)
         XCTAssertEqual(panel.mode, .compact)
         XCTAssertTrue(panel.ignoresMouseEvents)
+        coordinator.requestTermination()
+        await coordinator.waitForShutdown()
+    }
+
+    @MainActor
+    func testFreeFloatingPetLossRestoresPrePetReferenceBeforeExpandedCard() async throws {
+        let panel = FakeHaloPanelController()
+        let following = FakeWindowFollowingService()
+        let coordinator = ApplicationCoordinator(
+            usageService: FakeUsageService(),
+            haloPanelController: panel,
+            windowFollowingService: following,
+            terminateApplication: {}
+        )
+        coordinator.start()
+        coordinator.setHaloMode(.expanded)
+        let fallbackReference = panel.referencePoint
+        let petLayout = try XCTUnwrap(PetAttachmentLayoutPolicy.centeredLayout(
+            petFrame: CGRect(x: 700, y: 500, width: 120, height: 110),
+            panelSize: PetAttachmentLayoutPolicy.petAttachmentSize
+        ))
+
+        following.emit(.activatePetAttachment(petLayout))
+        for _ in 0 ..< 100 where panel.surfaceMode != .petRing {
+            await Task.yield()
+        }
+        following.emit(.targetSourceChanged(.freeFloating))
+        for _ in 0 ..< 100 where panel.surfaceMode != .expandedCard {
+            await Task.yield()
+        }
+
+        XCTAssertEqual(panel.lastSetReferencePoint, fallbackReference)
+        XCTAssertEqual(panel.surfaceMode, .expandedCard)
+        XCTAssertEqual(panel.frame.size, HaloPanelController.expandedSize)
+        XCTAssertFalse(panel.ignoresMouseEvents)
         coordinator.requestTermination()
         await coordinator.waitForShutdown()
     }

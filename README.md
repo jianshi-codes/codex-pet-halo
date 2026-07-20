@@ -6,11 +6,11 @@ Pet Halo is an independent, unofficial macOS companion that aims to display a tr
 
 ## Status
 
-**M6 Automatic Center-Locked Pet Attachment is implemented on top of `ROUTE_A — PET_ACCESSIBILITY_WINDOW`.** Pet Halo still requests Accessibility only after an explicit enable action. Once enabled, a uniquely resolved Pet attaches immediately without a saved Pet anchor or first-use calibration.
+**M7 Pet Ring Surface & Target-aware Presentation is implemented on top of the M6 center-lock contract.** Pet Halo still requests Accessibility only after an explicit enable action. Once enabled, a uniquely resolved Pet attaches immediately without a saved Pet anchor or first-use calibration.
 
 The target hierarchy remains Pet first, calibrated Codex standard window second, and free-floating Halo last. Whenever Pet is selected, the Halo panel center exactly equals the Pet AX frame center. This invariant requires no screen lookup, activity-dialog geometry, side choice, or persisted Pet position. A one-time migration deletes the legacy Pet anchor key without changing the M4 window anchor. The fine-tune API remains available as a compatibility hook but cannot override center lock.
 
-Until M7 introduces the Pet ring, Pet targeting forces the demo panel to Compact and rejects Expanded commands. Leaving Pet targeting restores normal Compact/Expanded controls and the previous fallback card mode.
+Pet targeting now selects only a transparent `208×208` vector ring with a validated `158`-point transparent center. The ring is click-through, shadowless, and non-activating; Compact and Expanded requests cannot replace it. Leaving Pet restores the previous fallback card mode and interaction policy. The ring displays weekly remaining directly, exact-300-minute five-hour remaining only when available, and only the Account Usage daily bucket matching the current calendar day.
 
 The M3 non-activating panel behavior remains intact: compact is click-through outside M4 window calibration, expanded accepts scrolling outside Pet targeting, and neither mode can become key or main. Direct M6 validation observed independent Pet movement, exact center alignment after movement, M4 fallback on Tuck Away, centered recovery on Wake, and clean Quit; the user also confirmed the visual relationship.
 
@@ -42,16 +42,18 @@ make m5-tests
 make m5-smoke
 make m6-tests
 make m6-smoke
+make m7-tests
+make m7-smoke
 make check
 ```
 
 XcodeGen 2.46.0 is required. `project.yml` is the editable project source of truth; the generated Xcode project is committed and must not be hand-edited.
 
-`make m2-tests` through `make m6-tests` are deterministic and require neither Accessibility permission nor a running Codex application. `make m6-smoke` is the sanitized local interaction gate for Pet/Halo center alignment, Pet movement, Tuck Away, and Wake.
+`make m2-tests` through `make m7-tests` are deterministic and require neither Accessibility permission nor a running Codex application. `make m7-smoke` is the sanitized local interaction gate for Pet Ring selection, center alignment, Pet movement, Tuck Away, Wake, non-activation, and clean shutdown.
 
-M7 replaces the demo card with the functional Pet ring and basic Usage metrics. M8 owns advanced styling, arc orientation, themes, low-usage visuals, and motion. M9 owns compatibility hardening, packaging, privacy audits, and release readiness. M6 does not authorize any later milestone.
+M8 owns advanced visual polish, arc orientation changes, themes, low-usage styling, glow, motion preferences, and animations. M9 owns compatibility hardening, packaging, privacy audits, and release readiness. M7 does not authorize either later milestone.
 
-See [the M6 report](docs/milestones/m6-automatic-pet-attachment.md), [center-lock ADR](docs/adr/0008-center-locked-pet-attachment.md), [compatibility contract](docs/COMPATIBILITY.md), and [privacy policy](docs/PRIVACY.md).
+See [the M7 report](docs/milestones/m7-pet-ring-presentation.md), [surface ADR](docs/adr/0009-target-aware-halo-surface.md), [compatibility contract](docs/COMPATIBILITY.md), and [privacy policy](docs/PRIVACY.md).
 
 ## Branding
 
