@@ -24,6 +24,8 @@ private final class XCTestDisabledWindowFollowingService: HaloWindowFollowing {
     func beginWindowCalibration(currentReferencePoint: CGPoint) {}
     func finishCalibration(currentReferencePoint: CGPoint) {}
     func cancelCalibration() {}
+    func resetPetVisualCenter() {}
+    func samplePetAttachmentLayout() -> PetAttachmentLayout? { nil }
     func beginPresentationTransition() {}
     func finishPresentationTransition(panelSize: CGSize) {}
 }
@@ -42,7 +44,9 @@ final class ApplicationCoordinator: ObservableObject {
     @Published private(set) var bridgeStatusText: String
     @Published private(set) var latestUsageState: CodexUsageState
     @Published private(set) var haloPresentationModel: HaloPresentationModel
+    @Published private(set) var petRingPresentationModel: PetRingPresentationModel
     @Published private(set) var haloMode: HaloPresentationMode = .compact
+    @Published private(set) var haloSurfaceMode: HaloSurfaceMode = .compactCard
     @Published private(set) var haloIsVisible = false
     @Published private(set) var windowFollowingState: WindowFollowingState = .disabled
     @Published private(set) var followingStatusText = WindowFollowingState.disabled.statusText
@@ -52,11 +56,18 @@ final class ApplicationCoordinator: ObservableObject {
     @Published private(set) var targetStatusText = HaloFollowingTargetSource.freeFloating.statusText
     @Published private(set) var petPlacementStatus: PetPlacementStatus = .unavailable
     @Published private(set) var petPlacementStatusText = PetPlacementStatus.unavailable.statusText
+    @Published private(set) var petRingOrientation: PetRingOrientation = .fixedDefault
+    #if DEBUG
+    @Published private(set) var petRingOrientationPreview =
+        PetRingOrientationPreview.from(arguments: ProcessInfo.processInfo.arguments)
+    #endif
 
     private let logger = Logger(subsystem: "io.github.jianshicodes.PetHalo", category: "lifecycle")
     private let usageService: any CodexUsageServing
     private let windowFollowingService: any HaloWindowFollowing
     private let presentationMapper: HaloPresentationMapper
+    private let petRingPresentationMapper: PetRingPresentationMapper
+    private let currentDate: @MainActor () -> Date
     private let terminateApplication: @MainActor () -> Void
     private var haloPanelController: (any HaloPanelControlling)?
     private var bridgeStateTask: Task<Void, Never>?
@@ -66,15 +77,21 @@ final class ApplicationCoordinator: ObservableObject {
     private var shutdownTask: Task<Void, Never>?
     private var shutdownComplete = false
     private var previousNonPetHaloMode: HaloPresentationMode?
+    private var previousNonPetReferencePoint: CGPoint?
+    private var haloVisibilityRequested = true
+    private var codexFallbackExplicitlyVisible = false
+    private var productionPetRingOrientation: PetRingOrientation = .fixedDefault
 
     init(
         usageService: (any CodexUsageServing)? = nil,
         haloPanelController: (any HaloPanelControlling)? = nil,
         windowFollowingService: (any HaloWindowFollowing)? = nil,
         presentationMapper: HaloPresentationMapper = HaloPresentationMapper(),
+        petRingPresentationMapper: PetRingPresentationMapper = PetRingPresentationMapper(),
         terminateApplication: @escaping @MainActor () -> Void = {
             NSApplication.shared.terminate(nil)
-        }
+        },
+        currentDate: @escaping @MainActor () -> Date = { Date() }
     ) {
         self.usageService = usageService ?? CodexUsageService(
             applicationVersion: AppVersion.current().marketingVersion
@@ -96,9 +113,12 @@ final class ApplicationCoordinator: ObservableObject {
             #endif
         }
         self.presentationMapper = presentationMapper
+        self.petRingPresentationMapper = petRingPresentationMapper
+        self.currentDate = currentDate
         self.terminateApplication = terminateApplication
         latestUsageState = .stopped
         haloPresentationModel = presentationMapper.map(.stopped)
+        petRingPresentationModel = petRingPresentationMapper.map(.stopped, date: currentDate())
         bridgeStatusText = "Bridge: Starting"
         self.haloPanelController = haloPanelController
             ?? HaloPanelController(model: haloPresentationModel)
@@ -107,6 +127,9 @@ final class ApplicationCoordinator: ObservableObject {
     func start() {
         guard state == .initialized else { return }
         state = .running
+        haloPanelController?.setPetAttachmentSampler { [weak self] in
+            self?.windowFollowingService.samplePetAttachmentLayout()
+        }
         logger.info("Application lifecycle started")
         bridgeStateTask = Task { [weak self, usageService] in
             let stream = await usageService.states()
@@ -123,10 +146,10 @@ final class ApplicationCoordinator: ObservableObject {
             }
         }
         updateUsageState(Self.startingUsageState)
-        haloPanelController?.setMode(.compact)
+        haloPanelController?.setSurfaceMode(.compactCard)
+        applyEffectivePetRingOrientation()
         haloMode = .compact
-        haloPanelController?.show()
-        haloIsVisible = haloPanelController?.isVisible == true
+        haloSurfaceMode = .compactCard
         windowFollowingService.start()
         bridgeStartTask = Task { [usageService] in
             await usageService.start()
@@ -134,13 +157,15 @@ final class ApplicationCoordinator: ObservableObject {
     }
 
     func showHalo() {
-        guard state == .running else { return }
+        guard canShowHalo else { return }
+        haloVisibilityRequested = true
         haloPanelController?.show()
         haloIsVisible = haloPanelController?.isVisible == true
     }
 
     func hideHalo() {
         guard state == .running else { return }
+        haloVisibilityRequested = false
         haloPanelController?.hide()
         haloIsVisible = haloPanelController?.isVisible == true
     }
@@ -154,6 +179,7 @@ final class ApplicationCoordinator: ObservableObject {
         windowFollowingService.beginPresentationTransition()
         haloPanelController?.setMode(mode)
         haloMode = haloPanelController?.mode ?? mode
+        haloSurfaceMode = haloPanelController?.surfaceMode ?? HaloSurfaceMode(cardMode: mode)
         windowFollowingService.finishPresentationTransition(
             panelSize: haloPanelController?.frame.size ?? HaloPanelController.size(for: mode)
         )
@@ -170,6 +196,13 @@ final class ApplicationCoordinator: ObservableObject {
 
     var acceptsUICommands: Bool {
         state == .running
+    }
+
+    var canShowHalo: Bool {
+        state == .running
+            && !haloIsVisible
+            && (targetSource == .pet
+                || (targetSource == .codexWindowFallback && codexFallbackExplicitlyVisible))
     }
 
     var canChangeHaloMode: Bool {
@@ -189,8 +222,19 @@ final class ApplicationCoordinator: ObservableObject {
             && windowFollowingState != .calibrating
     }
 
+    var canFineTunePetRing: Bool {
+        state == .running
+            && targetSource == .pet
+            && petDiscoveryState == .found
+            && windowFollowingState != .calibrating
+    }
+
     var canFinishCalibration: Bool {
         state == .running && windowFollowingState == .calibrating
+    }
+
+    var isAdjustingPetRingCenter: Bool {
+        canFinishCalibration && targetSource == .pet
     }
 
     var canDisableWindowFollowing: Bool {
@@ -199,18 +243,24 @@ final class ApplicationCoordinator: ObservableObject {
 
     var canUseWindowFallback: Bool {
         state == .running
-            && targetSource == .pet
+            && targetSource != .freeFloating
+            && !codexFallbackExplicitlyVisible
             && windowFollowingState != .calibrating
     }
 
     func enablePetFollowing() {
         guard canEnablePetFollowing else { return }
+        codexFallbackExplicitlyVisible = false
+        haloVisibilityRequested = true
         windowFollowingService.enable()
     }
 
     func useWindowFallback() {
         guard canUseWindowFallback else { return }
+        codexFallbackExplicitlyVisible = true
+        haloVisibilityRequested = true
         windowFollowingService.useWindowFallback()
+        showHaloIfEligible()
     }
 
     func disableWindowFollowing() {
@@ -219,11 +269,35 @@ final class ApplicationCoordinator: ObservableObject {
     }
 
     func beginPetFollowingCalibration() {
-        guard state == .running, let haloPanelController else { return }
+        guard canFineTunePetRing, let haloPanelController else { return }
         windowFollowingService.beginPetCalibration(
             currentReferencePoint: haloPanelController.referencePoint
         )
     }
+
+    func nudgePetRing(horizontal: CGFloat, vertical: CGFloat) {
+        guard isAdjustingPetRingCenter, let haloPanelController else { return }
+        let current = haloPanelController.referencePoint
+        haloPanelController.setReferencePoint(
+            CGPoint(
+                x: current.x + horizontal,
+                y: current.y + vertical
+            )
+        )
+    }
+
+    func resetPetVisualCenter() {
+        guard state == .running, targetSource == .pet else { return }
+        windowFollowingService.resetPetVisualCenter()
+    }
+
+    #if DEBUG
+    func setPetRingOrientationPreview(_ preview: PetRingOrientationPreview) {
+        guard state == .running else { return }
+        petRingOrientationPreview = preview
+        applyEffectivePetRingOrientation()
+    }
+    #endif
 
     func beginWindowFallbackCalibration() {
         guard canCalibrateWindowFallback, let haloPanelController else { return }
@@ -313,6 +387,10 @@ final class ApplicationCoordinator: ObservableObject {
             self.shutdownComplete = true
             self.latestUsageState = .stopped
             self.haloPresentationModel = self.presentationMapper.map(.stopped)
+            self.petRingPresentationModel = self.petRingPresentationMapper.map(
+                .stopped,
+                date: self.currentDate()
+            )
             self.bridgeStatusText = "Bridge: Unavailable"
             self.haloPanelController = nil
             completion()
@@ -333,6 +411,9 @@ final class ApplicationCoordinator: ObservableObject {
         case let .petPlacementStatusChanged(newStatus):
             petPlacementStatus = newStatus
             petPlacementStatusText = newStatus.statusText
+        case let .petRingOrientationChanged(newOrientation):
+            productionPetRingOrientation = newOrientation
+            applyEffectivePetRingOrientation()
         case let .setCalibrationEnabled(enabled):
             haloPanelController?.setCalibrationEnabled(enabled)
         case let .placeReferencePoint(referencePoint):
@@ -340,11 +421,29 @@ final class ApplicationCoordinator: ObservableObject {
         case let .activatePetAttachment(layout):
             applyTargetSource(.pet)
             haloPanelController?.setAttachmentLayout(layout)
-        case let .placePetAttachment(layout):
-            haloPanelController?.setAttachmentLayout(layout)
+            showHaloIfEligible()
+        case let .placePetAttachment(layout, mode):
+            switch mode {
+            case .snap:
+                haloPanelController?.setAttachmentLayout(layout)
+            case .follow:
+                haloPanelController?.followAttachmentLayout(layout)
+            }
         case .resetToDefaultPosition:
             haloPanelController?.resetToDefaultPosition()
         }
+    }
+
+    private func applyEffectivePetRingOrientation() {
+        #if DEBUG
+        let effective = petRingOrientationPreview.orientation(
+            auto: productionPetRingOrientation
+        )
+        #else
+        let effective = productionPetRingOrientation
+        #endif
+        petRingOrientation = effective
+        haloPanelController?.setPetRingOrientation(effective)
     }
 
     private func applyTargetSource(_ newSource: HaloFollowingTargetSource) {
@@ -352,27 +451,60 @@ final class ApplicationCoordinator: ObservableObject {
         targetSource = newSource
         targetStatusText = newSource.statusText
         if newSource == .pet {
+            codexFallbackExplicitlyVisible = false
             if previousSource != .pet {
                 previousNonPetHaloMode = haloMode
+                previousNonPetReferencePoint = haloPanelController?.referencePoint
             }
-            if haloMode != .compact {
-                applyHaloMode(.compact)
-            }
+            haloPanelController?.setSurfaceMode(.petRing)
+            haloSurfaceMode = .petRing
         } else if previousSource == .pet,
                   let mode = previousNonPetHaloMode
         {
-            previousNonPetHaloMode = nil
-            if haloMode != mode {
-                applyHaloMode(mode)
+            if haloPanelController?.attachmentLayout != nil,
+               let referencePoint = previousNonPetReferencePoint
+            {
+                haloPanelController?.setReferencePoint(referencePoint)
             }
+            previousNonPetHaloMode = nil
+            previousNonPetReferencePoint = nil
+            applyHaloMode(mode)
         }
+        if newSource == .codexWindowFallback, codexFallbackExplicitlyVisible {
+            showHaloIfEligible()
+        } else if newSource != .pet {
+            hideHaloForUnavailablePet()
+        }
+    }
+
+    private func showHaloIfEligible() {
+        guard haloVisibilityRequested,
+              targetSource == .pet
+                || (targetSource == .codexWindowFallback && codexFallbackExplicitlyVisible)
+        else {
+            return
+        }
+        haloPanelController?.show()
+        haloIsVisible = haloPanelController?.isVisible == true
+    }
+
+    private func hideHaloForUnavailablePet() {
+        haloPanelController?.hide()
+        haloIsVisible = haloPanelController?.isVisible == true
     }
 
     private func updateUsageState(_ usageState: CodexUsageState) {
         guard state == .running else { return }
         latestUsageState = usageState
         haloPresentationModel = presentationMapper.map(usageState)
-        haloPanelController?.update(model: haloPresentationModel)
+        petRingPresentationModel = petRingPresentationMapper.map(
+            usageState,
+            date: currentDate()
+        )
+        haloPanelController?.update(
+            cardModel: haloPresentationModel,
+            petRingModel: petRingPresentationModel
+        )
         switch usageState.connection {
         case .connected:
             bridgeStatusText = "Bridge: Connected"

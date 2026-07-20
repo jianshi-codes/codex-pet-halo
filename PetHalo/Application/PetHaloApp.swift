@@ -28,34 +28,87 @@ private struct ApplicationMenuContent: View {
         Button("Show Halo") {
             coordinator.showHalo()
         }
-        .disabled(coordinator.haloIsVisible || !coordinator.acceptsUICommands)
+        .disabled(!coordinator.canShowHalo)
 
         Button("Hide Halo") {
             coordinator.hideHalo()
         }
         .disabled(!coordinator.haloIsVisible || !coordinator.acceptsUICommands)
 
-        Button {
-            coordinator.setHaloMode(.compact)
-        } label: {
-            if coordinator.haloMode == .compact {
-                Label("Compact", systemImage: "checkmark")
+        if coordinator.haloSurfaceMode == .petRing {
+            Text("Display: Pet Ring")
+            if coordinator.isAdjustingPetRingCenter {
+                Text("Drag the Ring or use 4 pt nudges")
+                Button("Nudge Up") {
+                    coordinator.nudgePetRing(horizontal: 0, vertical: 4)
+                }
+                Button("Nudge Down") {
+                    coordinator.nudgePetRing(horizontal: 0, vertical: -4)
+                }
+                Button("Nudge Left") {
+                    coordinator.nudgePetRing(horizontal: -4, vertical: 0)
+                }
+                Button("Nudge Right") {
+                    coordinator.nudgePetRing(horizontal: 4, vertical: 0)
+                }
+                Button("Save Ring Center") {
+                    coordinator.finishWindowFollowingCalibration()
+                }
+                Button("Cancel Ring Center Adjustment") {
+                    coordinator.cancelWindowFollowingCalibration()
+                }
+                Button("Reset Visual Center") {
+                    coordinator.resetPetVisualCenter()
+                }
             } else {
-                Text("Compact")
+                Button("Adjust Ring Center") {
+                    coordinator.beginPetFollowingCalibration()
+                }
+                .disabled(!coordinator.canFineTunePetRing)
+                Button("Reset Visual Center") {
+                    coordinator.resetPetVisualCenter()
+                }
+                .disabled(!coordinator.canFineTunePetRing)
             }
-        }
-        .disabled(!coordinator.canChangeHaloMode)
 
-        Button {
-            coordinator.setHaloMode(.expanded)
-        } label: {
-            if coordinator.haloMode == .expanded {
-                Label("Expanded", systemImage: "checkmark")
-            } else {
-                Text("Expanded")
+            #if DEBUG
+            Menu("Orientation Preview") {
+                ForEach(PetRingOrientationPreview.allCases, id: \.self) { preview in
+                    Button {
+                        coordinator.setPetRingOrientationPreview(preview)
+                    } label: {
+                        if coordinator.petRingOrientationPreview == preview {
+                            Label(preview.label, systemImage: "checkmark")
+                        } else {
+                            Text(preview.label)
+                        }
+                    }
+                }
             }
+            #endif
+        } else {
+            Button {
+                coordinator.setHaloMode(.compact)
+            } label: {
+                if coordinator.haloMode == .compact {
+                    Label("Compact", systemImage: "checkmark")
+                } else {
+                    Text("Compact")
+                }
+            }
+            .disabled(!coordinator.canChangeHaloMode)
+
+            Button {
+                coordinator.setHaloMode(.expanded)
+            } label: {
+                if coordinator.haloMode == .expanded {
+                    Label("Expanded", systemImage: "checkmark")
+                } else {
+                    Text("Expanded")
+                }
+            }
+            .disabled(!coordinator.canChangeHaloMode)
         }
-        .disabled(!coordinator.canChangeHaloMode)
 
         Button("Refresh Usage") {
             coordinator.refreshUsage()
@@ -77,15 +130,15 @@ private struct ApplicationMenuContent: View {
         }
         .disabled(!coordinator.canCalibrateWindowFallback)
 
-        Button("Finish Calibration") {
+        Button("Finish Window Calibration") {
             coordinator.finishWindowFollowingCalibration()
         }
-        .disabled(!coordinator.canFinishCalibration)
+        .disabled(!coordinator.canFinishCalibration || coordinator.isAdjustingPetRingCenter)
 
-        Button("Cancel Calibration") {
+        Button("Cancel Window Calibration") {
             coordinator.cancelWindowFollowingCalibration()
         }
-        .disabled(!coordinator.canFinishCalibration)
+        .disabled(!coordinator.canFinishCalibration || coordinator.isAdjustingPetRingCenter)
 
         Button("Use Codex Window Fallback") {
             coordinator.useWindowFallback()

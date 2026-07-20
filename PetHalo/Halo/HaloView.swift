@@ -2,13 +2,22 @@ import SwiftUI
 
 @MainActor
 final class HaloViewState: ObservableObject {
-    @Published var model: HaloPresentationModel
-    @Published var mode: HaloPresentationMode
+    @Published var cardModel: HaloPresentationModel
+    @Published var petRingModel: PetRingPresentationModel
+    @Published var petRingOrientation: PetRingOrientation
+    @Published var surfaceMode: HaloSurfaceMode
     @Published var isCalibrating = false
 
-    init(model: HaloPresentationModel, mode: HaloPresentationMode) {
-        self.model = model
-        self.mode = mode
+    init(
+        cardModel: HaloPresentationModel,
+        petRingModel: PetRingPresentationModel,
+        petRingOrientation: PetRingOrientation = .fixedDefault,
+        surfaceMode: HaloSurfaceMode
+    ) {
+        self.cardModel = cardModel
+        self.petRingModel = petRingModel
+        self.petRingOrientation = petRingOrientation
+        self.surfaceMode = surfaceMode
     }
 }
 
@@ -19,39 +28,57 @@ struct HaloView: View {
 
     var body: some View {
         Group {
-            switch state.mode {
-            case .compact:
-                HaloCompactView(model: state.model)
-            case .expanded:
-                HaloExpandedView(model: state.model)
-            }
-        }
-        .padding(state.mode == .compact ? 14 : 16)
-        .background(background)
-        .clipShape(RoundedRectangle(cornerRadius: state.mode == .compact ? 36 : 22))
-        .overlay {
-            if state.isCalibrating {
-                VStack {
-                    Spacer()
-                    Text("Position Halo, then finish calibration from the menu bar")
-                        .font(.caption2.weight(.semibold))
-                        .multilineTextAlignment(.center)
-                        .padding(8)
-                        .background(Color(nsColor: .windowBackgroundColor))
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                        .padding(8)
+            switch state.surfaceMode {
+            case .petRing:
+                PetRingView(
+                    model: state.petRingModel,
+                    orientation: state.petRingOrientation,
+                    isCalibrating: state.isCalibrating
+                )
+            case .compactCard:
+                cardSurface(cornerRadius: 36, padding: 14) {
+                    HaloCompactView(model: state.cardModel)
                 }
-                .accessibilityLabel("Calibration active")
-            } else if differentiateWithoutColor {
-                RoundedRectangle(cornerRadius: state.mode == .compact ? 36 : 22)
-                    .stroke(.primary.opacity(0.35), lineWidth: 1)
-                    .accessibilityHidden(true)
+            case .expandedCard:
+                cardSurface(cornerRadius: 22, padding: 16) {
+                    HaloExpandedView(model: state.cardModel)
+                }
             }
         }
     }
 
+    private func cardSurface<Content: View>(
+        cornerRadius: CGFloat,
+        padding: CGFloat,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        content()
+            .padding(padding)
+            .background(cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+            .overlay {
+                if state.isCalibrating {
+                    VStack {
+                        Spacer()
+                        Text("Position Halo, then finish calibration from the menu bar")
+                            .font(.caption2.weight(.semibold))
+                            .multilineTextAlignment(.center)
+                            .padding(8)
+                            .background(Color(nsColor: .windowBackgroundColor))
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .padding(8)
+                    }
+                    .accessibilityLabel("Calibration active")
+                } else if differentiateWithoutColor {
+                    RoundedRectangle(cornerRadius: cornerRadius)
+                        .stroke(.primary.opacity(0.35), lineWidth: 1)
+                        .accessibilityHidden(true)
+                }
+            }
+    }
+
     @ViewBuilder
-    private var background: some View {
+    private var cardBackground: some View {
         if reduceTransparency {
             Color(nsColor: .windowBackgroundColor)
         } else {

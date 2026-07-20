@@ -20,7 +20,7 @@ if grep -EnR 'thread/|turn/|account/(login|logout|rateLimitResetCredit|workspace
 fi
 
 if grep -EnR 'AXUIElement|AXObserver|AXIsProcessTrusted|NSWorkspace|NSRunningApplication\.runningApplications' PetHalo PetHaloCore \
-    | grep -Ev '^PetHalo/WindowFollowing/(SystemWindowFollowing|SystemPetTargetDiscovery)\.swift:'; then
+    | grep -Ev '^PetHalo/WindowFollowing/(SystemWindowFollowing|SystemPetTargetDiscovery|SystemMotionPreference)\.swift:'; then
     echo "error: Accessibility or exact application discovery escaped the reviewed boundaries" >&2
     exit 1
 fi
@@ -57,7 +57,13 @@ if find PetHalo -type f \( \
     -iname '*.svg' -o \
     -iname '*.pdf' \
 \) | grep -q .; then
-    echo "error: M6 production source must not contain final artwork assets" >&2
+    echo "error: M7 production source must not contain final artwork assets" >&2
+    exit 1
+fi
+
+if grep -En 'ultraThinMaterial|RoundedRectangle|ScrollView|Button|Image\(' \
+    PetHalo/Halo/PetRingView.swift; then
+    echo "error: Pet Ring contains a card, control, scrolling, or artwork surface" >&2
     exit 1
 fi
 

@@ -41,11 +41,11 @@ Generate schemas from the installed Codex CLI, build a read-only protocol probe,
 
 ### M7 — Pet Ring Surface & Target-aware Presentation
 
-Replace the demo card with the functional Pet ring and basic Usage metrics, with target-aware presentation that removes the temporary M6 compact guard.
+**Complete — PASS.** Pet uses only a transparent, click-through vector surface centered on the stable AX Pet frame plus a persisted visual-center offset. Three concentric partial rings independently present Weekly remaining, an optional exact 300-minute 5h remaining value, and Today tokens versus nonzero historical peak, with fixed-identity capsule labels and semantic status colors. Dialog-aware orientation, latest-value following, restart recovery, explicit fallback visibility, UTC Today mapping, and calibrated center persistence are complete while Compact/Expanded fallbacks remain intact and are rejected on Pet. Focused M7 tests pass 106/106; the complete Swift suite executed 160 tests with 159 passed and one designed local authenticated integration smoke skipped; all 14 retained M0 tests, both latest CI jobs, live M7 smoke, visible-Pet containment, final capsule screenshot acceptance, and independent review pass with no unresolved threads. PR #8 remains Draft and unmerged. See [the M7 report](milestones/m7-pet-ring-presentation.md).
 
 ### M8 — Visual Polish, Themes & Motion
 
-Add advanced styling, arc orientation, themes, low-usage visuals, motion preferences, and animation without using official OpenAI or Codex Pet artwork.
+**Next milestone — not started.** Add advanced styling beyond M7's fixed functional arc/color policy, themes, decorative low-usage visuals, motion preferences, and animation without using official OpenAI or Codex Pet artwork. M7 completion does not authorize this work.
 
 ### M9 — Hardening & Release Readiness
 

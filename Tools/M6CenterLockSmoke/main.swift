@@ -7,6 +7,12 @@ private let petHaloBundleIdentifier = "io.github.jianshicodes.PetHalo"
 private let preferencesDomain = "io.github.jianshicodes.PetHalo"
 private let petAnchorKey = "io.github.jianshicodes.PetHalo.petFollowing.anchor.v1"
 private let windowAnchorKey = "io.github.jianshicodes.PetHalo.windowFollowing.anchor.v1"
+private let visualCenterOffsetKey = "io.github.jianshicodes.PetHalo.petRing.visualCenterOffset.v2"
+
+private struct VisualCenterOffset: Decodable {
+    let horizontal: Double
+    let vertical: Double
+}
 
 private struct WindowGeometry {
     let frame: CGRect
@@ -73,11 +79,16 @@ private func windows(from application: AXUIElement) -> [WindowGeometry] {
 }
 
 private func petCore(from candidates: [WindowGeometry]) -> CGRect? {
-    let eligible = candidates.filter {
+    let balanced = candidates.filter {
         !$0.minimized && !$0.hidden
-            && $0.role == "AXWindow" && $0.subrole == "AXDialog"
+            && $0.role == "AXWindow"
+            && ($0.subrole == "AXDialog" || $0.subrole == "AXSystemDialog")
             && (0.8 ... 1.5).contains($0.frame.width / $0.frame.height)
     }
+    let preferred = balanced.filter { $0.subrole == "AXSystemDialog" }
+    let eligible = preferred.isEmpty
+        ? balanced.filter { $0.subrole == "AXDialog" }
+        : preferred
     let groups = Dictionary(grouping: eligible) {
         [$0.frame.minX, $0.frame.minY, $0.frame.width, $0.frame.height]
             .map { Int(($0 * 2).rounded()) }
@@ -116,15 +127,22 @@ private func haloPanelFrame() -> CGRect? {
     let candidates = windows(from: application).filter {
         !$0.minimized && !$0.hidden
             && ((abs($0.frame.width - 176) <= 1 && abs($0.frame.height - 176) <= 1)
+                || (abs($0.frame.width - 208) <= 1 && abs($0.frame.height - 208) <= 1)
+                || (abs($0.frame.width - 252) <= 1 && abs($0.frame.height - 252) <= 1)
+                || (abs($0.frame.width - 448) <= 1 && abs($0.frame.height - 252) <= 1)
                 || (abs($0.frame.width - 360) <= 1 && abs($0.frame.height - 520) <= 1))
     }
     guard candidates.count == 1 else { return nil }
     return appKitFrame(candidates[0].frame)
 }
 
-private func centersAreAligned(panelFrame: CGRect, petFrame: CGRect) -> Bool {
-    abs(panelFrame.midX - petFrame.midX) <= 1
-        && abs(panelFrame.midY - petFrame.midY) <= 1
+private func visualCentersAreAligned(
+    panelFrame: CGRect,
+    petFrame: CGRect,
+    offset: VisualCenterOffset
+) -> Bool {
+    abs(panelFrame.midX - petFrame.midX - offset.horizontal) <= 1
+        && abs(panelFrame.midY - petFrame.midY - offset.vertical) <= 1
 }
 
 guard AXIsProcessTrusted() else {
@@ -153,6 +171,12 @@ let savedWindowAnchor = CFPreferencesCopyAppValue(
     windowAnchorKey as CFString,
     preferencesDomain as CFString
 ) != nil
+private let savedVisualCenterOffset = (CFPreferencesCopyAppValue(
+    visualCenterOffsetKey as CFString,
+    preferencesDomain as CFString
+) as? Data)
+    .flatMap { try? JSONDecoder().decode(VisualCenterOffset.self, from: $0) }
+    ?? VisualCenterOffset(horizontal: 0, vertical: 0)
 print("Legacy Pet anchor: \(savedPetAnchor ? "present" : "absent")")
 print("M4 window anchor: \(savedWindowAnchor ? "present" : "absent")")
 
@@ -182,11 +206,19 @@ var quitObserved = false
 var initialAlignmentObserved = false
 var movementAlignmentObserved = false
 var wakeAlignmentObserved = false
+var petRingObserved = false
+var fallbackCardObserved = false
+var applicationRemainedInactive = true
 
 while Date() < deadline {
     let petHaloRunning = NSRunningApplication.runningApplications(
         withBundleIdentifier: petHaloBundleIdentifier
     ).count == 1
+    if let petHaloApplication = NSRunningApplication.runningApplications(
+        withBundleIdentifier: petHaloBundleIdentifier
+    ).only {
+        applicationRemainedInactive = applicationRemainedInactive && !petHaloApplication.isActive
+    }
     if !petHaloRunning {
         quitObserved = true
         if disappearanceObserved && wakeObserved { break }
@@ -206,7 +238,14 @@ while Date() < deadline {
 
         if let panelFrame = haloPanelFrame() {
             attachmentObserved = true
-            if centersAreAligned(panelFrame: panelFrame, petFrame: petFrame) {
+            petRingObserved = petRingObserved
+                || (abs(panelFrame.width - 252) <= 1 && abs(panelFrame.height - 252) <= 1)
+                || (abs(panelFrame.width - 448) <= 1 && abs(panelFrame.height - 252) <= 1)
+            if visualCentersAreAligned(
+                panelFrame: panelFrame,
+                petFrame: petFrame,
+                offset: savedVisualCenterOffset
+            ) {
                 initialAlignmentObserved = true
                 if movementObserved {
                     movementAlignmentObserved = true
@@ -221,6 +260,11 @@ while Date() < deadline {
         lastPetPresent = false
         if disappearanceObserved, savedWindowAnchor, haloPanelFrame() != nil {
             fallbackObserved = true
+            if let panelFrame = haloPanelFrame() {
+                fallbackCardObserved = fallbackCardObserved
+                    || (abs(panelFrame.width - 176) <= 1 && abs(panelFrame.height - 176) <= 1)
+                    || (abs(panelFrame.width - 360) <= 1 && abs(panelFrame.height - 520) <= 1)
+            }
         }
     }
     Thread.sleep(forTimeInterval: 0.1)
@@ -231,15 +275,18 @@ let centerAlignmentMaintained = initialAlignmentObserved
     && wakeAlignmentObserved
 print("Pet target found: \(firstPetFrame == nil ? "no" : "yes")")
 print("Automatic attachment: \(attachmentObserved ? "observed" : "not observed")")
-print("Center alignment sample: \(initialAlignmentObserved ? "observed" : "not observed")")
-print("Post-movement center alignment: \(movementAlignmentObserved ? "observed" : "not observed")")
-print("Post-Wake center alignment: \(wakeAlignmentObserved ? "observed" : "not observed")")
-print("Center alignment maintained: \(centerAlignmentMaintained ? "yes" : "no")")
+print("Visual-center offset sample: \(initialAlignmentObserved ? "observed" : "not observed")")
+print("Post-movement visual-center offset: \(movementAlignmentObserved ? "observed" : "not observed")")
+print("Post-Wake visual-center offset: \(wakeAlignmentObserved ? "observed" : "not observed")")
+print("Visual-center offset maintained: \(centerAlignmentMaintained ? "yes" : "no")")
 print("Independent Pet movement: \(movementObserved ? "observed" : "not observed")")
 print("Pet Tuck Away: \(disappearanceObserved ? "observed" : "not observed")")
 print("Codex-window fallback: \(fallbackObserved ? "observed" : "not observed")")
 print("Pet Wake: \(wakeObserved ? "observed" : "not observed")")
 print("Pet Halo Quit: \(quitObserved ? "observed" : "not observed")")
+print("Pet Ring selected: \(petRingObserved ? "observed" : "not observed")")
+print("Fallback card restored: \(fallbackCardObserved ? "observed" : "not observed")")
+print("Application remained inactive: \(applicationRemainedInactive ? "yes" : "no")")
 
 private extension Array {
     var only: Element? { count == 1 ? self[0] : nil }

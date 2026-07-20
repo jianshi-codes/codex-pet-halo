@@ -37,13 +37,15 @@ final class WindowFollowingSystemTests: XCTestCase {
             box.enqueue(.geometryChanged)
         }
         box.enqueue(.selectionChanged)
-        try? await Task.sleep(for: .milliseconds(100))
+        for _ in 0 ..< 10 where received.isEmpty {
+            await Task.yield()
+        }
         XCTAssertEqual(received.map(\.0), [.selectionChanged])
         XCTAssertEqual(received.map(\.1), [11])
 
         box.enqueue(.targetInvalidated)
         box.deactivate()
-        try? await Task.sleep(for: .milliseconds(100))
+        for _ in 0 ..< 10 { await Task.yield() }
         XCTAssertEqual(received.map(\.0), [.selectionChanged])
     }
 
@@ -60,13 +62,22 @@ final class WindowFollowingSystemTests: XCTestCase {
             pointOffset: PointOffsetValue(width: 48, height: -12)
         )
 
+        let visualOffset = PetVisualCenterOffset(horizontal: -12, vertical: 36)
+        defaults.set(
+            try JSONEncoder().encode(visualOffset),
+            forKey: "io.github.jianshicodes.PetHalo.petRing.visualCenterOffset.v1"
+        )
+        XCTAssertEqual(store.load().petVisualCenterOffset, .zero)
+
         store.setFollowingEnabled(true)
         store.setWindowAnchor(anchor)
+        store.setPetVisualCenterOffset(visualOffset)
         XCTAssertEqual(
             store.load(),
             WindowFollowingPreferenceSnapshot(
                 followingEnabled: true,
-                windowAnchor: anchor
+                windowAnchor: anchor,
+                petVisualCenterOffset: visualOffset
             )
         )
 
@@ -97,6 +108,8 @@ final class WindowFollowingSystemTests: XCTestCase {
         let legacyKey = "io.github.jianshicodes.PetHalo.petFollowing.anchor.v1"
 
         store.setWindowAnchor(windowAnchor)
+        let visualOffset = PetVisualCenterOffset(horizontal: 4, vertical: 28)
+        store.setPetVisualCenterOffset(visualOffset)
         defaults.set(Data("legacy-anchor".utf8), forKey: legacyKey)
         XCTAssertNotNil(defaults.object(forKey: legacyKey))
 
@@ -105,5 +118,6 @@ final class WindowFollowingSystemTests: XCTestCase {
 
         XCTAssertNil(defaults.object(forKey: legacyKey))
         XCTAssertEqual(store.load().windowAnchor, windowAnchor)
+        XCTAssertEqual(store.load().petVisualCenterOffset, visualOffset)
     }
 }

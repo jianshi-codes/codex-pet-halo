@@ -21,11 +21,58 @@ enum HaloFollowingTargetSource: Equatable, Sendable {
 struct PetTargetSnapshot: Equatable, Sendable {
     let generation: Int
     let frame: CGRect
+    let activityGeometryHint: PetActivityGeometryHint
+    let activityVerticalDelta: Double?
+
+    init(
+        generation: Int,
+        frame: CGRect,
+        activityGeometryHint: PetActivityGeometryHint = .none,
+        activityVerticalDelta: Double? = nil
+    ) {
+        self.generation = generation
+        self.frame = frame
+        self.activityGeometryHint = activityGeometryHint
+        self.activityVerticalDelta = activityVerticalDelta
+    }
+}
+
+struct PetTrackedFrameSample: Equatable, Sendable {
+    let generation: Int
+    let frame: CGRect
 }
 
 struct PetAttachmentLayout: Equatable, Sendable {
     let referencePoint: CGPoint
     let panelFrame: CGRect
+}
+
+struct PetVisualCenterOffset: Codable, Equatable, Sendable {
+    static let zero = PetVisualCenterOffset(horizontal: 0, vertical: 0)
+    static let maximumMagnitude = PetRingGeometry.standard.panelDiameter
+
+    let horizontal: Double
+    let vertical: Double
+
+    var isValid: Bool {
+        horizontal.isFinite
+            && vertical.isFinite
+            && abs(horizontal) <= Self.maximumMagnitude
+            && abs(vertical) <= Self.maximumMagnitude
+    }
+}
+
+enum PetActivityGeometryHint: Equatable, Sendable {
+    case none
+    case above
+    case below
+    case ambiguous
+}
+
+struct PetActivityGeometryResolution: Equatable, Sendable {
+    let hint: PetActivityGeometryHint
+    let observedIdentities: Set<Int>
+    let activityVerticalDelta: Double?
 }
 
 enum PetPlacementStatus: Equatable, Sendable {
@@ -83,11 +130,33 @@ struct PetWindowCandidate: Equatable, Sendable {
               frame.width > 0,
               frame.height > 0,
               role == "AXWindow",
-              subrole == "AXDialog"
+              subrole == "AXDialog" || subrole == "AXSystemDialog"
         else {
             return false
         }
         return (0.8 ... 1.5).contains(frame.width / frame.height)
+    }
+
+    var isPreferredCoreSurface: Bool {
+        isEligibleCoreSurface && subrole == "AXSystemDialog"
+    }
+
+    var isEligibleActivitySurface: Bool {
+        guard !isMinimized,
+              !isHidden,
+              frame.isFinite,
+              frame.width > 0,
+              frame.height > 0,
+              role == "AXWindow",
+              subrole == "AXDialog" || subrole == "AXSystemDialog"
+        else {
+            return false
+        }
+        return frame.width / frame.height > 1.5
+    }
+
+    var isPreferredActivitySurface: Bool {
+        isEligibleActivitySurface && subrole == "AXSystemDialog"
     }
 }
 
@@ -99,7 +168,10 @@ enum PetWindowSelection: Equatable, Sendable {
 
 enum PetWindowSelector {
     static func select(from candidates: [PetWindowCandidate]) -> PetWindowSelection {
-        let eligible = candidates.filter(\.isEligibleCoreSurface)
+        let preferred = candidates.filter(\.isPreferredCoreSurface)
+        let eligible = preferred.isEmpty
+            ? candidates.filter(\.isEligibleCoreSurface)
+            : preferred
         let groups = Dictionary(grouping: eligible, by: { FrameKey(frame: $0.frame) })
         guard groups.count == 1,
               let group = groups.values.first
@@ -132,14 +204,124 @@ enum PetWindowSelector {
     }
 }
 
+enum PetTrackedFrameResolver {
+    static func resolve(_ frames: [CGRect]) -> CGRect? {
+        guard !frames.isEmpty,
+              frames.allSatisfy({
+                  $0.isFinite && $0.width > 0 && $0.height > 0
+              })
+        else {
+            return nil
+        }
+        let groups = Dictionary(grouping: frames, by: FrameKey.init)
+        guard groups.count == 1, let group = groups.values.first else { return nil }
+        return CGRect(
+            x: group.map(\.minX).reduce(0, +) / CGFloat(group.count),
+            y: group.map(\.minY).reduce(0, +) / CGFloat(group.count),
+            width: group.map(\.width).reduce(0, +) / CGFloat(group.count),
+            height: group.map(\.height).reduce(0, +) / CGFloat(group.count)
+        )
+    }
+
+    private struct FrameKey: Hashable {
+        let x: Int
+        let y: Int
+        let width: Int
+        let height: Int
+
+        init(_ frame: CGRect) {
+            x = Int((frame.minX * 2).rounded())
+            y = Int((frame.minY * 2).rounded())
+            width = Int((frame.width * 2).rounded())
+            height = Int((frame.height * 2).rounded())
+        }
+    }
+}
+
+enum PetActivityGeometryResolver {
+    static func resolve(
+        petFrame: CGRect,
+        petMemberIdentities: Set<Int>,
+        candidates: [PetWindowCandidate]
+    ) -> PetActivityGeometryResolution {
+        let activity = candidates.filter {
+            !petMemberIdentities.contains($0.identity)
+                && $0.isEligibleActivitySurface
+                && horizontalOverlap($0.frame, petFrame)
+        }
+        let identities = Set(activity.map(\.identity))
+        let preferred = activity.filter(\.isPreferredActivitySurface)
+        let orientedActivity = preferred.isEmpty
+            ? activity.filter { $0.subrole == "AXDialog" }
+            : preferred
+        guard orientedActivity.count == 1, let dialog = orientedActivity.first else {
+            return PetActivityGeometryResolution(
+                hint: activity.isEmpty ? .none : .ambiguous,
+                observedIdentities: identities,
+                activityVerticalDelta: nil
+            )
+        }
+        let delta = dialog.frame.midY - petFrame.midY
+        guard abs(delta) > 1 else {
+            return PetActivityGeometryResolution(
+                hint: .ambiguous,
+                observedIdentities: identities,
+                activityVerticalDelta: nil
+            )
+        }
+        return PetActivityGeometryResolution(
+            hint: delta < 0 ? .above : .below,
+            observedIdentities: identities,
+            activityVerticalDelta: -delta
+        )
+    }
+
+    private static func horizontalOverlap(_ lhs: CGRect, _ rhs: CGRect) -> Bool {
+        min(lhs.maxX, rhs.maxX) > max(lhs.minX, rhs.minX)
+    }
+}
+
 enum PetAttachmentLayoutPolicy {
-    static let petAttachmentSize = CGSize(width: 176, height: 176)
+    static let petAttachmentSize = PetRingGeometry.standard.panelSize
 
     static func centeredLayout(
         petFrame: CGRect,
-        panelSize: CGSize
+        panelSize: CGSize,
+        visualCenterOffset: PetVisualCenterOffset = .zero
     ) -> PetAttachmentLayout? {
         guard petFrame.isFinite,
+              petFrame.width > 0,
+              petFrame.height > 0,
+              panelSize.isFinite,
+              panelSize.width > 0,
+              panelSize.height > 0,
+              visualCenterOffset.isValid
+        else {
+            return nil
+        }
+        let visualCenter = CGPoint(
+            x: petFrame.midX + visualCenterOffset.horizontal,
+            y: petFrame.midY + visualCenterOffset.vertical
+        )
+        let panelFrame = CGRect(
+            x: visualCenter.x - panelSize.width / 2,
+            y: visualCenter.y - panelSize.height / 2,
+            width: panelSize.width,
+            height: panelSize.height
+        )
+        return PetAttachmentLayout(
+            referencePoint: HaloPlacementGeometry.referencePoint(for: panelFrame),
+            panelFrame: panelFrame
+        )
+    }
+
+    static func visualCenterOffset(
+        panelReferencePoint: CGPoint,
+        petFrame: CGRect,
+        panelSize: CGSize
+    ) -> PetVisualCenterOffset? {
+        guard panelReferencePoint.isFinite,
+              petFrame.isFinite,
               petFrame.width > 0,
               petFrame.height > 0,
               panelSize.isFinite,
@@ -148,16 +330,11 @@ enum PetAttachmentLayoutPolicy {
         else {
             return nil
         }
-        let panelFrame = CGRect(
-            x: petFrame.midX - panelSize.width / 2,
-            y: petFrame.midY - panelSize.height / 2,
-            width: panelSize.width,
-            height: panelSize.height
+        let offset = PetVisualCenterOffset(
+            horizontal: panelReferencePoint.x - panelSize.width / 2 - petFrame.midX,
+            vertical: panelReferencePoint.y - panelSize.height / 2 - petFrame.midY
         )
-        return PetAttachmentLayout(
-            referencePoint: HaloPlacementGeometry.referencePoint(for: panelFrame),
-            panelFrame: panelFrame
-        )
+        return offset.isValid ? offset : nil
     }
 }
 

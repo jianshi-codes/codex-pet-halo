@@ -4,6 +4,7 @@ import Foundation
 
 enum PetTargetObservationEvent: Equatable, Sendable {
     case geometryChanged
+    case activityGeometryChanged
     case selectionChanged
     case targetInvalidated
 }
@@ -23,6 +24,7 @@ protocol PetTargetAccessing: AnyObject {
         onEvent: @escaping @MainActor (PetTargetObservationEvent, Int) -> Void
     ) -> PetTargetAccessResult
     func currentSnapshot() -> PetTargetSnapshot?
+    func currentTrackedFrame() -> PetTrackedFrameSample?
     func stop()
 }
 
@@ -30,16 +32,43 @@ final class PetAXCallbackBox: @unchecked Sendable {
     private let lock = NSLock()
     private let generation: Int
     private let handler: @MainActor (PetTargetObservationEvent, Int) -> Void
+    private let petElements: [AXUIElement]
+    private let activityElements: [AXUIElement]
     private var pending: PetTargetObservationEvent?
     private var scheduled = false
     private var active = true
 
     init(
         generation: Int,
+        petElements: [AXUIElement] = [],
+        activityElements: [AXUIElement] = [],
         handler: @escaping @MainActor (PetTargetObservationEvent, Int) -> Void
     ) {
         self.generation = generation
+        self.petElements = petElements
+        self.activityElements = activityElements
         self.handler = handler
+    }
+
+    func enqueue(notification: String, element: AXUIElement) {
+        if notification == kAXWindowCreatedNotification as String {
+            enqueue(.selectionChanged)
+            return
+        }
+        let isPet = petElements.contains { CFEqual($0, element) }
+        let isActivity = activityElements.contains { CFEqual($0, element) }
+        switch notification {
+        case kAXMovedNotification, kAXResizedNotification:
+            if isPet {
+                enqueue(.geometryChanged)
+            } else if isActivity {
+                enqueue(.activityGeometryChanged)
+            }
+        case kAXUIElementDestroyedNotification:
+            enqueue(isPet ? .targetInvalidated : .activityGeometryChanged)
+        default:
+            break
+        }
     }
 
     func enqueue(_ event: PetTargetObservationEvent) {
@@ -55,7 +84,6 @@ final class PetAXCallbackBox: @unchecked Sendable {
         guard shouldSchedule else { return }
 
         Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .milliseconds(80))
             self?.deliver()
         }
     }
@@ -89,7 +117,10 @@ final class PetAXCallbackBox: @unchecked Sendable {
         if current == .selectionChanged || incoming == .selectionChanged {
             return .selectionChanged
         }
-        return .geometryChanged
+        if current == .geometryChanged || incoming == .geometryChanged {
+            return .geometryChanged
+        }
+        return .activityGeometryChanged
     }
 }
 
@@ -97,11 +128,15 @@ final class PetAXCallbackBox: @unchecked Sendable {
 final class AccessibilityPetTargetAccessor: PetTargetAccessing {
     private struct Selection {
         let observedIdentities: Set<Int>
+        let activityObservedIdentities: Set<Int>
         let petFrame: CGRect
+        let activityGeometryHint: PetActivityGeometryHint
+        let activityVerticalDelta: Double?
     }
 
     private var applicationElement: AXUIElement?
     private var targetElements: [AXUIElement] = []
+    private var activityElements: [AXUIElement] = []
     private var observer: AXObserver?
     private var callbackBox: PetAXCallbackBox?
     private var generation = 0
@@ -118,14 +153,29 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
         let selection: Selection
         switch selectionResult {
         case .unavailable:
+            _ = observeApplicationWindowCreation(
+                application: application,
+                processIdentifier: processIdentifier,
+                generation: generation,
+                onEvent: onEvent
+            )
             return .unavailable
         case .ambiguous:
+            _ = observeApplicationWindowCreation(
+                application: application,
+                processIdentifier: processIdentifier,
+                generation: generation,
+                onEvent: onEvent
+            )
             return .ambiguous
         case let .selected(selected):
             selection = selected
         }
         let selectedElements = windows.enumerated().compactMap { index, element in
             selection.observedIdentities.contains(index) ? element : nil
+        }
+        let selectedActivityElements = windows.enumerated().compactMap { index, element in
+            selection.activityObservedIdentities.contains(index) ? element : nil
         }
         guard !selectedElements.isEmpty,
               let petFrame = appKitFrame(fromAccessibilityFrame: selection.petFrame)
@@ -135,20 +185,11 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
         var newObserver: AXObserver?
         let observerResult = AXObserverCreate(
             processIdentifier,
-            { _, _, notification, reference in
+            { _, element, notification, reference in
                 guard let reference else { return }
                 let box = Unmanaged<PetAXCallbackBox>.fromOpaque(reference)
                     .takeUnretainedValue()
-                switch notification as String {
-                case kAXMovedNotification, kAXResizedNotification:
-                    box.enqueue(.geometryChanged)
-                case kAXUIElementDestroyedNotification:
-                    box.enqueue(.targetInvalidated)
-                case kAXWindowCreatedNotification:
-                    box.enqueue(.selectionChanged)
-                default:
-                    break
-                }
+                box.enqueue(notification: notification as String, element: element)
             },
             &newObserver
         )
@@ -156,7 +197,12 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
             return .observerFailed
         }
 
-        let box = PetAXCallbackBox(generation: generation, handler: onEvent)
+        let box = PetAXCallbackBox(
+            generation: generation,
+            petElements: selectedElements,
+            activityElements: selectedActivityElements,
+            handler: onEvent
+        )
         let reference = Unmanaged.passUnretained(box).toOpaque()
         for target in selectedElements {
             for notification in [
@@ -167,6 +213,23 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
                 guard AXObserverAddNotification(
                     newObserver,
                     target,
+                    notification as CFString,
+                    reference
+                ) == .success else {
+                    box.deactivate()
+                    return .observerFailed
+                }
+            }
+        }
+        for activity in selectedActivityElements {
+            for notification in [
+                kAXMovedNotification,
+                kAXResizedNotification,
+                kAXUIElementDestroyedNotification,
+            ] {
+                guard AXObserverAddNotification(
+                    newObserver,
+                    activity,
                     notification as CFString,
                     reference
                 ) == .success else {
@@ -191,13 +254,61 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
         )
         applicationElement = application
         targetElements = selectedElements
+        activityElements = selectedActivityElements
         observer = newObserver
         callbackBox = box
         self.generation = generation
         return .selected(PetTargetSnapshot(
             generation: generation,
-            frame: petFrame
+            frame: petFrame,
+            activityGeometryHint: selection.activityGeometryHint,
+            activityVerticalDelta: selection.activityVerticalDelta
         ))
+    }
+
+    private func observeApplicationWindowCreation(
+        application: AXUIElement,
+        processIdentifier: Int32,
+        generation: Int,
+        onEvent: @escaping @MainActor (PetTargetObservationEvent, Int) -> Void
+    ) -> Bool {
+        var newObserver: AXObserver?
+        guard AXObserverCreate(
+            processIdentifier,
+            { _, element, notification, reference in
+                guard let reference else { return }
+                let box = Unmanaged<PetAXCallbackBox>.fromOpaque(reference)
+                    .takeUnretainedValue()
+                box.enqueue(notification: notification as String, element: element)
+            },
+            &newObserver
+        ) == .success,
+            let newObserver
+        else {
+            return false
+        }
+
+        let box = PetAXCallbackBox(generation: generation, handler: onEvent)
+        let reference = Unmanaged.passUnretained(box).toOpaque()
+        guard AXObserverAddNotification(
+            newObserver,
+            application,
+            kAXWindowCreatedNotification as CFString,
+            reference
+        ) == .success else {
+            box.deactivate()
+            return false
+        }
+        CFRunLoopAddSource(
+            CFRunLoopGetMain(),
+            AXObserverGetRunLoopSource(newObserver),
+            .commonModes
+        )
+        applicationElement = application
+        observer = newObserver
+        callbackBox = box
+        self.generation = generation
+        return true
     }
 
     func currentSnapshot() -> PetTargetSnapshot? {
@@ -210,8 +321,22 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
         }
         return PetTargetSnapshot(
             generation: generation,
-            frame: petFrame
+            frame: petFrame,
+            activityGeometryHint: selection.activityGeometryHint,
+            activityVerticalDelta: selection.activityVerticalDelta
         )
+    }
+
+    func currentTrackedFrame() -> PetTrackedFrameSample? {
+        guard !targetElements.isEmpty else { return nil }
+        let frames = targetElements.compactMap(accessibilityFrame(of:))
+        guard frames.count == targetElements.count,
+              let frame = PetTrackedFrameResolver.resolve(frames),
+              let appKitFrame = appKitFrame(fromAccessibilityFrame: frame)
+        else {
+            return nil
+        }
+        return PetTrackedFrameSample(generation: generation, frame: appKitFrame)
     }
 
     func stop() {
@@ -235,6 +360,19 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
                     )
                 }
             }
+            for activity in activityElements {
+                for notification in [
+                    kAXMovedNotification,
+                    kAXResizedNotification,
+                    kAXUIElementDestroyedNotification,
+                ] {
+                    _ = AXObserverRemoveNotification(
+                        observer,
+                        activity,
+                        notification as CFString
+                    )
+                }
+            }
             if let applicationElement {
                 _ = AXObserverRemoveNotification(
                     observer,
@@ -246,6 +384,7 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
         callbackBox = nil
         observer = nil
         targetElements.removeAll()
+        activityElements.removeAll()
         applicationElement = nil
     }
 
@@ -272,9 +411,17 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
         case .ambiguous:
             return .ambiguous
         case let .selected(memberIdentities, petFrame):
+            let activity = PetActivityGeometryResolver.resolve(
+                petFrame: petFrame,
+                petMemberIdentities: memberIdentities,
+                candidates: candidates
+            )
             return .selected(Selection(
                 observedIdentities: memberIdentities,
-                petFrame: petFrame
+                activityObservedIdentities: activity.observedIdentities,
+                petFrame: petFrame,
+                activityGeometryHint: activity.hint,
+                activityVerticalDelta: activity.activityVerticalDelta
             ))
         }
     }

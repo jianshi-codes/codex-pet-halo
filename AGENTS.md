@@ -13,8 +13,8 @@ Pet Halo is an independent, unofficial macOS companion for Codex. The current ap
 - M4 — Codex Window Following & Fallback — is complete with PASS. It follows the Codex standard window, not the independently movable Pet, and remains the permanent window-level fallback above free-floating mode.
 - M5 — Pet Target Discovery & Pet-relative Following — is complete through Route A. It prefers the unique geometric Pet AX window target, preserves M4 and M3 fallbacks, and provides optional manual calibration with a separate Pet-relative anchor.
 - M6 — Automatic Center-Locked Pet Attachment — makes first-use Pet attachment automatic, removes legacy positional overrides, locks the panel midpoint to the Pet midpoint, and preserves M4/M3 fallbacks and lifecycle behavior.
-- M7 — Pet Ring Surface & Target-aware Presentation — replaces the demo card with the functional Pet ring and basic Usage metrics.
-- M8 — Visual Polish, Themes & Motion — owns advanced styling, arc orientation, themes, low-usage visuals, and motion.
+- M7 — Pet Ring Surface & Target-aware Presentation — is complete with PASS. It replaces the Pet demo card with concentric functional Usage rings, explicit visual-center calibration, semantic thresholds, dialog-aware partial arcs, capsule labels, and a non-overshooting display-linked tracking follower while preserving fallback cards.
+- M8 — Visual Polish, Themes & Motion — is the next milestone and has not started. It owns advanced styling beyond the fixed M7 system colors and arc policy, themes, decorative low-usage visuals, and decorative motion.
 - M9 — Hardening & Release Readiness — contains compatibility hardening, packaging, privacy audits, release documentation, and release readiness.
 - Do not begin Screen Recording, visual detection, screenshots/OCR, final artwork, motion, themes, release work, or later milestone work without separate authorization.
 
@@ -36,6 +36,8 @@ make m5-tests
 make m5-smoke
 make m6-tests
 make m6-smoke
+make m7-tests
+make m7-smoke
 make check
 ```
 
