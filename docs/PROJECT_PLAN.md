@@ -33,7 +33,7 @@ Generate schemas from the installed Codex CLI, build a read-only protocol probe,
 
 ### M5 — Pet Target Discovery & Pet-relative Following
 
-Discovery comes first because the Codex Pet implementation is not yet known. Investigate, in order: a separate Codex-owned Accessibility window or panel; a stable Accessibility child element; and only if Accessibility discovery is impossible, a separately authorized visual-detection route that may require Screen Recording. M5 owns Pet-relative geometry and must preserve calibrated Codex-window following and free-floating mode as fallbacks. This roadmap entry does not authorize M5 implementation, Screen Recording, screenshots, OCR, or visual detection.
+**Complete — Route A implemented.** Local discovery proved one logical near-square `AXWindow/AXDialog` frame that follows independent Pet movement while the standard Codex window remains stationary. M5 adds deterministic Pet selection, a separate versioned Pet-relative anchor, event coalescing, loss fallback, recreation recovery, safe status/menu controls, tests, smoke tooling, and privacy boundaries. Calibrated M4 window following and M3 free-floating placement remain permanent fallbacks. No Screen Recording, screenshots, OCR, or visual detection was added. See [the M5 report](milestones/m5-pet-target-following.md) and [discovery evidence](milestones/m5-pet-target-discovery-report.md).
 
 ### M6 — Original Visual Design
 

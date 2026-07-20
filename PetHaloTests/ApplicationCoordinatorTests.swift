@@ -70,8 +70,10 @@ private final class FakeWindowFollowingService: HaloWindowFollowing {
     private(set) var startCount = 0
     private(set) var stopCount = 0
     private(set) var enableCount = 0
+    private(set) var useWindowFallbackCount = 0
     private(set) var disableCount = 0
-    private(set) var beginCount = 0
+    private(set) var beginPetCount = 0
+    private(set) var beginWindowCount = 0
     private(set) var finishCount = 0
     private(set) var cancelCount = 0
     private(set) var resetCount = 0
@@ -92,11 +94,13 @@ private final class FakeWindowFollowingService: HaloWindowFollowing {
     }
     func stop() async { stopCount += 1 }
     func enable() { enableCount += 1 }
+    func useWindowFallback() { useWindowFallbackCount += 1 }
     func disable() { disableCount += 1 }
-    func beginCalibration(currentReferencePoint: CGPoint) { beginCount += 1 }
+    func beginPetCalibration(currentReferencePoint: CGPoint) { beginPetCount += 1 }
+    func beginWindowCalibration(currentReferencePoint: CGPoint) { beginWindowCount += 1 }
     func finishCalibration(currentReferencePoint: CGPoint) { finishCount += 1 }
     func cancelCalibration() { cancelCount += 1 }
-    func resetPosition() { resetCount += 1 }
+    func resetPetPosition() { resetCount += 1 }
 
     func emit(_ event: HaloWindowFollowingEvent) {
         continuation.yield(event)
@@ -408,8 +412,16 @@ final class ApplicationCoordinatorTests: XCTestCase {
         for _ in 0 ..< 20 where coordinator.windowFollowingState != .calibrationRequired {
             await Task.yield()
         }
-        coordinator.beginWindowFollowingCalibration()
-        XCTAssertEqual(following.beginCount, 1)
+        following.emit(.petDiscoveryStateChanged(.found))
+        following.emit(.targetSourceChanged(.pet))
+        for _ in 0 ..< 20
+            where coordinator.petDiscoveryState != .found || coordinator.targetSource != .pet
+        {
+            await Task.yield()
+        }
+        coordinator.beginPetFollowingCalibration()
+        XCTAssertEqual(following.beginPetCount, 1)
+        XCTAssertEqual(coordinator.targetSource, .pet)
         following.emit(.stateChanged(.calibrating))
         following.emit(.setCalibrationEnabled(true))
         for _ in 0 ..< 20 where !panel.isCalibrationEnabled {
