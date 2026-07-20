@@ -56,13 +56,16 @@ if find PetHalo -type f \( \
     -iname '*.webp' -o \
     -iname '*.svg' -o \
     -iname '*.pdf' \
-\) | grep -q .; then
-    echo "error: M7 production source must not contain final artwork assets" >&2
+\) | grep -Ev '^PetHalo/Assets\.xcassets/(AppIcon\.appiconset/app-icon-(16|32|64|128|256|512|1024)\.png|MenuBarIcon\.imageset/menu-bar-icon(-2x)?\.png)$' \
+    | grep -q .; then
+    echo "error: production source contains artwork outside the reviewed M8 icon assets" >&2
     exit 1
 fi
 
-if grep -En 'ultraThinMaterial|RoundedRectangle|ScrollView|Button|Image\(' \
-    PetHalo/Halo/PetRingView.swift; then
+if grep -En 'ultraThinMaterial|RoundedRectangle|ScrollView|Button' \
+    PetHalo/Halo/PetRingView.swift \
+    || grep -En 'Image\(' PetHalo/Halo/PetRingView.swift \
+        | grep -Ev 'Image\(systemName:'; then
     echo "error: Pet Ring contains a card, control, scrolling, or artwork surface" >&2
     exit 1
 fi

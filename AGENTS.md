@@ -14,9 +14,9 @@ Pet Halo is an independent, unofficial macOS companion for Codex. The current ap
 - M5 — Pet Target Discovery & Pet-relative Following — is complete through Route A. It prefers the unique geometric Pet AX window target, preserves M4 and M3 fallbacks, and provides optional manual calibration with a separate Pet-relative anchor.
 - M6 — Automatic Center-Locked Pet Attachment — makes first-use Pet attachment automatic, removes legacy positional overrides, locks the panel midpoint to the Pet midpoint, and preserves M4/M3 fallbacks and lifecycle behavior.
 - M7 — Pet Ring Surface & Target-aware Presentation — is complete with PASS. It replaces the Pet demo card with concentric functional Usage rings, explicit visual-center calibration, semantic thresholds, dialog-aware partial arcs, capsule labels, and a non-overshooting display-linked tracking follower while preserving fallback cards.
-- M8 — Visual Polish, Themes & Motion — is the next milestone and has not started. It owns advanced styling beyond the fixed M7 system colors and arc policy, themes, decorative low-usage visuals, and decorative motion.
-- M9 — Hardening & Release Readiness — contains compatibility hardening, packaging, privacy audits, release documentation, and release readiness.
-- Do not begin Screen Recording, visual detection, screenshots/OCR, final artwork, motion, themes, release work, or later milestone work without separate authorization.
+- M8 — Release UI Polish — is complete with PASS. It owns system appearance/accessibility polish, appearance-aware capsule contrast, visible-frame-safe label sides, Reduce Motion direct following, original application/menu icons, spacing, tests, smoke tooling, and documentation. It does not add a theme system or decorative effects.
+- M9 — Public Beta Release Readiness — is next and has not started. It contains compatibility hardening, packaging, signing/notarization, privacy audits, release documentation, automation, and public-beta readiness.
+- Do not begin Screen Recording, visual detection, screenshots/OCR, themes, particles, glow, sound, decorative animation, packaging, signing/notarization, release automation, or later milestone work without separate authorization.
 
 ## Build and test
 
@@ -38,6 +38,8 @@ make m6-tests
 make m6-smoke
 make m7-tests
 make m7-smoke
+make m8-tests
+make m8-smoke
 make check
 ```
 

@@ -136,6 +136,21 @@ private func haloPanelFrame() -> CGRect? {
     return appKitFrame(candidates[0].frame)
 }
 
+private func haloPanelIsOnScreen() -> Bool {
+    guard let application = NSRunningApplication.runningApplications(
+        withBundleIdentifier: petHaloBundleIdentifier
+    ).only else {
+        return false
+    }
+    let windows = CGWindowListCopyWindowInfo(
+        [.optionOnScreenOnly, .excludeDesktopElements],
+        kCGNullWindowID
+    ) as? [[String: Any]] ?? []
+    return windows.contains {
+        ($0[kCGWindowOwnerPID as String] as? Int32) == application.processIdentifier
+    }
+}
+
 private func visualCentersAreAligned(
     panelFrame: CGRect,
     petFrame: CGRect,
@@ -208,6 +223,7 @@ var movementAlignmentObserved = false
 var wakeAlignmentObserved = false
 var petRingObserved = false
 var fallbackCardObserved = false
+var petLossHaloHiddenObserved = false
 var applicationRemainedInactive = true
 
 while Date() < deadline {
@@ -258,6 +274,9 @@ while Date() < deadline {
     } else {
         disappearanceObserved = disappearanceObserved || lastPetPresent
         lastPetPresent = false
+        if disappearanceObserved, !haloPanelIsOnScreen() {
+            petLossHaloHiddenObserved = true
+        }
         if disappearanceObserved, savedWindowAnchor, haloPanelFrame() != nil {
             fallbackObserved = true
             if let panelFrame = haloPanelFrame() {
@@ -286,6 +305,7 @@ print("Pet Wake: \(wakeObserved ? "observed" : "not observed")")
 print("Pet Halo Quit: \(quitObserved ? "observed" : "not observed")")
 print("Pet Ring selected: \(petRingObserved ? "observed" : "not observed")")
 print("Fallback card restored: \(fallbackCardObserved ? "observed" : "not observed")")
+print("Pet loss Halo hidden: \(petLossHaloHiddenObserved ? "observed" : "not observed")")
 print("Application remained inactive: \(applicationRemainedInactive ? "yes" : "no")")
 
 private extension Array {

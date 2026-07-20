@@ -22,6 +22,7 @@ private final class FakeHaloPanelController: HaloPanelControlling {
     private(set) var models: [HaloPresentationModel] = []
     private(set) var petRingModels: [PetRingPresentationModel] = []
     private(set) var petRingOrientation: PetRingOrientation = .fixedDefault
+    private(set) var petRingLabelSide: PetRingLabelSide = .right
     private(set) var operations: [FakePanelOperation] = []
     private(set) var lastSetReferencePoint: CGPoint?
     var onSetAttachment: (@MainActor (PetAttachmentLayout) -> Void)?

@@ -310,19 +310,27 @@ final class PetRingPresentationMapperTests: XCTestCase {
         let metrics: [PetRingMetricKind] = [.weekly, .fiveHour, .today]
         let panelBounds = CGRect(origin: .zero, size: geometry.panelSize)
         for metric in metrics {
-            let right = geometry.labelPosition(for: metric, orientation: .openingTop)
-            let left = geometry.labelPosition(for: metric, orientation: .openingBottom)
+            let right = geometry.labelPosition(
+                for: metric,
+                side: .right,
+                visibleMetrics: metrics
+            )
+            let left = geometry.labelPosition(
+                for: metric,
+                side: .left,
+                visibleMetrics: metrics
+            )
             XCTAssertEqual(right.x + left.x, geometry.panelSize.width, accuracy: 0.001)
             XCTAssertEqual(right.y, left.y, accuracy: 0.001)
             XCTAssertTrue(panelBounds.contains(
-                geometry.labelFrame(for: metric, orientation: .openingTop)
+                geometry.labelFrame(for: metric, side: .right, visibleMetrics: metrics)
             ))
             XCTAssertTrue(panelBounds.contains(
-                geometry.labelFrame(for: metric, orientation: .openingBottom)
+                geometry.labelFrame(for: metric, side: .left, visibleMetrics: metrics)
             ))
         }
         let topFrames = metrics.map {
-            geometry.labelFrame(for: $0, orientation: .openingTop)
+            geometry.labelFrame(for: $0, side: .right, visibleMetrics: metrics)
         }
         XCTAssertEqual(Set(topFrames.map(\.minX)).count, 1)
         XCTAssertGreaterThan(topFrames[0].minX, center.x + geometry.outerRadius)
@@ -330,7 +338,7 @@ final class PetRingPresentationMapperTests: XCTestCase {
         XCTAssertFalse(topFrames[0].intersects(topFrames[2]))
         XCTAssertFalse(topFrames[1].intersects(topFrames[2]))
         let bottomFrames = metrics.map {
-            geometry.labelFrame(for: $0, orientation: .openingBottom)
+            geometry.labelFrame(for: $0, side: .left, visibleMetrics: metrics)
         }
         XCTAssertEqual(Set(bottomFrames.map(\.maxX)).count, 1)
         XCTAssertLessThan(bottomFrames[0].maxX, center.x - geometry.outerRadius)
@@ -338,14 +346,24 @@ final class PetRingPresentationMapperTests: XCTestCase {
         XCTAssertFalse(bottomFrames[0].intersects(bottomFrames[2]))
         XCTAssertFalse(bottomFrames[1].intersects(bottomFrames[2]))
         XCTAssertEqual(
-            metrics.map { geometry.labelPosition(for: $0, orientation: .openingTop).y },
-            [160, 126, 92]
+            metrics.map {
+                geometry.labelPosition(for: $0, side: .right, visibleMetrics: metrics).y
+            },
+            [156, 126, 96]
         )
         XCTAssertGreaterThan(geometry.radius(for: .weekly), geometry.radius(for: .fiveHour))
         XCTAssertGreaterThan(geometry.radius(for: .fiveHour), geometry.radius(for: .today))
         for metric in metrics {
-            let right = geometry.connectorSegment(for: metric, orientation: .openingTop)
-            let left = geometry.connectorSegment(for: metric, orientation: .openingBottom)
+            let right = geometry.connectorSegment(
+                for: metric,
+                side: .right,
+                visibleMetrics: metrics
+            )
+            let left = geometry.connectorSegment(
+                for: metric,
+                side: .left,
+                visibleMetrics: metrics
+            )
             XCTAssertNotEqual(right.ringPoint, right.capsulePoint)
             XCTAssertEqual(right.ringPoint.x + left.ringPoint.x, geometry.panelSize.width, accuracy: 0.001)
             XCTAssertEqual(right.capsulePoint.x + left.capsulePoint.x, geometry.panelSize.width, accuracy: 0.001)

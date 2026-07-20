@@ -43,10 +43,10 @@ Generate schemas from the installed Codex CLI, build a read-only protocol probe,
 
 **Complete — PASS.** Pet uses only a transparent, click-through vector surface centered on the stable AX Pet frame plus a persisted visual-center offset. Three concentric partial rings independently present Weekly remaining, an optional exact 300-minute 5h remaining value, and Today tokens versus nonzero historical peak, with fixed-identity capsule labels and semantic status colors. Dialog-aware orientation, latest-value following, restart recovery, explicit fallback visibility, UTC Today mapping, and calibrated center persistence are complete while Compact/Expanded fallbacks remain intact and are rejected on Pet. Focused M7 tests pass 106/106; the complete Swift suite executed 160 tests with 159 passed and one designed local authenticated integration smoke skipped; all 14 retained M0 tests, both latest CI jobs, live M7 smoke, visible-Pet containment, final capsule screenshot acceptance, and independent review pass with no unresolved threads. PR #8 remains Draft and unmerged. See [the M7 report](milestones/m7-pet-ring-presentation.md).
 
-### M8 — Visual Polish, Themes & Motion
+### M8 — Release UI Polish
 
-**Next milestone — not started.** Add advanced styling beyond M7's fixed functional arc/color policy, themes, decorative low-usage visuals, motion preferences, and animation without using official OpenAI or Codex Pet artwork. M7 completion does not authorize this work.
+**Complete — PASS.** Live light/dark and accessibility treatment, appearance-aware metric-key contrast, visible-frame-safe capsule sides without moving the Ring center, direct Reduce Motion following, original AppIcon and monochrome template menu icon, normalized spacing, deterministic tests, smoke tooling, and documentation are implemented. Full regression, universal Release, retained smoke, direct appearance/live-Pet acceptance, and both Draft PR #9 CI jobs pass. Pet discovery, Usage semantics, target hierarchy, panel centering, bridge behavior, and fallback architecture remain unchanged. M8 adds no theme system, decorative animation, glow, particles, sound, packaging, signing, notarization, or release automation. Draft PR #9 remains open and unmerged. See [the M8 report](milestones/m8-release-ui-polish.md).
 
-### M9 — Hardening & Release Readiness
+### M9 — Public Beta Release Readiness
 
-Expand compatibility fixtures, transport/reconnect tests, UI/window tests, privacy audits, packaging, and release documentation and readiness.
+Expand compatibility fixtures, transport/reconnect tests, UI/window tests, privacy audits, packaging, signing/notarization, release automation, release documentation, and public-beta readiness. M8 completion does not authorize M9.

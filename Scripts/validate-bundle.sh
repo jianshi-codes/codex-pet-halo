@@ -29,6 +29,12 @@ assert_plist_value CFBundleShortVersionString 0.1.0
 assert_plist_value CFBundleVersion 1
 assert_plist_value LSUIElement true
 assert_plist_value LSMinimumSystemVersion 14.0
+assert_plist_value CFBundleIconName AppIcon
+
+if [[ ! -f "$app_bundle/Contents/Resources/Assets.car" ]]; then
+    echo "error: compiled application asset catalog not found" >&2
+    exit 1
+fi
 
 if [[ "$configuration" == "Release" ]]; then
     if ! executable_architectures="$(lipo -archs "$executable")"; then
