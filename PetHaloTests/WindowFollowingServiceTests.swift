@@ -379,7 +379,7 @@ final class WindowFollowingServiceTests: XCTestCase {
     }
 
     @MainActor
-    func testPetMovementIsIndependentFromDialogDebounceAndReplacementSnaps() async throws {
+    func testPetMovementIsIndependentFromDialogDebounceAndProcessReplacementSnaps() async throws {
         let initial = CGRect(x: 500, y: 300, width: 120, height: 110)
         let moved = initial.offsetBy(dx: 12, dy: -8)
         let replacement = initial.offsetBy(dx: 28, dy: 14)
@@ -402,15 +402,32 @@ final class WindowFollowingServiceTests: XCTestCase {
         XCTAssertEqual(recorder.layouts.last?.panelFrame.midX, moved.midX)
         XCTAssertEqual(recorder.placementModes.last, .follow)
 
-        context.petAccessor.snapshot = PetTargetSnapshot(
-            generation: generation,
+        context.locator.selection = .selected(processIdentifier: 84)
+        context.petAccessor.result = .selected(PetTargetSnapshot(
+            generation: 0,
             frame: replacement
-        )
-        context.petAccessor.emit(.selectionChanged)
+        ))
+        context.service.recoverStateIfNeeded()
         for _ in 0 ..< 100 where recorder.layouts.last?.panelFrame.midX != replacement.midX {
             await Task.yield()
         }
         XCTAssertEqual(recorder.placementModes.last, .snap)
+        XCTAssertEqual(context.petAccessor.resolveCount, 2)
+
+        let silentlyUpdated = replacement.offsetBy(dx: -16, dy: 22)
+        let replacementGeneration = try XCTUnwrap(context.petAccessor.snapshot?.generation)
+        context.petAccessor.snapshot = PetTargetSnapshot(
+            generation: replacementGeneration,
+            frame: silentlyUpdated
+        )
+        context.service.recoverStateIfNeeded()
+        for _ in 0 ..< 100 where recorder.layouts.last?.panelFrame.midX != silentlyUpdated.midX {
+            await Task.yield()
+        }
+        XCTAssertEqual(recorder.layouts.last?.panelFrame.midX, silentlyUpdated.midX)
+        XCTAssertEqual(recorder.layouts.last?.panelFrame.midY, silentlyUpdated.midY)
+        XCTAssertEqual(recorder.placementModes.last, .snap)
+        XCTAssertEqual(context.petAccessor.resolveCount, 2)
         XCTAssertTrue(recorder.orientations.isEmpty)
         recorder.stop()
         await context.service.stop()
@@ -878,6 +895,7 @@ final class WindowFollowingServiceTests: XCTestCase {
         )
         return Context(
             service: service,
+            locator: locator,
             petAccessor: petAccessor,
             windowAccessor: windowAccessor,
             events: events,
@@ -896,6 +914,7 @@ final class WindowFollowingServiceTests: XCTestCase {
     @MainActor
     private struct Context {
         let service: WindowFollowingService
+        let locator: FakeApplicationLocator
         let petAccessor: FakePetAccessor
         let windowAccessor: FakeWindowAccessor
         let events: FakeSystemEventSource

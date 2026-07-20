@@ -130,11 +130,15 @@ struct PetWindowCandidate: Equatable, Sendable {
               frame.width > 0,
               frame.height > 0,
               role == "AXWindow",
-              subrole == "AXDialog"
+              subrole == "AXDialog" || subrole == "AXSystemDialog"
         else {
             return false
         }
         return (0.8 ... 1.5).contains(frame.width / frame.height)
+    }
+
+    var isPreferredCoreSurface: Bool {
+        isEligibleCoreSurface && subrole == "AXSystemDialog"
     }
 
     var isEligibleActivitySurface: Bool {
@@ -164,7 +168,10 @@ enum PetWindowSelection: Equatable, Sendable {
 
 enum PetWindowSelector {
     static func select(from candidates: [PetWindowCandidate]) -> PetWindowSelection {
-        let eligible = candidates.filter(\.isEligibleCoreSurface)
+        let preferred = candidates.filter(\.isPreferredCoreSurface)
+        let eligible = preferred.isEmpty
+            ? candidates.filter(\.isEligibleCoreSurface)
+            : preferred
         let groups = Dictionary(grouping: eligible, by: { FrameKey(frame: $0.frame) })
         guard groups.count == 1,
               let group = groups.values.first

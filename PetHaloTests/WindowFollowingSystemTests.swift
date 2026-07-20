@@ -62,9 +62,15 @@ final class WindowFollowingSystemTests: XCTestCase {
             pointOffset: PointOffsetValue(width: 48, height: -12)
         )
 
+        let visualOffset = PetVisualCenterOffset(horizontal: -12, vertical: 36)
+        defaults.set(
+            try JSONEncoder().encode(visualOffset),
+            forKey: "io.github.jianshicodes.PetHalo.petRing.visualCenterOffset.v1"
+        )
+        XCTAssertEqual(store.load().petVisualCenterOffset, .zero)
+
         store.setFollowingEnabled(true)
         store.setWindowAnchor(anchor)
-        let visualOffset = PetVisualCenterOffset(horizontal: -12, vertical: 36)
         store.setPetVisualCenterOffset(visualOffset)
         XCTAssertEqual(
             store.load(),

@@ -31,7 +31,7 @@ final class UserDefaultsWindowFollowingPreferences: WindowFollowingPreferenceSto
         static let followingEnabled = "io.github.jianshicodes.PetHalo.windowFollowing.enabled"
         static let windowAnchor = "io.github.jianshicodes.PetHalo.windowFollowing.anchor.v1"
         static let petAnchor = "io.github.jianshicodes.PetHalo.petFollowing.anchor.v1"
-        static let petVisualCenterOffset = "io.github.jianshicodes.PetHalo.petRing.visualCenterOffset.v1"
+        static let petVisualCenterOffset = "io.github.jianshicodes.PetHalo.petRing.visualCenterOffset.v2"
     }
 
     private let defaults: UserDefaults

@@ -110,13 +110,26 @@ final class PetTargetModelsTests: XCTestCase {
         ))
     }
 
-    func testSelectsSingleBalancedDialogAsPetCore() {
+    func testPrefersStableSystemDialogCoreAndFallsBackToDialog() {
+        let systemDialog = candidate(
+            2,
+            subrole: "AXSystemDialog",
+            frame: CGRect(x: 300, y: 400, width: 118, height: 122)
+        )
         XCTAssertEqual(
             PetWindowSelector.select(from: [candidate(1)]),
             .selected(
                 memberIdentities: [1],
                 frame: CGRect(x: 100, y: 200, width: 120, height: 110)
             )
+        )
+        XCTAssertEqual(
+            PetWindowSelector.select(from: [systemDialog]),
+            .selected(memberIdentities: [2], frame: systemDialog.frame)
+        )
+        XCTAssertEqual(
+            PetWindowSelector.select(from: [systemDialog, candidate(1)]),
+            .selected(memberIdentities: [2], frame: systemDialog.frame)
         )
     }
 

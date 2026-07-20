@@ -7,7 +7,7 @@ private let petHaloBundleIdentifier = "io.github.jianshicodes.PetHalo"
 private let preferencesDomain = "io.github.jianshicodes.PetHalo"
 private let petAnchorKey = "io.github.jianshicodes.PetHalo.petFollowing.anchor.v1"
 private let windowAnchorKey = "io.github.jianshicodes.PetHalo.windowFollowing.anchor.v1"
-private let visualCenterOffsetKey = "io.github.jianshicodes.PetHalo.petRing.visualCenterOffset.v1"
+private let visualCenterOffsetKey = "io.github.jianshicodes.PetHalo.petRing.visualCenterOffset.v2"
 
 private struct VisualCenterOffset: Decodable {
     let horizontal: Double
@@ -79,11 +79,16 @@ private func windows(from application: AXUIElement) -> [WindowGeometry] {
 }
 
 private func petCore(from candidates: [WindowGeometry]) -> CGRect? {
-    let eligible = candidates.filter {
+    let balanced = candidates.filter {
         !$0.minimized && !$0.hidden
-            && $0.role == "AXWindow" && $0.subrole == "AXDialog"
+            && $0.role == "AXWindow"
+            && ($0.subrole == "AXDialog" || $0.subrole == "AXSystemDialog")
             && (0.8 ... 1.5).contains($0.frame.width / $0.frame.height)
     }
+    let preferred = balanced.filter { $0.subrole == "AXSystemDialog" }
+    let eligible = preferred.isEmpty
+        ? balanced.filter { $0.subrole == "AXDialog" }
+        : preferred
     let groups = Dictionary(grouping: eligible) {
         [$0.frame.minX, $0.frame.minY, $0.frame.width, $0.frame.height]
             .map { Int(($0 * 2).rounded()) }
@@ -124,6 +129,7 @@ private func haloPanelFrame() -> CGRect? {
             && ((abs($0.frame.width - 176) <= 1 && abs($0.frame.height - 176) <= 1)
                 || (abs($0.frame.width - 208) <= 1 && abs($0.frame.height - 208) <= 1)
                 || (abs($0.frame.width - 252) <= 1 && abs($0.frame.height - 252) <= 1)
+                || (abs($0.frame.width - 448) <= 1 && abs($0.frame.height - 252) <= 1)
                 || (abs($0.frame.width - 360) <= 1 && abs($0.frame.height - 520) <= 1))
     }
     guard candidates.count == 1 else { return nil }
@@ -234,6 +240,7 @@ while Date() < deadline {
             attachmentObserved = true
             petRingObserved = petRingObserved
                 || (abs(panelFrame.width - 252) <= 1 && abs(panelFrame.height - 252) <= 1)
+                || (abs(panelFrame.width - 448) <= 1 && abs(panelFrame.height - 252) <= 1)
             if visualCentersAreAligned(
                 panelFrame: panelFrame,
                 petFrame: petFrame,

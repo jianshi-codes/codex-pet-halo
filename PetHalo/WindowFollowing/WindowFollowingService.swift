@@ -70,6 +70,7 @@ final class WindowFollowingService: HaloWindowFollowing {
     private var calibrationTarget: CalibrationTarget?
     private var petRingOrientation: PetRingOrientation = .fixedDefault
     private var pendingPetRingOrientation: PetRingOrientation?
+    private var petProcessIdentifier: Int32?
     private var petGeneration = 0
     private var windowGeneration = 0
     private var systemEventTask: Task<Void, Never>?
@@ -162,6 +163,7 @@ final class WindowFollowingService: HaloWindowFollowing {
         pendingPetRingOrientation = nil
         suspendCalibrationIfNeeded()
         petSnapshot = nil
+        petProcessIdentifier = nil
         windowFrame = nil
         petAccessor.stop()
         windowAccessor.stop()
@@ -197,6 +199,7 @@ final class WindowFollowingService: HaloWindowFollowing {
         petFollowingSuppressed = true
         petGeneration += 1
         petSnapshot = nil
+        petProcessIdentifier = nil
         petAccessor.stop()
         transitionPetDiscovery(to: .suspended)
         resolveWindowFallback()
@@ -387,6 +390,7 @@ final class WindowFollowingService: HaloWindowFollowing {
         if petFollowingSuppressed {
             petGeneration += 1
             petSnapshot = nil
+            petProcessIdentifier = nil
             petAccessor.stop()
             transitionPetDiscovery(to: .suspended)
             resolveWindowFallback()
@@ -395,9 +399,11 @@ final class WindowFollowingService: HaloWindowFollowing {
         suspendCalibrationIfNeeded()
         transition(to: .searching)
         transitionPetDiscovery(to: .searching)
+        let previousPetProcessIdentifier = petProcessIdentifier
         petGeneration += 1
         let currentGeneration = petGeneration
         petSnapshot = nil
+        petProcessIdentifier = nil
         petAccessor.stop()
 
         let processIdentifier: Int32
@@ -422,13 +428,17 @@ final class WindowFollowingService: HaloWindowFollowing {
             }
         ) {
         case let .selected(snapshot):
+            petProcessIdentifier = processIdentifier
             petSnapshot = snapshot
             schedulePetRingOrientation(for: snapshot)
             transitionPetDiscovery(to: .found)
             windowGeneration += 1
             windowFrame = nil
             windowAccessor.stop()
-            applyPetPlacement()
+            applyPetPlacement(mode: previousPetProcessIdentifier == nil
+                || previousPetProcessIdentifier == processIdentifier
+                ? .follow
+                : .snap)
         case .unavailable:
             transitionPetDiscovery(to: .unavailable)
             resolveWindowFallback(processIdentifier: processIdentifier)
@@ -651,7 +661,26 @@ final class WindowFollowingService: HaloWindowFollowing {
             if targetSource == .freeFloating {
                 resolveWindowFallback()
             }
-        } else if targetSource != .pet || petDiscoveryState != .found {
+        } else if targetSource == .pet, petDiscoveryState == .found {
+            guard case let .selected(currentProcessIdentifier) = applicationLocator.locate(),
+                  currentProcessIdentifier == petProcessIdentifier
+            else {
+                resolvePreferredTarget()
+                return
+            }
+            guard let snapshot = petAccessor.currentSnapshot(),
+                  snapshot.generation == petGeneration
+            else {
+                resolvePreferredTarget()
+                return
+            }
+            let frameChanged = snapshot.frame != petSnapshot?.frame
+            petSnapshot = snapshot
+            schedulePetRingOrientation(for: snapshot)
+            if frameChanged, !isPetVisualCenterCalibrationActive {
+                applyPetPlacement(mode: .snap)
+            }
+        } else {
             resolvePreferredTarget()
         }
     }
@@ -755,6 +784,7 @@ final class WindowFollowingService: HaloWindowFollowing {
         petOrientationTask = nil
         pendingPetRingOrientation = nil
         petSnapshot = nil
+        petProcessIdentifier = nil
         windowFrame = nil
         petAccessor.stop()
         windowAccessor.stop()
