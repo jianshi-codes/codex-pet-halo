@@ -286,7 +286,7 @@ final class ApplicationCoordinatorTests: XCTestCase {
         let stopCount = await service.stopCount
         XCTAssertEqual(startCount, 1)
         XCTAssertEqual(stopCount, 1)
-        XCTAssertEqual(panel.showCount, 1)
+        XCTAssertEqual(panel.showCount, 0)
         XCTAssertEqual(panel.stopCount, 1)
         let stoppedInOrder = await service.panelWasStoppedWhenServiceStopped
         XCTAssertTrue(stoppedInOrder)
@@ -427,9 +427,11 @@ final class ApplicationCoordinatorTests: XCTestCase {
     func testHaloCommandsAndRefreshAreIdempotent() async {
         let service = FakeUsageService()
         let panel = FakeHaloPanelController()
+        let following = FakeWindowFollowingService()
         let coordinator = ApplicationCoordinator(
             usageService: service,
             haloPanelController: panel,
+            windowFollowingService: following,
             terminateApplication: {}
         )
         XCTAssertFalse(coordinator.canRefreshUsage)
@@ -437,6 +439,14 @@ final class ApplicationCoordinatorTests: XCTestCase {
         let disconnectedRefreshCount = await service.refreshCount
         XCTAssertEqual(disconnectedRefreshCount, 0)
         coordinator.start()
+
+        following.emit(.targetSourceChanged(.codexWindowFallback))
+        for _ in 0 ..< 100 where coordinator.targetSource != .codexWindowFallback {
+            await Task.yield()
+        }
+        XCTAssertFalse(coordinator.haloIsVisible)
+        coordinator.useWindowFallback()
+        XCTAssertTrue(coordinator.haloIsVisible)
 
         for _ in 0 ..< 100 where !coordinator.canRefreshUsage {
             await Task.yield()
@@ -602,6 +612,9 @@ final class ApplicationCoordinatorTests: XCTestCase {
         for _ in 0 ..< 100 where coordinator.targetSource != .codexWindowFallback {
             await Task.yield()
         }
+        XCTAssertFalse(coordinator.haloIsVisible)
+        coordinator.useWindowFallback()
+        XCTAssertTrue(coordinator.haloIsVisible)
         coordinator.setHaloMode(.expanded)
         XCTAssertEqual(panel.mode, .expanded)
         XCTAssertEqual(panel.frame.size, CGSize(width: 360, height: 520))
@@ -646,6 +659,7 @@ final class ApplicationCoordinatorTests: XCTestCase {
         XCTAssertEqual(panel.frame.midX, petFrame.midX)
         XCTAssertEqual(panel.frame.midY, petFrame.midY)
         XCTAssertTrue(panel.ignoresMouseEvents)
+        XCTAssertTrue(coordinator.haloIsVisible)
         XCTAssertFalse(coordinator.canChangeHaloMode)
 
         coordinator.setHaloMode(.expanded)
@@ -657,6 +671,7 @@ final class ApplicationCoordinatorTests: XCTestCase {
         }
         XCTAssertEqual(panel.mode, .expanded)
         XCTAssertEqual(panel.surfaceMode, .expandedCard)
+        XCTAssertFalse(coordinator.haloIsVisible)
         XCTAssertTrue(coordinator.canChangeHaloMode)
         coordinator.setHaloMode(.compact)
         XCTAssertEqual(panel.mode, .compact)
@@ -696,6 +711,7 @@ final class ApplicationCoordinatorTests: XCTestCase {
         XCTAssertEqual(panel.surfaceMode, .expandedCard)
         XCTAssertEqual(panel.frame.size, HaloPanelController.expandedSize)
         XCTAssertFalse(panel.ignoresMouseEvents)
+        XCTAssertFalse(coordinator.haloIsVisible)
         coordinator.requestTermination()
         await coordinator.waitForShutdown()
     }

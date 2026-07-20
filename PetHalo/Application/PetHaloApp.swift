@@ -28,7 +28,7 @@ private struct ApplicationMenuContent: View {
         Button("Show Halo") {
             coordinator.showHalo()
         }
-        .disabled(coordinator.haloIsVisible || !coordinator.acceptsUICommands)
+        .disabled(!coordinator.canShowHalo)
 
         Button("Hide Halo") {
             coordinator.hideHalo()

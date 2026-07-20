@@ -78,6 +78,8 @@ final class ApplicationCoordinator: ObservableObject {
     private var shutdownComplete = false
     private var previousNonPetHaloMode: HaloPresentationMode?
     private var previousNonPetReferencePoint: CGPoint?
+    private var haloVisibilityRequested = true
+    private var codexFallbackExplicitlyVisible = false
     private var productionPetRingOrientation: PetRingOrientation = .fixedDefault
 
     init(
@@ -148,8 +150,6 @@ final class ApplicationCoordinator: ObservableObject {
         applyEffectivePetRingOrientation()
         haloMode = .compact
         haloSurfaceMode = .compactCard
-        haloPanelController?.show()
-        haloIsVisible = haloPanelController?.isVisible == true
         windowFollowingService.start()
         bridgeStartTask = Task { [usageService] in
             await usageService.start()
@@ -157,13 +157,15 @@ final class ApplicationCoordinator: ObservableObject {
     }
 
     func showHalo() {
-        guard state == .running else { return }
+        guard canShowHalo else { return }
+        haloVisibilityRequested = true
         haloPanelController?.show()
         haloIsVisible = haloPanelController?.isVisible == true
     }
 
     func hideHalo() {
         guard state == .running else { return }
+        haloVisibilityRequested = false
         haloPanelController?.hide()
         haloIsVisible = haloPanelController?.isVisible == true
     }
@@ -194,6 +196,13 @@ final class ApplicationCoordinator: ObservableObject {
 
     var acceptsUICommands: Bool {
         state == .running
+    }
+
+    var canShowHalo: Bool {
+        state == .running
+            && !haloIsVisible
+            && (targetSource == .pet
+                || (targetSource == .codexWindowFallback && codexFallbackExplicitlyVisible))
     }
 
     var canChangeHaloMode: Bool {
@@ -234,18 +243,24 @@ final class ApplicationCoordinator: ObservableObject {
 
     var canUseWindowFallback: Bool {
         state == .running
-            && targetSource == .pet
+            && targetSource != .freeFloating
+            && !codexFallbackExplicitlyVisible
             && windowFollowingState != .calibrating
     }
 
     func enablePetFollowing() {
         guard canEnablePetFollowing else { return }
+        codexFallbackExplicitlyVisible = false
+        haloVisibilityRequested = true
         windowFollowingService.enable()
     }
 
     func useWindowFallback() {
         guard canUseWindowFallback else { return }
+        codexFallbackExplicitlyVisible = true
+        haloVisibilityRequested = true
         windowFollowingService.useWindowFallback()
+        showHaloIfEligible()
     }
 
     func disableWindowFollowing() {
@@ -406,6 +421,7 @@ final class ApplicationCoordinator: ObservableObject {
         case let .activatePetAttachment(layout):
             applyTargetSource(.pet)
             haloPanelController?.setAttachmentLayout(layout)
+            showHaloIfEligible()
         case let .placePetAttachment(layout, mode):
             switch mode {
             case .snap:
@@ -435,6 +451,7 @@ final class ApplicationCoordinator: ObservableObject {
         targetSource = newSource
         targetStatusText = newSource.statusText
         if newSource == .pet {
+            codexFallbackExplicitlyVisible = false
             if previousSource != .pet {
                 previousNonPetHaloMode = haloMode
                 previousNonPetReferencePoint = haloPanelController?.referencePoint
@@ -453,6 +470,27 @@ final class ApplicationCoordinator: ObservableObject {
             previousNonPetReferencePoint = nil
             applyHaloMode(mode)
         }
+        if newSource == .codexWindowFallback, codexFallbackExplicitlyVisible {
+            showHaloIfEligible()
+        } else if newSource != .pet {
+            hideHaloForUnavailablePet()
+        }
+    }
+
+    private func showHaloIfEligible() {
+        guard haloVisibilityRequested,
+              targetSource == .pet
+                || (targetSource == .codexWindowFallback && codexFallbackExplicitlyVisible)
+        else {
+            return
+        }
+        haloPanelController?.show()
+        haloIsVisible = haloPanelController?.isVisible == true
+    }
+
+    private func hideHaloForUnavailablePet() {
+        haloPanelController?.hide()
+        haloIsVisible = haloPanelController?.isVisible == true
     }
 
     private func updateUsageState(_ usageState: CodexUsageState) {
