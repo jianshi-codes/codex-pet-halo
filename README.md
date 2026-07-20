@@ -6,7 +6,11 @@ Pet Halo is an independent, unofficial macOS companion that aims to display a tr
 
 ## Status
 
-**M3 Halo Window is complete with PASS.** The native Swift 6 accessory application presents a transparent, borderless, non-activating `NSPanel` with compact and expanded Usage layouts. It shows the real weekly remaining quota, capability-gates the optional five-hour quota, presents Account Usage without identity, and marks current, stale, and unavailable components explicitly. Menu commands show, hide, resize, and refresh the Halo; compact is click-through, while expanded accepts scrolling without becoming key, main, or activating the application.
+**M4 Codex Window Following & Fallback is complete with `PASS`.** Pet Halo remains free-floating by default, requests Accessibility only after `Enable Window Following`, discovers only the exact `com.openai.codex` application, selects a standard window deterministically, and supports explicit drag calibration. A versioned normalized-window-point plus point-offset anchor follows move/resize events and remains contained in multi-display visible frames. Missing permission, Codex, an unambiguous window, or a valid observer leaves Usage visible in safe free-floating fallback.
+
+The product target hierarchy is: Pet target following is preferred; calibrated Codex standard-window following is the permanent fallback; and a free-floating Halo is the final fallback. M4 implements the latter two levels. It follows the Codex standard window, not the independently movable Codex Pet, and does not claim Pet following or automatic Pet detection.
+
+The M3 non-activating panel behavior remains intact: compact is click-through outside calibration, expanded accepts scrolling, and neither mode can become key or main. Direct local validation passed permission, calibration, move/resize, focus, interaction, fallback, Codex and Pet Halo restart recovery, cleanup, and multi-display checks. The Codex launch-before-window-ready race found during validation was fixed and passed focused physical revalidation without recalibration.
 
 M0 protocol feasibility remains complete with **PASS-CORE / PARTIAL-OPTIONALS**. The validated future MVP uses capability-driven data:
 
@@ -30,16 +34,18 @@ make m2-tests
 make m2-smoke
 make m3-tests
 make m3-smoke
+make m4-tests
+make m4-smoke
 make check
 ```
 
 XcodeGen 2.46.0 is required. `project.yml` is the editable project source of truth; the generated Xcode project is committed and must not be hand-edited.
 
-`make m2-tests` and `make m3-tests` are deterministic and require neither a real Codex installation nor authentication. `make m2-smoke` is a local-only read-only bridge check. `make m3-smoke` combines deterministic presentation checks with an authenticated accessory-app lifecycle smoke; both print sanitized status only.
+`make m2-tests`, `make m3-tests`, and `make m4-tests` are deterministic and require neither Accessibility permission nor a running Codex application. `make m4-smoke` adds a sanitized live permission/exact-application/window check and clearly labels interactive observations that remain manual.
 
-M3 uses a fixed upper-right initial position and does not inspect, follow, or position itself relative to Codex or Codex Pet. It stores no placement or preferences. Calibration/window following belongs to M4, while final artwork, motion, and game-like visual design belong to M5.
+M5 owns discovery-first Pet target discovery and Pet-relative following: first a separate Codex-owned Accessibility window or panel, then a stable Accessibility child element, and only if Accessibility is impossible a separately authorized visual-detection route that may require Screen Recording. This roadmap entry does not authorize M5, Screen Recording, or visual detection. M6 owns final branding, motion, themes, and game-like visual design; M7 owns compatibility hardening, packaging, privacy audits, and release readiness.
 
-See [the M3 report](docs/milestones/m3-halo-window.md), [compatibility contract](docs/COMPATIBILITY.md), [privacy policy](docs/PRIVACY.md), and [contribution guide](CONTRIBUTING.md).
+See [the M4 report](docs/milestones/m4-window-following.md), [window-following ADR](docs/adr/0006-window-following-calibration.md), [compatibility contract](docs/COMPATIBILITY.md), and [privacy policy](docs/PRIVACY.md).
 
 ## Branding
 

@@ -44,7 +44,7 @@ private struct ApplicationMenuContent: View {
                 Text("Compact")
             }
         }
-        .disabled(!coordinator.acceptsUICommands)
+        .disabled(!coordinator.canChangeHaloMode)
 
         Button {
             coordinator.setHaloMode(.expanded)
@@ -55,12 +55,44 @@ private struct ApplicationMenuContent: View {
                 Text("Expanded")
             }
         }
-        .disabled(!coordinator.acceptsUICommands)
+        .disabled(!coordinator.canChangeHaloMode)
 
         Button("Refresh Usage") {
             coordinator.refreshUsage()
         }
         .disabled(!coordinator.canRefreshUsage)
+        Divider()
+        Text(coordinator.followingStatusText)
+
+        Button("Enable Window Following") {
+            coordinator.enableWindowFollowing()
+        }
+        .disabled(!coordinator.canEnableWindowFollowing)
+
+        Button("Calibrate Position") {
+            coordinator.beginWindowFollowingCalibration()
+        }
+        .disabled(!coordinator.canCalibrateWindowFollowing)
+
+        Button("Finish Calibration") {
+            coordinator.finishWindowFollowingCalibration()
+        }
+        .disabled(!coordinator.canFinishCalibration)
+
+        Button("Cancel Calibration") {
+            coordinator.cancelWindowFollowingCalibration()
+        }
+        .disabled(!coordinator.canFinishCalibration)
+
+        Button("Disable Window Following") {
+            coordinator.disableWindowFollowing()
+        }
+        .disabled(!coordinator.canDisableWindowFollowing)
+
+        Button("Reset Halo Position") {
+            coordinator.resetHaloPosition()
+        }
+        .disabled(!coordinator.acceptsUICommands)
         Divider()
         Text(menuModel.versionText)
         Divider()

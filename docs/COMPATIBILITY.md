@@ -56,6 +56,22 @@ The M3 mapper consumes only the stable M2 domain. Weekly/five-hour presentation 
 
 The panel does not discover or inspect Codex, enumerate product windows, request Accessibility or Screen Recording permission, or use saved placement. M4 owns any future calibration/window-following compatibility work; M5 owns final artwork and visual themes.
 
+## M4 window-following contract
+
+| Component | M4 contract |
+| --- | --- |
+| Application discovery | `NSRunningApplication.runningApplications(withBundleIdentifier:)` for exact `com.openai.codex` only; one exact candidate wins, or one active candidate among multiples |
+| Permission | Accessibility trust checked without prompting at startup; the prompt option is used only after `Enable Window Following` |
+| Window selection | focused eligible standard window, then main eligible standard window, then exactly one eligible visible non-minimized standard window; otherwise fallback |
+| AX data | window list, focused/main references, role, subrole, minimized, position, and size only |
+| AX events | moved, resized, focused/main change, created, destroyed; workspace launch/termination/activation is exact-bundle filtered |
+| Coordinates | AX global top-left/Y-down converted once to AppKit global Y-up using the primary display frame; point values are not scaled as pixels |
+| Placement | version-1 normalized point inside the Codex window plus a fixed point offset to the Halo upper-right reference |
+| Displays | anchor-point screen selection, complete visible-frame containment, nearest remaining display fallback, no persisted screen index |
+| Interaction | calibration temporarily accepts drag events; the panel remains `.nonactivatingPanel` and cannot become key or main |
+
+Synthetic tests cover a main display at `(0,0)`, a negative-X left display, a negative-Y lower display, mixed sizes, boundary-crossing windows, screen removal, and an oversized Halo. The implementation currently targets macOS 14 or later. Direct validation passed explicit Accessibility permission, calibration, physical move/resize, focus and interaction behavior, multi-display containment, permission fallback/recovery, Codex termination/relaunch recovery, Pet Halo restart, and clean shutdown as recorded in the M4 report.
+
 ## Protocol matrix for Codex CLI 0.145.0-alpha.18
 
 | Capability | Generated shape | Runtime result |
