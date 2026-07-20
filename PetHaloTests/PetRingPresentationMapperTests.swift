@@ -320,7 +320,7 @@ final class PetRingPresentationMapperTests: XCTestCase {
         XCTAssertFalse(bottomFrames[1].intersects(bottomFrames[2]))
         XCTAssertEqual(
             metrics.map { geometry.labelPosition(for: $0, orientation: .openingTop).y },
-            [92, 126, 160]
+            [160, 126, 92]
         )
         XCTAssertGreaterThan(geometry.radius(for: .weekly), geometry.radius(for: .fiveHour))
         XCTAssertGreaterThan(geometry.radius(for: .fiveHour), geometry.radius(for: .today))

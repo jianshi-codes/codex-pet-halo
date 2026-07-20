@@ -128,11 +128,11 @@ struct PetRingGeometry: Equatable, Sendable {
         let y: Double
         switch metric {
         case .weekly:
-            y = 92
+            y = 160
         case .fiveHour:
             y = 126
         case .today:
-            y = 160
+            y = 92
         }
         return CGPoint(
             x: x,
