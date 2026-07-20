@@ -3,7 +3,7 @@
 - Milestone: M7 — Pet Ring Surface & Target-aware Presentation
 - Route: `ROUTE_A — PET_ACCESSIBILITY_WINDOW`
 - Implementation: complete on `m7/pet-ring-presentation`; final live validation pending
-- Gate: M7 not yet PASS — M5-M7 live interaction, observer visual confirmation, pushed-Head Draft PR CI, and independent review remain publication gates
+- Gate: M7 not yet PASS — M5-M7 live interaction, observer visual confirmation, and independent review remain publication gates
 - Target hierarchy: Pet / calibrated Codex standard window / free-floating Halo
 - Pet placement invariant: whenever the selected target is Pet, the Halo panel midpoint equals the Pet AX frame midpoint
 - Geometry boundary: `PetTargetSnapshot` carries only the Pet frame and generation; the fixed M7 ring is `208×208` with a `158`-point transparent center while fallback cards retain `176×176` Compact and `360×520` Expanded sizing
@@ -17,6 +17,7 @@
 - Pet metrics: weekly uses domain `remainingPercent`; 5h requires an exact 300-minute capability; Today tokens require exactly one bucket matching the injected Calendar day; rate and Account Usage freshness remain independent
 - Focused M7 validation: 79 application/presentation/following tests pass with fakes and synthetic geometry; no Codex process or Accessibility permission required
 - Full validation: generated-project/source/privacy scans, Debug build/bundle, universal arm64+x86_64 Release build/bundle, all 82 Swift tests, all 14 M0 protocol tests, and whitespace checks pass
+- Draft PR CI: Protocol evidence and macOS application jobs pass on pushed commit `9c7a4b9`
 - M2 timing validation: `testSparseNotificationBurstDebouncesToOneCompleteRefreshSeam` passes 30/30 fail-fast repetitions without retry
 - Live validation: current-tree M2 and M3 lifecycle smokes pass; M4 deterministic/accessibility/lifecycle smoke completes with the standard window currently unavailable; M5-M7 are blocked until one visible unique Pet and one normal Codex window are present
 - Retained protocol boundary: M0 remains PASS-CORE / PARTIAL-OPTIONALS; production remains fail-closed to CLI `0.145.0-alpha.18`; no Codex internal database dependency

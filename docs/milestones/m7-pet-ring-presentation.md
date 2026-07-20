@@ -39,8 +39,9 @@ M7 adds no OpenAI, ChatGPT, or Codex Pet artwork; no screenshots, OCR, Screen Re
 | M0-M6 regression and complete Swift suite | PASS — 82 Swift tests plus 14 M0 tests |
 | Debug and universal Release bundle | PASS — Debug plus arm64/x86_64 Release |
 | Source, privacy, generated-project, and bundle boundaries | PASS |
+| Draft PR CI | PASS — Protocol evidence and macOS application jobs on pushed commit `9c7a4b9` |
 | M2-M7 smoke | M2/M3 PASS; M4 completes with standard window unavailable; M5-M7 blocked until a unique visible Pet and normal Codex window are present |
 | Direct visible-Pet/no-rectangle confirmation | Pending observer confirmation; screenshots and visual detection are out of scope |
-| Draft PR CI and independent review | Pending publication |
+| Independent review | Pending publication review |
 
 M7 becomes PASS only after every pending row is closed with current-tree evidence. A Draft PR does not authorize merge or M8.
