@@ -18,45 +18,24 @@ enum HaloFollowingTargetSource: Equatable, Sendable {
     }
 }
 
-struct PetEnvironmentSnapshot: Equatable, Sendable {
+struct PetTargetSnapshot: Equatable, Sendable {
     let generation: Int
-    let petFrame: CGRect
-    let activityFrame: CGRect?
-
-    init(generation: Int, petFrame: CGRect, activityFrame: CGRect? = nil) {
-        self.generation = generation
-        self.petFrame = petFrame
-        self.activityFrame = activityFrame
-    }
-}
-
-enum PetPlacementMode: Equatable, Sendable {
-    case automatic
-    case manual
-}
-
-enum PetAttachmentSide: Equatable, Sendable {
-    case above
-    case below
+    let frame: CGRect
 }
 
 struct PetAttachmentLayout: Equatable, Sendable {
-    let side: PetAttachmentSide
     let referencePoint: CGPoint
     let panelFrame: CGRect
 }
 
 enum PetPlacementStatus: Equatable, Sendable {
-    case automatic(PetAttachmentSide)
-    case manual
+    case centered
     case unavailable
 
     var statusText: String {
         switch self {
-        case .automatic:
-            "Pet placement: Automatic Centered"
-        case .manual:
-            "Pet placement: Fine-tuned"
+        case .centered:
+            "Pet placement: Centered"
         case .unavailable:
             "Pet placement: Unavailable"
         }
@@ -153,74 +132,10 @@ enum PetWindowSelector {
     }
 }
 
-enum PetActivityWindowSelector {
-    static func select(
-        from candidates: [PetWindowCandidate],
-        excluding memberIdentities: Set<Int>,
-        near petFrame: CGRect
-    ) -> PetWindowCandidate? {
-        guard petFrame.isFinite, petFrame.width > 0, petFrame.height > 0 else { return nil }
-        let proximity = max(max(petFrame.width, petFrame.height) * 2, 240)
-        let nearbyFrame = petFrame.insetBy(dx: -proximity, dy: -proximity)
-        let eligible = candidates.filter { candidate in
-            guard !memberIdentities.contains(candidate.identity),
-                  !candidate.isMinimized,
-                  !candidate.isHidden,
-                  candidate.role == "AXWindow",
-                  candidate.subrole == "AXDialog",
-                  candidate.frame.isFinite,
-                  candidate.frame.width >= max(160, petFrame.width * 0.45),
-                  candidate.frame.height > 0,
-                  candidate.frame.width / candidate.frame.height >= 1.8,
-                  nearbyFrame.intersects(candidate.frame)
-            else {
-                return false
-            }
-            return true
-        }
-        return eligible.count == 1 ? eligible[0] : nil
-    }
-}
-
 enum PetAttachmentLayoutPolicy {
-    static func preferredSide(
-        petFrame: CGRect,
-        activityFrame: CGRect?,
-        visibleFrame: CGRect,
-        currentSide: PetAttachmentSide?
-    ) -> PetAttachmentSide? {
-        guard petFrame.isFinite,
-              petFrame.width > 0,
-              petFrame.height > 0,
-              visibleFrame.isFinite,
-              visibleFrame.width > 0,
-              visibleFrame.height > 0
-        else {
-            return nil
-        }
-        if let activityFrame,
-           activityFrame.isFinite,
-           activityFrame.width > 0,
-           activityFrame.height > 0
-        {
-            return activityFrame.midY < petFrame.midY ? .above : .below
-        }
-
-        let relativeCenter = (petFrame.midY - visibleFrame.minY) / visibleFrame.height
-        switch currentSide {
-        case .above where relativeCenter > 0.4:
-            return .above
-        case .below where relativeCenter < 0.6:
-            return .below
-        default:
-            return relativeCenter >= 0.5 ? .above : .below
-        }
-    }
-
     static func centeredLayout(
         petFrame: CGRect,
-        panelSize: CGSize,
-        side: PetAttachmentSide
+        panelSize: CGSize
     ) -> PetAttachmentLayout? {
         guard petFrame.isFinite,
               petFrame.width > 0,
@@ -238,69 +153,8 @@ enum PetAttachmentLayoutPolicy {
             height: panelSize.height
         )
         return PetAttachmentLayout(
-            side: side,
             referencePoint: HaloPlacementGeometry.referencePoint(for: panelFrame),
             panelFrame: panelFrame
-        )
-    }
-}
-
-struct PetRelativeAnchor: Codable, Equatable, Sendable {
-    static let currentVersion = 1
-
-    let version: Int
-    let normalizedPetPoint: UnitPointValue
-    let pointOffset: PointOffsetValue
-
-    var isValid: Bool {
-        version == Self.currentVersion
-            && normalizedPetPoint.isValid
-            && pointOffset.isValid
-    }
-}
-
-enum PetAnchorGeometry {
-    static func calibrate(referencePoint: CGPoint, petFrame: CGRect) -> PetRelativeAnchor? {
-        guard referencePoint.isFinite,
-              petFrame.isFinite,
-              petFrame.width > 0,
-              petFrame.height > 0
-        else {
-            return nil
-        }
-        let projected = CGPoint(
-            x: min(max(referencePoint.x, petFrame.minX), petFrame.maxX),
-            y: min(max(referencePoint.y, petFrame.minY), petFrame.maxY)
-        )
-        let anchor = PetRelativeAnchor(
-            version: PetRelativeAnchor.currentVersion,
-            normalizedPetPoint: UnitPointValue(
-                x: (projected.x - petFrame.minX) / petFrame.width,
-                y: (projected.y - petFrame.minY) / petFrame.height
-            ),
-            pointOffset: PointOffsetValue(
-                width: referencePoint.x - projected.x,
-                height: referencePoint.y - projected.y
-            )
-        )
-        return anchor.isValid ? anchor : nil
-    }
-
-    static func referencePoint(anchor: PetRelativeAnchor, petFrame: CGRect) -> CGPoint? {
-        guard anchor.isValid,
-              petFrame.isFinite,
-              petFrame.width > 0,
-              petFrame.height > 0
-        else {
-            return nil
-        }
-        return CGPoint(
-            x: petFrame.minX
-                + petFrame.width * anchor.normalizedPetPoint.x
-                + anchor.pointOffset.width,
-            y: petFrame.minY
-                + petFrame.height * anchor.normalizedPetPoint.y
-                + anchor.pointOffset.height
         )
     }
 }

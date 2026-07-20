@@ -21,7 +21,7 @@ M2 provides stable capability and component-freshness state but deliberately has
 
 ## Deferred decisions
 
-M4 owns Codex-window following and calibration, M5 owns Pet discovery and Pet-relative following, M6 owns automatic center-locked placement, M7 owns original artwork, final colors, themes, and motion, and M8 owns hardening and release readiness. None is required for M3 correctness.
+M4 owns Codex-window following and calibration, M5 owns Pet discovery and Pet-relative following, M6 owns automatic center-locked placement, M7 owns the functional Pet ring and basic Usage presentation, M8 owns visual polish/themes/motion, and M9 owns hardening and release readiness. None is required for M3 correctness.
 
 ## Consequences
 

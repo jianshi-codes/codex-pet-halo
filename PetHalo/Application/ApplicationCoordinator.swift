@@ -24,7 +24,6 @@ private final class XCTestDisabledWindowFollowingService: HaloWindowFollowing {
     func beginWindowCalibration(currentReferencePoint: CGPoint) {}
     func finishCalibration(currentReferencePoint: CGPoint) {}
     func cancelCalibration() {}
-    func resetPetPosition() {}
     func beginPresentationTransition() {}
     func finishPresentationTransition(panelSize: CGSize) {}
 }
@@ -66,6 +65,7 @@ final class ApplicationCoordinator: ObservableObject {
     private var refreshTask: Task<Void, Never>?
     private var shutdownTask: Task<Void, Never>?
     private var shutdownComplete = false
+    private var previousNonPetHaloMode: HaloPresentationMode?
 
     init(
         usageService: (any CodexUsageServing)? = nil,
@@ -147,6 +147,10 @@ final class ApplicationCoordinator: ObservableObject {
 
     func setHaloMode(_ mode: HaloPresentationMode) {
         guard canChangeHaloMode else { return }
+        applyHaloMode(mode)
+    }
+
+    private func applyHaloMode(_ mode: HaloPresentationMode) {
         windowFollowingService.beginPresentationTransition()
         haloPanelController?.setMode(mode)
         haloMode = haloPanelController?.mode ?? mode
@@ -169,17 +173,13 @@ final class ApplicationCoordinator: ObservableObject {
     }
 
     var canChangeHaloMode: Bool {
-        state == .running && windowFollowingState != .calibrating
+        state == .running
+            && targetSource != .pet
+            && windowFollowingState != .calibrating
     }
 
     var canEnablePetFollowing: Bool {
         state == .running && targetSource != .pet && windowFollowingState != .calibrating
-    }
-
-    var canCalibratePetFollowing: Bool {
-        state == .running
-            && petDiscoveryState == .found
-            && windowFollowingState != .calibrating
     }
 
     var canCalibrateWindowFallback: Bool {
@@ -203,12 +203,6 @@ final class ApplicationCoordinator: ObservableObject {
             && windowFollowingState != .calibrating
     }
 
-    var canResetPetPosition: Bool {
-        state == .running
-            && petPlacementStatus == .manual
-            && windowFollowingState != .calibrating
-    }
-
     func enablePetFollowing() {
         guard canEnablePetFollowing else { return }
         windowFollowingService.enable()
@@ -225,7 +219,7 @@ final class ApplicationCoordinator: ObservableObject {
     }
 
     func beginPetFollowingCalibration() {
-        guard canCalibratePetFollowing, let haloPanelController else { return }
+        guard state == .running, let haloPanelController else { return }
         windowFollowingService.beginPetCalibration(
             currentReferencePoint: haloPanelController.referencePoint
         )
@@ -248,11 +242,6 @@ final class ApplicationCoordinator: ObservableObject {
     func cancelWindowFollowingCalibration() {
         guard state == .running else { return }
         windowFollowingService.cancelCalibration()
-    }
-
-    func resetPetPosition() {
-        guard canResetPetPosition else { return }
-        windowFollowingService.resetPetPosition()
     }
 
     var canRefreshUsage: Bool {
@@ -340,8 +329,24 @@ final class ApplicationCoordinator: ObservableObject {
             petDiscoveryState = newState
             petStatusText = newState.statusText
         case let .targetSourceChanged(newSource):
+            let previousSource = targetSource
             targetSource = newSource
             targetStatusText = newSource.statusText
+            if newSource == .pet {
+                if previousSource != .pet {
+                    previousNonPetHaloMode = haloMode
+                }
+                if haloMode != .compact {
+                    applyHaloMode(.compact)
+                }
+            } else if previousSource == .pet,
+                      let mode = previousNonPetHaloMode
+            {
+                previousNonPetHaloMode = nil
+                if haloMode != mode {
+                    applyHaloMode(mode)
+                }
+            }
         case let .petPlacementStatusChanged(newStatus):
             petPlacementStatus = newStatus
             petPlacementStatusText = newStatus.statusText

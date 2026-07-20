@@ -72,11 +72,6 @@ private struct ApplicationMenuContent: View {
         }
         .disabled(!coordinator.canEnablePetFollowing)
 
-        Button("Fine-tune Pet Position") {
-            coordinator.beginPetFollowingCalibration()
-        }
-        .disabled(!coordinator.canCalibratePetFollowing)
-
         Button("Calibrate Codex Window Fallback") {
             coordinator.beginWindowFallbackCalibration()
         }
@@ -102,10 +97,6 @@ private struct ApplicationMenuContent: View {
         }
         .disabled(!coordinator.canDisableWindowFollowing)
 
-        Button("Use Automatic Pet Placement") {
-            coordinator.resetPetPosition()
-        }
-        .disabled(!coordinator.canResetPetPosition)
         Divider()
         Text(menuModel.versionText)
         Divider()

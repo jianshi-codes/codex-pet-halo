@@ -88,7 +88,6 @@ private final class FakeWindowFollowingService: HaloWindowFollowing {
     private(set) var beginWindowCount = 0
     private(set) var finishCount = 0
     private(set) var cancelCount = 0
-    private(set) var resetCount = 0
     private(set) var presentationTransitionCount = 0
     var eventsOnCancel: [HaloWindowFollowingEvent] = []
 
@@ -119,7 +118,6 @@ private final class FakeWindowFollowingService: HaloWindowFollowing {
             continuation.yield(event)
         }
     }
-    func resetPetPosition() { resetCount += 1 }
     func beginPresentationTransition() { presentationTransitionCount += 1 }
     func finishPresentationTransition(panelSize: CGSize) { presentationTransitionCount += 1 }
 
@@ -504,7 +502,7 @@ final class ApplicationCoordinatorTests: XCTestCase {
     }
 
     @MainActor
-    func testCalibrationBlocksUnrelatedCoordinatorCommandsAndReset() async {
+    func testWindowCalibrationBlocksUnrelatedCoordinatorCommands() async {
         let panel = FakeHaloPanelController()
         let following = FakeWindowFollowingService()
         let coordinator = ApplicationCoordinator(
@@ -523,19 +521,13 @@ final class ApplicationCoordinatorTests: XCTestCase {
 
         XCTAssertFalse(coordinator.canEnablePetFollowing)
         XCTAssertFalse(coordinator.canUseWindowFallback)
-        XCTAssertFalse(coordinator.canResetPetPosition)
-        XCTAssertFalse(coordinator.canCalibratePetFollowing)
         XCTAssertFalse(coordinator.canCalibrateWindowFallback)
         coordinator.enablePetFollowing()
         coordinator.useWindowFallback()
-        coordinator.resetPetPosition()
-        coordinator.beginPetFollowingCalibration()
         coordinator.beginWindowFallbackCalibration()
 
         XCTAssertEqual(following.enableCount, 0)
         XCTAssertEqual(following.useWindowFallbackCount, 0)
-        XCTAssertEqual(following.resetCount, 0)
-        XCTAssertEqual(following.beginPetCount, 0)
         XCTAssertEqual(following.beginWindowCount, 0)
         XCTAssertEqual(coordinator.windowFollowingState, .calibrating)
         coordinator.requestTermination()
@@ -543,7 +535,7 @@ final class ApplicationCoordinatorTests: XCTestCase {
     }
 
     @MainActor
-    func testAutomaticAttachmentStatusAndSideSurvivePresentationModeChanges() async {
+    func testPetTargetForcesCompactRejectsExpandedAndRestoresFallbackMode() async {
         let panel = FakeHaloPanelController()
         let following = FakeWindowFollowingService()
         let coordinator = ApplicationCoordinator(
@@ -553,37 +545,34 @@ final class ApplicationCoordinatorTests: XCTestCase {
             terminateApplication: {}
         )
         coordinator.start()
+        coordinator.setHaloMode(.expanded)
+        XCTAssertEqual(panel.mode, .expanded)
+
         let compactLayout = PetAttachmentLayout(
-            side: .above,
             referencePoint: CGPoint(x: 648, y: 794),
             panelFrame: CGRect(x: 472, y: 618, width: 176, height: 176)
         )
         following.emit(.targetSourceChanged(.pet))
-        following.emit(.petPlacementStatusChanged(.automatic(.above)))
+        following.emit(.petPlacementStatusChanged(.centered))
         following.emit(.placePetAttachment(compactLayout))
-        for _ in 0 ..< 20 where panel.attachmentLayout != compactLayout {
+        for _ in 0 ..< 100 where panel.attachmentLayout != compactLayout || panel.mode != .compact {
             await Task.yield()
         }
-        XCTAssertEqual(coordinator.petPlacementStatusText, "Pet placement: Automatic Centered")
-        XCTAssertEqual(panel.attachmentLayout?.side, .above)
+        XCTAssertEqual(coordinator.petPlacementStatusText, "Pet placement: Centered")
+        XCTAssertEqual(panel.mode, .compact)
+        XCTAssertFalse(coordinator.canChangeHaloMode)
 
         coordinator.setHaloMode(.expanded)
-        XCTAssertEqual(following.presentationTransitionCount, 2)
-        let expandedLayout = PetAttachmentLayout(
-            side: .above,
-            referencePoint: CGPoint(x: 740, y: 1_138),
-            panelFrame: CGRect(x: 380, y: 618, width: 360, height: 520)
-        )
-        following.emit(.placePetAttachment(expandedLayout))
-        for _ in 0 ..< 20 where panel.attachmentLayout != expandedLayout {
+        XCTAssertEqual(panel.mode, .compact)
+
+        following.emit(.targetSourceChanged(.codexWindowFallback))
+        for _ in 0 ..< 100 where panel.mode != .expanded {
             await Task.yield()
         }
         XCTAssertEqual(panel.mode, .expanded)
-        XCTAssertEqual(panel.attachmentLayout?.side, .above)
-        XCTAssertEqual(panel.referencePoint, expandedLayout.referencePoint)
-
+        XCTAssertTrue(coordinator.canChangeHaloMode)
         coordinator.setHaloMode(.compact)
-        XCTAssertEqual(following.presentationTransitionCount, 4)
+        XCTAssertEqual(panel.mode, .compact)
         XCTAssertTrue(panel.ignoresMouseEvents)
         coordinator.requestTermination()
         await coordinator.waitForShutdown()

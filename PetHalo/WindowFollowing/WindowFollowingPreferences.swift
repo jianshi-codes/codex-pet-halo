@@ -3,15 +3,14 @@ import Foundation
 struct WindowFollowingPreferenceSnapshot: Equatable, Sendable {
     let followingEnabled: Bool
     let windowAnchor: HaloWindowAnchor?
-    let petAnchor: PetRelativeAnchor?
 }
 
 @MainActor
 protocol WindowFollowingPreferenceStoring: AnyObject {
     func load() -> WindowFollowingPreferenceSnapshot
+    func removeLegacyPetAnchor()
     func setFollowingEnabled(_ enabled: Bool)
     func setWindowAnchor(_ anchor: HaloWindowAnchor?)
-    func setPetAnchor(_ anchor: PetRelativeAnchor?)
 }
 
 @MainActor
@@ -34,14 +33,14 @@ final class UserDefaultsWindowFollowingPreferences: WindowFollowingPreferenceSto
         let windowAnchor = defaults.data(forKey: Key.windowAnchor)
             .flatMap { try? decoder.decode(HaloWindowAnchor.self, from: $0) }
             .flatMap { $0.isValid ? $0 : nil }
-        let petAnchor = defaults.data(forKey: Key.petAnchor)
-            .flatMap { try? decoder.decode(PetRelativeAnchor.self, from: $0) }
-            .flatMap { $0.isValid ? $0 : nil }
         return WindowFollowingPreferenceSnapshot(
             followingEnabled: defaults.bool(forKey: Key.followingEnabled),
-            windowAnchor: windowAnchor,
-            petAnchor: petAnchor
+            windowAnchor: windowAnchor
         )
+    }
+
+    func removeLegacyPetAnchor() {
+        defaults.removeObject(forKey: Key.petAnchor)
     }
 
     func setFollowingEnabled(_ enabled: Bool) {
@@ -57,12 +56,4 @@ final class UserDefaultsWindowFollowingPreferences: WindowFollowingPreferenceSto
         defaults.set(data, forKey: Key.windowAnchor)
     }
 
-    func setPetAnchor(_ anchor: PetRelativeAnchor?) {
-        guard let anchor else {
-            defaults.removeObject(forKey: Key.petAnchor)
-            return
-        }
-        guard anchor.isValid, let data = try? encoder.encode(anchor) else { return }
-        defaults.set(data, forKey: Key.petAnchor)
-    }
 }

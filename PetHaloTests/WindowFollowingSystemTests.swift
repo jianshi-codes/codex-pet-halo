@@ -66,8 +66,7 @@ final class WindowFollowingSystemTests: XCTestCase {
             store.load(),
             WindowFollowingPreferenceSnapshot(
                 followingEnabled: true,
-                windowAnchor: anchor,
-                petAnchor: nil
+                windowAnchor: anchor
             )
         )
 
@@ -84,31 +83,27 @@ final class WindowFollowingSystemTests: XCTestCase {
     }
 
     @MainActor
-    func testPetAnchorUsesSeparatePreferenceKeyAndRejectsInvalidVersion() throws {
+    func testLegacyPetAnchorMigrationRemovesOnlyPetKey() throws {
         let suiteName = "io.github.jianshicodes.PetHaloTests.PetFollowingPreferences"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         defaults.removePersistentDomain(forName: suiteName)
         defer { defaults.removePersistentDomain(forName: suiteName) }
         let store = UserDefaultsWindowFollowingPreferences(defaults: defaults)
-        let anchor = PetRelativeAnchor(
+        let windowAnchor = HaloWindowAnchor(
             version: 1,
-            normalizedPetPoint: UnitPointValue(x: 0.75, y: 0.25),
+            normalizedWindowPoint: UnitPointValue(x: 0.75, y: 0.25),
             pointOffset: PointOffsetValue(width: 30, height: -10)
         )
+        let legacyKey = "io.github.jianshicodes.PetHalo.petFollowing.anchor.v1"
 
-        store.setPetAnchor(anchor)
-        XCTAssertEqual(store.load().petAnchor, anchor)
-        XCTAssertNil(store.load().windowAnchor)
+        store.setWindowAnchor(windowAnchor)
+        defaults.set(Data("legacy-anchor".utf8), forKey: legacyKey)
+        XCTAssertNotNil(defaults.object(forKey: legacyKey))
 
-        let invalid = PetRelativeAnchor(
-            version: 0,
-            normalizedPetPoint: UnitPointValue(x: 0.5, y: 0.5),
-            pointOffset: PointOffsetValue(width: 0, height: 0)
-        )
-        defaults.set(
-            try JSONEncoder().encode(invalid),
-            forKey: "io.github.jianshicodes.PetHalo.petFollowing.anchor.v1"
-        )
-        XCTAssertNil(store.load().petAnchor)
+        store.removeLegacyPetAnchor()
+        store.removeLegacyPetAnchor()
+
+        XCTAssertNil(defaults.object(forKey: legacyKey))
+        XCTAssertEqual(store.load().windowAnchor, windowAnchor)
     }
 }

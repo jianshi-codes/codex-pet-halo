@@ -9,7 +9,7 @@ enum PetTargetObservationEvent: Equatable, Sendable {
 }
 
 enum PetTargetAccessResult: Equatable, Sendable {
-    case selected(PetEnvironmentSnapshot)
+    case selected(PetTargetSnapshot)
     case unavailable
     case ambiguous
     case observerFailed
@@ -22,7 +22,7 @@ protocol PetTargetAccessing: AnyObject {
         generation: Int,
         onEvent: @escaping @MainActor (PetTargetObservationEvent, Int) -> Void
     ) -> PetTargetAccessResult
-    func currentSnapshot() -> PetEnvironmentSnapshot?
+    func currentSnapshot() -> PetTargetSnapshot?
     func stop()
 }
 
@@ -98,7 +98,6 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
     private struct Selection {
         let observedIdentities: Set<Int>
         let petFrame: CGRect
-        let activityFrame: CGRect?
     }
 
     private var applicationElement: AXUIElement?
@@ -133,10 +132,6 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
         else {
             return .unavailable
         }
-        let activityFrame = selection.activityFrame.flatMap {
-            appKitFrame(fromAccessibilityFrame: $0)
-        }
-
         var newObserver: AXObserver?
         let observerResult = AXObserverCreate(
             processIdentifier,
@@ -199,14 +194,13 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
         observer = newObserver
         callbackBox = box
         self.generation = generation
-        return .selected(PetEnvironmentSnapshot(
+        return .selected(PetTargetSnapshot(
             generation: generation,
-            petFrame: petFrame,
-            activityFrame: activityFrame
+            frame: petFrame
         ))
     }
 
-    func currentSnapshot() -> PetEnvironmentSnapshot? {
+    func currentSnapshot() -> PetTargetSnapshot? {
         guard let applicationElement else { return nil }
         let windows = elementArray(attribute: kAXWindowsAttribute, from: applicationElement)
         guard case let .selected(selection) = select(from: windows),
@@ -214,12 +208,9 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
         else {
             return nil
         }
-        return PetEnvironmentSnapshot(
+        return PetTargetSnapshot(
             generation: generation,
-            petFrame: petFrame,
-            activityFrame: selection.activityFrame.flatMap {
-                appKitFrame(fromAccessibilityFrame: $0)
-            }
+            frame: petFrame
         )
     }
 
@@ -281,19 +272,9 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
         case .ambiguous:
             return .ambiguous
         case let .selected(memberIdentities, petFrame):
-            let activity = PetActivityWindowSelector.select(
-                from: candidates,
-                excluding: memberIdentities,
-                near: petFrame
-            )
-            var observedIdentities = memberIdentities
-            if let activity {
-                observedIdentities.insert(activity.identity)
-            }
             return .selected(Selection(
-                observedIdentities: observedIdentities,
-                petFrame: petFrame,
-                activityFrame: activity?.frame
+                observedIdentities: memberIdentities,
+                petFrame: petFrame
             ))
         }
     }

@@ -35,14 +35,18 @@ Generate schemas from the installed Codex CLI, build a read-only protocol probe,
 
 **Complete — Route A implemented.** Local discovery proved one logical near-square `AXWindow/AXDialog` frame that follows independent Pet movement while the standard Codex window remains stationary. M5 adds deterministic Pet selection, optional manual Pet-relative calibration with a separate versioned anchor, event coalescing, loss fallback, recreation recovery, safe status/menu controls, tests, smoke tooling, and privacy boundaries. Calibrated M4 window following and M3 free-floating placement remain permanent fallbacks. No Screen Recording, screenshots, OCR, or visual detection was added. See [the M5 report](milestones/m5-pet-target-following.md) and [discovery evidence](milestones/m5-pet-target-discovery-report.md).
 
-### M6 — Automatic Pet Attachment & Adaptive Placement
+### M6 — Automatic Center-Locked Pet Attachment
 
-**Implemented; final PASS still requires the current Draft PR CI and direct M6 interaction gate.** A unique Pet attaches immediately without a saved anchor and keeps the Halo panel midpoint equal to the Pet midpoint. Optional non-positional orientation metadata, fine-tuning, fallback/recovery, safe status, tests, and sanitized center-alignment smoke tooling preserve the M5 target hierarchy. See [the M6 report](milestones/m6-automatic-pet-attachment.md).
+**Implemented; final PASS still requires the current Draft PR CI and direct M6 interaction gate.** A unique Pet attaches immediately and unconditionally keeps the Halo panel midpoint equal to the Pet midpoint. Legacy Pet positional anchors are deleted by a safe migration; the M4 window anchor, fallback/recovery, lifecycle, safe status, tests, and sanitized center-alignment smoke tooling remain intact. See [the M6 report](milestones/m6-automatic-pet-attachment.md).
 
-### M7 — Original Halo Visual Design
+### M7 — Pet Ring Surface & Target-aware Presentation
 
-Replace the demo card with the final original semicircular Halo, percentage label, semantic status treatment, themes, and motion without using official OpenAI or Codex Pet artwork.
+Replace the demo card with the functional Pet ring and basic Usage metrics, with target-aware presentation that removes the temporary M6 compact guard.
 
-### M8 — Hardening & Release Readiness
+### M8 — Visual Polish, Themes & Motion
+
+Add advanced styling, arc orientation, themes, low-usage visuals, motion preferences, and animation without using official OpenAI or Codex Pet artwork.
+
+### M9 — Hardening & Release Readiness
 
 Expand compatibility fixtures, transport/reconnect tests, UI/window tests, privacy audits, packaging, and release documentation and readiness.

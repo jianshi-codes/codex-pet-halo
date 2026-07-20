@@ -1,54 +1,56 @@
-# M6 Automatic Pet Attachment & Adaptive Placement
+# M6 Automatic Center-Locked Pet Attachment
 
 - Branch: `m6/automatic-pet-attachment`
-- Scope: automatic first-use Pet attachment, fixed Pet/Halo center alignment, optional non-positional orientation metadata, optional fine-tuning, tests, smoke, privacy, and documentation
+- Scope: automatic first-use Pet attachment, unconditional Pet/Halo center lock, preserved fallback/lifecycle, temporary Compact guard, tests, smoke, privacy, and documentation
 - Stop condition: Draft PR; do not merge and do not begin M7
 
 ## Outcome
 
 M6 removes the first-use Pet calibration requirement. A uniquely discovered Pet attaches immediately without a saved Pet anchor, does not publish Calibration Required, and remains preferred over the preserved M4 calibrated Codex-window and M3 free-floating fallbacks.
 
-Placement has two explicit modes. No Pet anchor means automatic. Every valid pre-M6 Pet anchor migrates without data loss as a fine-tuned override. Fine-tuning persists only after Finish; Cancel restores the prior automatic/manual state and reference; Use Automatic Pet Placement removes only the Pet override and never the M4 window anchor.
+Pet positioning has one production behavior: centered. Startup safely removes the legacy M5 Pet-anchor preference so an old normalized offset cannot move the panel. This migration does not read, rewrite, or delete the separate M4 Codex-window anchor. The fine-tune API remains as a source-compatible hook, but calling it cannot create Pet calibration state, persist a Pet anchor, or change the centered layout.
 
 ## Center-lock policy
 
-`PetEnvironmentSnapshot` contains only the raw padded Pet frame, an optional activity frame, and a generation. Direct user screenshots showed that attempting to infer the rendered head/feet edge from the padded Route A surface produced inconsistent sides and distances. The accepted policy is deliberately smaller: automatic layout makes the Halo panel midpoint equal the raw Pet frame midpoint. This relationship is identical in every screen region, with or without an activity dialog, and at display edges. Fine-tune remains the explicit manual override.
+`PetTargetSnapshot` contains only the raw padded Pet frame and generation. The pure layout policy applies one invariant:
 
-The pure layout policy applies this invariant:
+1. `panelFrame.midX == petFrame.midX`;
+2. `panelFrame.midY == petFrame.midY`;
+3. Pet movement, Pet resize, and panel-size changes recompute around the same midpoint;
+4. screen geometry, display half, activity dialogs, available space, and orientation are not inputs.
 
-1. `panel.midX == pet.midX`;
-2. `panel.midY == pet.midY`;
-3. Pet movement or panel-size changes recompute the panel around the same Pet midpoint;
-4. activity, screen half, available space, and display edges cannot shift that midpoint.
-
-The policy supports negative display coordinates and never uses `NSScreen.main` to place the panel. Activity/screen logic remains only as orientation metadata for future artwork inside the transparent panel. Fine-tuning retains its manual anchor behavior, stale generations are ignored, and M6 adds no smooth animation.
+The policy supports negative global coordinates without looking up `NSScreen.main` or any other screen. Stale target generations remain ignored. The Pet accessor observes only selected Pet core surfaces plus application window creation needed for Pet recreation.
 
 ## Presentation and lifecycle
 
-`PetAttachmentLayout` exposes side, logical reference point, and complete panel frame through the presentation boundary. The current demo card remains. Compact stays click-through, expanded stays scrollable, the `NSPanel` remains non-activating and ineligible for key/main status, and shutdown still stops observers before panel and app-server teardown.
+`PetAttachmentLayout` exposes only a logical reference point and complete panel frame. Pet targeting temporarily forces the existing demo surface to Compact and rejects direct Expanded commands. When Pet is lost or another target becomes active, the coordinator restores the previous fallback card mode and normal Compact/Expanded controls.
 
-Menu terminology is Fine-tune Pet Position and Use Automatic Pet Placement. Status is limited to Automatic Centered, Fine-tuned, or Unavailable; coordinates and raw AX state are not exposed.
+The panel remains non-activating and cannot become key or main. Compact remains click-through. Tuck Away falls back through M4/M3, Wake returns to centered Pet placement, and shutdown still stops observers before panel and owned app-server teardown.
+
+Safe placement status is limited to Centered or Unavailable. No coordinates, side, activity relationship, raw AX state, or legacy anchor state is exposed.
 
 ## Validation status
 
 | Gate | Result |
 | --- | --- |
-| `make m6-tests` | PASS — 76 focused application tests |
-| First-use automatic attachment / no Calibration Required | PASS — deterministic |
-| Center equality / movement / panel-size changes / negative displays | PASS — deterministic |
-| Activity and screen geometry cannot shift panel center | PASS — deterministic |
-| Tuck Away / Wake / manual override / Cancel / Reset | PASS — deterministic |
-| Compact/expanded / non-activation / observer shutdown | PASS — deterministic |
-| User-requested fixed Pet/Halo center relationship | PASS — directly observed on current Head |
-| `make check` and M0-M5 regression | PASS — source/privacy, Debug, universal Release, 51 core, 89 app, and 14 M0 tests |
-| Direct Pet/Halo midpoint equality | PASS — sanitized live AX geometry on current Head |
-| `make m6-smoke` movement / Tuck Away / Wake | BLOCKED — latest 45-second run did not observe a Pet target; retry required |
-| `make m2-smoke` through `make m5-smoke` | Pending current Head |
-| Direct independent Pet movement and interaction | Pending current Head |
+| `make m6-tests` | PASS — 58 focused application tests |
+| No saved Pet anchor → centered | PASS — deterministic |
+| Legacy Pet anchor removed / M4 anchor preserved | PASS — deterministic and real `UserDefaults` migration coverage |
+| Movement / resize / panel-size changes / negative coordinates | PASS — deterministic exact midpoint equality |
+| Activity-window creation cannot change placement | PASS — deterministic |
+| Fine-tune API cannot override center lock | PASS — deterministic |
+| Pet forces Compact / Expanded rejected / fallback mode restored | PASS — deterministic |
+| Tuck Away / Wake / fallback and recovery | PASS — deterministic |
+| Observer and service shutdown | PASS — deterministic |
+| Repeated M2 refresh-coalescing test | PASS — 30/30 fail-fast repetitions without retry |
+| `make check` | PASS — source/privacy, Debug, universal arm64+x86_64 Release, 121 Swift passes + 1 designed local-only skip, 14 M0 passes |
+| `make m2-smoke` through `make m5-smoke` | PASS — current Head |
+| Direct M6 movement / fallback / Wake / Quit | PASS — sanitized observer captured every required transition and cleanup; user confirmed visual behavior |
+| Corrected M6 center-lock smoke harness | READY — typechecked after removing a non-contract pre-movement ordering assertion; the direct live evidence above satisfied the interaction gate |
 | Draft PR CI and independent review | Pending current Head |
 
-M6 is not final PASS until the pending rows pass. Sanitized smoke output contains no coordinates, PIDs, titles, identifiers, Usage values, or account data.
+M6 is not final PASS until Draft PR CI and independent review pass. Sanitized smoke output contains no coordinates, PIDs, titles, identifiers, Usage values, or account data.
 
 ## Explicit non-goals
 
-M7 owns the final semicircular arc, percentage placement, semantic state colors, visual themes, low-usage appearance, motion preferences, and animation. M6 adds no final branding, decorative motion, particles, sound, Screen Recording, visual detection, screenshots, OCR, packaging, or release work.
+M7 owns the functional Pet ring and basic Usage metrics. M8 owns advanced styling, arc orientation, themes, low-usage visuals, motion preferences, and animation. M9 owns compatibility hardening, privacy audit, packaging, and release readiness. M6 adds no final branding, decorative motion, particles, sound, Screen Recording, visual detection, screenshots, OCR, packaging, or release work.
