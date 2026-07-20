@@ -36,6 +36,47 @@ final class PetTargetModelsTests: XCTestCase {
         XCTAssertEqual(expanded.panelFrame.midY, petFrame.midY)
     }
 
+    func testVisualCenterOffsetAppliesEquallyAndRemainsConstantDuringPetMovement() throws {
+        let offset = PetVisualCenterOffset(horizontal: -12, vertical: 36)
+        let firstPet = CGRect(x: 100, y: 200, width: 120, height: 110)
+        let movedPet = CGRect(x: 640, y: -300, width: 120, height: 110)
+        let first = try XCTUnwrap(PetAttachmentLayoutPolicy.centeredLayout(
+            petFrame: firstPet,
+            panelSize: PetAttachmentLayoutPolicy.petAttachmentSize,
+            visualCenterOffset: offset
+        ))
+        let moved = try XCTUnwrap(PetAttachmentLayoutPolicy.centeredLayout(
+            petFrame: movedPet,
+            panelSize: PetAttachmentLayoutPolicy.petAttachmentSize,
+            visualCenterOffset: offset
+        ))
+
+        XCTAssertEqual(first.panelFrame.midX - firstPet.midX, -12)
+        XCTAssertEqual(first.panelFrame.midY - firstPet.midY, 36)
+        XCTAssertEqual(moved.panelFrame.midX - movedPet.midX, -12)
+        XCTAssertEqual(moved.panelFrame.midY - movedPet.midY, 36)
+        XCTAssertEqual(moved.panelFrame.origin.x - first.panelFrame.origin.x, 540)
+        XCTAssertEqual(moved.panelFrame.origin.y - first.panelFrame.origin.y, -500)
+    }
+
+    func testFineTuneReferenceProducesOnlyAConstantVisualCenterOffset() throws {
+        let petFrame = CGRect(x: 500, y: 300, width: 120, height: 110)
+        let panelSize = PetAttachmentLayoutPolicy.petAttachmentSize
+        let reference = CGPoint(
+            x: petFrame.midX + 18 + panelSize.width / 2,
+            y: petFrame.midY - 24 + panelSize.height / 2
+        )
+
+        XCTAssertEqual(
+            PetAttachmentLayoutPolicy.visualCenterOffset(
+                panelReferencePoint: reference,
+                petFrame: petFrame,
+                panelSize: panelSize
+            ),
+            PetVisualCenterOffset(horizontal: 18, vertical: -24)
+        )
+    }
+
     func testCenteredLayoutSupportsNegativeDisplayCoordinates() throws {
         let petFrame = CGRect(x: -1_100, y: -450, width: 120, height: 110)
         let layout = try XCTUnwrap(PetAttachmentLayoutPolicy.centeredLayout(
@@ -108,6 +149,51 @@ final class PetTargetModelsTests: XCTestCase {
 
         XCTAssertEqual(
             PetWindowSelector.select(from: [activity, pet]),
+            .selected(memberIdentities: [1], frame: pet.frame)
+        )
+    }
+
+    func testActivityDialogAboveAndBelowResolveWithoutChangingPetSelection() {
+        let pet = candidate(1)
+        let above = candidate(2, frame: CGRect(x: 40, y: 80, width: 360, height: 70))
+        let below = candidate(3, frame: CGRect(x: 40, y: 350, width: 360, height: 70))
+
+        XCTAssertEqual(
+            PetActivityGeometryResolver.resolve(
+                petFrame: pet.frame,
+                petMemberIdentities: [pet.identity],
+                candidates: [pet, above]
+            ).hint,
+            .above
+        )
+        XCTAssertEqual(
+            PetActivityGeometryResolver.resolve(
+                petFrame: pet.frame,
+                petMemberIdentities: [pet.identity],
+                candidates: [pet, below]
+            ).hint,
+            .below
+        )
+        XCTAssertEqual(
+            PetWindowSelector.select(from: [pet, above, below]),
+            .selected(memberIdentities: [pet.identity], frame: pet.frame)
+        )
+    }
+
+    func testMultipleActivityDialogsAreAmbiguousWithoutChangingPetSelection() {
+        let pet = candidate(1)
+        let first = candidate(2, frame: CGRect(x: 40, y: 80, width: 360, height: 70))
+        let second = candidate(3, frame: CGRect(x: 40, y: 350, width: 360, height: 70))
+        let resolution = PetActivityGeometryResolver.resolve(
+            petFrame: pet.frame,
+            petMemberIdentities: [pet.identity],
+            candidates: [pet, first, second]
+        )
+
+        XCTAssertEqual(resolution.hint, .ambiguous)
+        XCTAssertEqual(resolution.observedIdentities, [2, 3])
+        XCTAssertEqual(
+            PetWindowSelector.select(from: [pet, first, second]),
             .selected(memberIdentities: [1], frame: pet.frame)
         )
     }

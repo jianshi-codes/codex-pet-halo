@@ -13,18 +13,22 @@ The Pet surface also needs a much smaller data contract than Expanded Account Us
 
 Introduce `HaloSurfaceMode` with `petRing`, `compactCard`, and `expandedCard`. `ApplicationCoordinator` remains the sole owner of target, Usage, remembered fallback card choice, and current surface.
 
-- Pet activation records the fallback card mode and non-Pet reference, switches directly to `petRing`, then applies the centered ring layout.
+- Pet activation records the fallback card mode and non-Pet reference, switches directly to `petRing`, then applies the AX-center tracking layout plus the persisted visual-center offset.
 - Pet loss restores a delivered M4 window reference when present; otherwise it restores the saved free-floating reference before applying the remembered card mode.
 - Card commands are rejected while Pet is active.
-- `HaloPanelController` applies surface-specific size, shadow, and mouse policy. Pet Ring is `208×208`, shadowless, click-through, non-activating, and cannot become key or main.
+- `HaloPanelController` applies surface-specific size, shadow, and mouse policy. Pet Ring is `252×252`, shadowless, click-through, non-activating, and cannot become key or main.
 - `HaloView` routes Pet directly to `PetRingView`. Card-only padding, material, rounded clipping, calibration overlay, and scrolling remain outside that branch.
 
-`PetRingPresentationMapper` is separate from `HaloPresentationMapper`. It accepts an injected Date plus Calendar, Locale, and TimeZone semantics. Weekly uses domain `remainingPercent`; five-hour appears only for an exact 300-minute capability; Today tokens require exactly one daily bucket in the injected current day. Missing or ambiguous buckets are unavailable, while an explicit zero stays zero. Component freshness is never replaced by aggregate freshness.
+`PetRingPresentationMapper` is separate from `HaloPresentationMapper`. It accepts an injected Date plus Calendar, Locale, and TimeZone semantics. Weekly uses domain `remainingPercent`; five-hour appears only for an exact 300-minute capability; Today requires one current-day bucket and a nonzero historical peak. Today progress is clamped at 100% without changing its token text. Component freshness is never replaced by aggregate freshness.
 
-The fixed geometry uses SwiftUI vector paths only: a 84-point primary radius, 10-point primary stroke, 5-point secondary stroke, fixed full sweep, and a 158-point transparent center. Text exposes freshness and normal/low/critical state so meaning is not color-only. Decorative arcs are accessibility-hidden and the ring is one coherent accessibility group.
+The fixed geometry uses three independent SwiftUI vector tracks and progress arcs at 104/94/84-point radii with 6-point strokes and a 162-point transparent center. Weekly and five-hour colors use remaining thresholds of 50% and 20%; Today uses consumption thresholds of 50% and 80%. Stale metrics also use opacity, dash, visible text, and accessibility state.
+
+The AX Pet midpoint remains the discovery and tracking basis. A separate versioned `PetVisualCenterOffset(dx, dy)` moves the complete panel, rings, and absolute-position labels together and survives movement, Tuck Away/Wake, and restart. Menu fine-tune actions call the retained calibration API while the Pet panel remains click-through. The old normalized Pet anchor remains deleted.
+
+Wide activity-dialog geometry is evaluated only after core selection and can produce above, below, none, or ambiguous hints. All rings share one fixed partial-arc opening. Stable above/below/no-dialog hints are debounced; ambiguous hints retain the previous orientation. Orientation events update only arc angles and never placement or fallback.
 
 ## Consequences
 
-Fallback cards and their full Account Usage presentation remain intact. The Pet model cannot expose lifetime, peak, streak, longest-turn, or recent-history fields. No screenshots, OCR, visual detection, official artwork, settings window, persistence, network request, telemetry, animation, or announcement loop is added.
+Fallback cards and their full Account Usage presentation remain intact. The Pet model uses historical peak only as the Today denominator and cannot expose lifetime, streak, longest-turn, or recent-history fields. No screenshots, OCR, visual detection, official artwork, settings window, network request, telemetry, animation, or announcement loop is added.
 
-M8 exclusively owns advanced visual polish, arc angle/orientation changes, themes, low-usage styling, glow, motion preferences, and animations. M9 remains separately gated.
+M8 exclusively owns advanced visual polish beyond this fixed functional policy, themes, decorative low-usage styling, glow, motion preferences, and animations. M9 remains separately gated.

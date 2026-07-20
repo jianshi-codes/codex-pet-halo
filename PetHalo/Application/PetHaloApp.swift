@@ -37,6 +37,25 @@ private struct ApplicationMenuContent: View {
 
         if coordinator.haloSurfaceMode == .petRing {
             Text("Display: Pet Ring")
+            Button("Move Ring Up 4 pt") {
+                coordinator.nudgePetRing(horizontal: 0, vertical: 4)
+            }
+            .disabled(!coordinator.canFineTunePetRing)
+
+            Button("Move Ring Down 4 pt") {
+                coordinator.nudgePetRing(horizontal: 0, vertical: -4)
+            }
+            .disabled(!coordinator.canFineTunePetRing)
+
+            Button("Move Ring Left 4 pt") {
+                coordinator.nudgePetRing(horizontal: -4, vertical: 0)
+            }
+            .disabled(!coordinator.canFineTunePetRing)
+
+            Button("Move Ring Right 4 pt") {
+                coordinator.nudgePetRing(horizontal: 4, vertical: 0)
+            }
+            .disabled(!coordinator.canFineTunePetRing)
         } else {
             Button {
                 coordinator.setHaloMode(.compact)

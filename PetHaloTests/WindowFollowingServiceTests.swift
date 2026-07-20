@@ -103,7 +103,11 @@ private final class FakePetAccessor: PetTargetAccessing {
         self.generation = generation
         handler = onEvent
         if case let .selected(snapshot) = result {
-            let current = PetTargetSnapshot(generation: generation, frame: snapshot.frame)
+            let current = PetTargetSnapshot(
+                generation: generation,
+                frame: snapshot.frame,
+                activityGeometryHint: snapshot.activityGeometryHint
+            )
             self.snapshot = current
             return .selected(current)
         }
@@ -146,12 +150,18 @@ private final class FakeFollowingPreferences: WindowFollowingPreferenceStoring {
     var snapshot: WindowFollowingPreferenceSnapshot
     private(set) var enabledWrites: [Bool] = []
     private(set) var windowAnchorWrites: [HaloWindowAnchor?] = []
+    private(set) var petVisualCenterOffsetWrites: [PetVisualCenterOffset] = []
     private(set) var legacyPetAnchorRemovalCount = 0
 
-    init(enabled: Bool, windowAnchor: HaloWindowAnchor? = nil) {
+    init(
+        enabled: Bool,
+        windowAnchor: HaloWindowAnchor? = nil,
+        petVisualCenterOffset: PetVisualCenterOffset = .zero
+    ) {
         snapshot = WindowFollowingPreferenceSnapshot(
             followingEnabled: enabled,
-            windowAnchor: windowAnchor
+            windowAnchor: windowAnchor,
+            petVisualCenterOffset: petVisualCenterOffset
         )
     }
 
@@ -162,7 +172,8 @@ private final class FakeFollowingPreferences: WindowFollowingPreferenceStoring {
         enabledWrites.append(enabled)
         snapshot = WindowFollowingPreferenceSnapshot(
             followingEnabled: enabled,
-            windowAnchor: snapshot.windowAnchor
+            windowAnchor: snapshot.windowAnchor,
+            petVisualCenterOffset: snapshot.petVisualCenterOffset
         )
     }
 
@@ -170,7 +181,17 @@ private final class FakeFollowingPreferences: WindowFollowingPreferenceStoring {
         windowAnchorWrites.append(anchor)
         snapshot = WindowFollowingPreferenceSnapshot(
             followingEnabled: snapshot.followingEnabled,
-            windowAnchor: anchor
+            windowAnchor: anchor,
+            petVisualCenterOffset: snapshot.petVisualCenterOffset
+        )
+    }
+
+    func setPetVisualCenterOffset(_ offset: PetVisualCenterOffset) {
+        petVisualCenterOffsetWrites.append(offset)
+        snapshot = WindowFollowingPreferenceSnapshot(
+            followingEnabled: snapshot.followingEnabled,
+            windowAnchor: snapshot.windowAnchor,
+            petVisualCenterOffset: offset
         )
     }
 }
@@ -196,6 +217,15 @@ private final class FollowingEventRecorder {
             default:
                 nil
             }
+        }
+    }
+
+    var orientations: [PetRingOrientation] {
+        events.compactMap { event in
+            if case let .petRingOrientationChanged(orientation) = event {
+                return orientation
+            }
+            return nil
         }
     }
 
@@ -374,7 +404,7 @@ final class WindowFollowingServiceTests: XCTestCase {
     }
 
     @MainActor
-    func testFineTuneAPIIsRetainedButCannotOverrideCenterLock() async throws {
+    func testFineTunePersistsVisualCenterOffsetWithoutChangingTargetSelection() async throws {
         let petFrame = CGRect(x: 500, y: 300, width: 120, height: 110)
         let context = makeContext(
             petAccessResult: .selected(PetTargetSnapshot(generation: 0, frame: petFrame)),
@@ -384,22 +414,76 @@ final class WindowFollowingServiceTests: XCTestCase {
         recorder.start(context.service.events())
         context.service.start()
         await waitForLayout(recorder)
-        for _ in 0 ..< 20 { await Task.yield() }
-        let eventCount = recorder.events.count
-        let enabledWrites = context.preferences.enabledWrites
-        let windowAnchorWrites = context.preferences.windowAnchorWrites
-
-        context.service.beginPetCalibration(currentReferencePoint: CGPoint(x: 9_000, y: -9_000))
-        for _ in 0 ..< 20 { await Task.yield() }
+        let initial = try XCTUnwrap(recorder.layouts.last)
+        let petResolveCount = context.petAccessor.resolveCount
+        context.service.beginPetCalibration(currentReferencePoint: initial.referencePoint)
+        context.service.finishCalibration(
+            currentReferencePoint: CGPoint(
+                x: initial.referencePoint.x - 12,
+                y: initial.referencePoint.y + 36
+            )
+        )
+        for _ in 0 ..< 100 where recorder.layouts.last == initial { await Task.yield() }
 
         let layout = try XCTUnwrap(recorder.layouts.last)
         XCTAssertEqual(context.service.state, .following)
         XCTAssertEqual(context.service.targetSource, .pet)
-        XCTAssertEqual(layout.panelFrame.midX, petFrame.midX)
-        XCTAssertEqual(layout.panelFrame.midY, petFrame.midY)
-        XCTAssertEqual(recorder.events.count, eventCount)
-        XCTAssertEqual(context.preferences.enabledWrites, enabledWrites)
-        XCTAssertEqual(context.preferences.windowAnchorWrites, windowAnchorWrites)
+        XCTAssertEqual(layout.panelFrame.midX, petFrame.midX - 12)
+        XCTAssertEqual(layout.panelFrame.midY, petFrame.midY + 36)
+        XCTAssertEqual(
+            context.preferences.petVisualCenterOffsetWrites,
+            [PetVisualCenterOffset(horizontal: -12, vertical: 36)]
+        )
+        XCTAssertTrue(context.preferences.windowAnchorWrites.isEmpty)
+        XCTAssertEqual(context.petAccessor.resolveCount, petResolveCount)
+        recorder.stop()
+        await context.service.stop()
+    }
+
+    @MainActor
+    func testDialogOrientationDebouncesAndAmbiguityRetainsPriorWithoutMovingPanel() async throws {
+        let petFrame = CGRect(x: 500, y: 300, width: 120, height: 110)
+        let context = makeContext(
+            petAccessResult: .selected(PetTargetSnapshot(
+                generation: 0,
+                frame: petFrame,
+                activityGeometryHint: .below
+            )),
+            enabled: true,
+            orientationDebounce: .milliseconds(1)
+        )
+        let recorder = FollowingEventRecorder()
+        recorder.start(context.service.events())
+        context.service.start()
+        await waitForLayout(recorder)
+        for _ in 0 ..< 100 where recorder.orientations.last != .openingBottom {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        let layoutCount = recorder.layouts.count
+        XCTAssertEqual(recorder.orientations.last, .openingBottom)
+
+        let generation = try XCTUnwrap(context.petAccessor.snapshot?.generation)
+        context.petAccessor.snapshot = PetTargetSnapshot(
+            generation: generation,
+            frame: petFrame,
+            activityGeometryHint: .ambiguous
+        )
+        context.petAccessor.emit(.activityGeometryChanged)
+        try await Task.sleep(for: .milliseconds(5))
+        XCTAssertEqual(recorder.orientations, [.openingBottom])
+
+        context.petAccessor.snapshot = PetTargetSnapshot(
+            generation: generation,
+            frame: petFrame,
+            activityGeometryHint: .above
+        )
+        context.petAccessor.emit(.activityGeometryChanged)
+        for _ in 0 ..< 100 where recorder.orientations.last != .openingTop {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+
+        XCTAssertEqual(recorder.orientations, [.openingBottom, .openingTop])
+        XCTAssertEqual(recorder.layouts.count, layoutCount)
         recorder.stop()
         await context.service.stop()
     }
@@ -429,12 +513,14 @@ final class WindowFollowingServiceTests: XCTestCase {
     }
 
     @MainActor
-    func testTuckAwayFallsBackAndWakeReturnsToCenteredPet() async throws {
+    func testTuckAwayAndWakeRestorePersistentVisualCenterOffset() async throws {
         let petFrame = CGRect(x: 500, y: 600, width: 120, height: 110)
+        let offset = PetVisualCenterOffset(horizontal: -8, vertical: 32)
         let context = makeContext(
             petAccessResult: .selected(PetTargetSnapshot(generation: 0, frame: petFrame)),
             enabled: true,
-            anchor: windowAnchor()
+            anchor: windowAnchor(),
+            petVisualCenterOffset: offset
         )
         let recorder = FollowingEventRecorder()
         recorder.start(context.service.events())
@@ -456,8 +542,9 @@ final class WindowFollowingServiceTests: XCTestCase {
         let recovered = try XCTUnwrap(recorder.layouts.last)
         XCTAssertEqual(context.service.targetSource, .pet)
         XCTAssertEqual(context.service.petPlacementStatus, .centered)
-        XCTAssertEqual(recovered.panelFrame.midX, petFrame.midX)
-        XCTAssertEqual(recovered.panelFrame.midY, petFrame.midY)
+        XCTAssertEqual(recovered.panelFrame.midX, petFrame.midX - 8)
+        XCTAssertEqual(recovered.panelFrame.midY, petFrame.midY + 32)
+        XCTAssertEqual(context.preferences.snapshot.petVisualCenterOffset, offset)
         recorder.stop()
         await context.service.stop()
     }
@@ -551,20 +638,27 @@ final class WindowFollowingServiceTests: XCTestCase {
             frame: CGRect(x: 100, y: 200, width: 800, height: 600)
         ),
         enabled: Bool = false,
-        anchor: HaloWindowAnchor? = nil
+        anchor: HaloWindowAnchor? = nil,
+        petVisualCenterOffset: PetVisualCenterOffset = .zero,
+        orientationDebounce: Duration = .milliseconds(180)
     ) -> Context {
         let locator = FakeApplicationLocator(locatorSelection)
         let petAccessor = FakePetAccessor(result: petAccessResult)
         let windowAccessor = FakeWindowAccessor(result: accessResult)
         let events = FakeSystemEventSource()
-        let preferences = FakeFollowingPreferences(enabled: enabled, windowAnchor: anchor)
+        let preferences = FakeFollowingPreferences(
+            enabled: enabled,
+            windowAnchor: anchor,
+            petVisualCenterOffset: petVisualCenterOffset
+        )
         let service = WindowFollowingService(
             permissionProvider: permission,
             applicationLocator: locator,
             petAccessor: petAccessor,
             windowAccessor: windowAccessor,
             systemEvents: events,
-            preferences: preferences
+            preferences: preferences,
+            petOrientationDebounce: orientationDebounce
         )
         return Context(
             service: service,

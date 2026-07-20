@@ -77,10 +77,10 @@ required_live_lines=(
     'Pet visible at start: yes'
     'Pet target found: yes'
     'Automatic attachment: observed'
-    'Center alignment sample: observed'
-    'Post-movement center alignment: observed'
-    'Post-Wake center alignment: observed'
-    'Center alignment maintained: yes'
+    'Visual-center offset sample: observed'
+    'Post-movement visual-center offset: observed'
+    'Post-Wake visual-center offset: observed'
+    'Visual-center offset maintained: yes'
     'Independent Pet movement: observed'
     'Pet Tuck Away: observed'
     'Codex-window fallback: observed'
@@ -108,11 +108,11 @@ fi
 
 echo "Pet target found at start: direct pass"
 echo "Legacy Pet anchor migration: direct pass"
-echo "Pet/Halo center alignment: direct pass"
+echo "Pet/Halo visual-center offset: direct pass"
 echo "Independent movement: direct pass"
 echo "Tuck Away and Codex-window fallback: direct pass"
-echo "Wake and centered recovery: direct pass"
-echo "Fine-tune API center safety: deterministic pass"
+echo "Wake and visual-center recovery: direct pass"
+echo "Fine-tune API offset persistence: deterministic pass"
 echo "Pet presentation cannot use fallback Expanded size: deterministic pass"
 echo "Observer and panel shutdown: direct pass"
 echo "Owned app-server shutdown: direct pass"

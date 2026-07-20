@@ -7,6 +7,7 @@ enum HaloWindowFollowingEvent: Equatable, Sendable {
     case petDiscoveryStateChanged(PetTargetDiscoveryState)
     case targetSourceChanged(HaloFollowingTargetSource)
     case petPlacementStatusChanged(PetPlacementStatus)
+    case petRingOrientationChanged(PetRingOrientation)
     case setCalibrationEnabled(Bool)
     case placeReferencePoint(CGPoint)
     case activatePetAttachment(PetAttachmentLayout)
@@ -32,6 +33,11 @@ protocol HaloWindowFollowing: AnyObject {
 
 @MainActor
 final class WindowFollowingService: HaloWindowFollowing {
+    private enum CalibrationTarget: Equatable {
+        case pet
+        case window
+    }
+
     private let permissionProvider: any AccessibilityPermissionProviding
     private let applicationLocator: any CodexApplicationLocating
     private let petAccessor: any PetTargetAccessing
@@ -48,16 +54,22 @@ final class WindowFollowingService: HaloWindowFollowing {
     private var followingEnabled = false
     private var petFollowingSuppressed = false
     private var windowAnchor: HaloWindowAnchor?
+    private var petVisualCenterOffset: PetVisualCenterOffset = .zero
     private var petSnapshot: PetTargetSnapshot?
     private var lastPetLayout: PetAttachmentLayout?
     private var windowFrame: CGRect?
     private var preCalibrationReferencePoint: CGPoint?
     private var preCalibrationPetFollowingSuppressed: Bool?
+    private var calibrationTarget: CalibrationTarget?
+    private var petRingOrientation: PetRingOrientation = .fixedDefault
+    private var pendingPetRingOrientation: PetRingOrientation?
     private var petGeneration = 0
     private var windowGeneration = 0
     private var systemEventTask: Task<Void, Never>?
     private var recoveryTask: Task<Void, Never>?
     private var petStabilityTask: Task<Void, Never>?
+    private var petOrientationTask: Task<Void, Never>?
+    private let petOrientationDebounce: Duration
     private var started = false
     private var stopping = false
 
@@ -67,7 +79,8 @@ final class WindowFollowingService: HaloWindowFollowing {
         petAccessor: any PetTargetAccessing = AccessibilityPetTargetAccessor(),
         windowAccessor: any CodexWindowAccessing = AccessibilityCodexWindowAccessor(),
         systemEvents: any WindowFollowingSystemEventSourcing = WorkspaceWindowFollowingEventSource(),
-        preferences: any WindowFollowingPreferenceStoring = UserDefaultsWindowFollowingPreferences()
+        preferences: any WindowFollowingPreferenceStoring = UserDefaultsWindowFollowingPreferences(),
+        petOrientationDebounce: Duration = .milliseconds(180)
     ) {
         self.permissionProvider = permissionProvider
         self.applicationLocator = applicationLocator
@@ -75,6 +88,7 @@ final class WindowFollowingService: HaloWindowFollowing {
         self.windowAccessor = windowAccessor
         self.systemEvents = systemEvents
         self.preferences = preferences
+        self.petOrientationDebounce = petOrientationDebounce
         let pair = AsyncStream.makeStream(
             of: HaloWindowFollowingEvent.self,
             bufferingPolicy: .bufferingNewest(24)
@@ -93,6 +107,7 @@ final class WindowFollowingService: HaloWindowFollowing {
         let saved = preferences.load()
         followingEnabled = saved.followingEnabled
         windowAnchor = saved.windowAnchor
+        petVisualCenterOffset = saved.petVisualCenterOffset
         preferences.removeLegacyPetAnchor()
         transitionPlacementStatus(.unavailable)
         systemEvents.start()
@@ -132,6 +147,9 @@ final class WindowFollowingService: HaloWindowFollowing {
         windowGeneration += 1
         petStabilityTask?.cancel()
         petStabilityTask = nil
+        petOrientationTask?.cancel()
+        petOrientationTask = nil
+        pendingPetRingOrientation = nil
         suspendCalibrationIfNeeded()
         petSnapshot = nil
         windowFrame = nil
@@ -186,9 +204,20 @@ final class WindowFollowingService: HaloWindowFollowing {
         transition(to: .disabled)
     }
 
-    // Retained as an inert compatibility hook. Future fine-tuning belongs to a new
-    // visual-orientation API and must not restore Pet positional offsets.
-    func beginPetCalibration(currentReferencePoint: CGPoint) {}
+    func beginPetCalibration(currentReferencePoint: CGPoint) {
+        guard acceptsCommands,
+              followingEnabled,
+              state != .calibrating,
+              targetSource == .pet,
+              petSnapshot != nil
+        else {
+            return
+        }
+        preCalibrationReferencePoint = currentReferencePoint
+        calibrationTarget = .pet
+        transition(to: .calibrating)
+        eventContinuation.yield(.setCalibrationEnabled(true))
+    }
 
     func beginWindowCalibration(currentReferencePoint: CGPoint) {
         guard acceptsCommands, followingEnabled, state != .calibrating else { return }
@@ -207,37 +236,66 @@ final class WindowFollowingService: HaloWindowFollowing {
             return
         }
         preCalibrationReferencePoint = currentReferencePoint
+        calibrationTarget = .window
         transition(to: .calibrating)
         eventContinuation.yield(.setCalibrationEnabled(true))
     }
 
     func finishCalibration(currentReferencePoint: CGPoint) {
-        guard acceptsCommands, state == .calibrating else { return }
-        guard let frame = windowAccessor.currentFrame() ?? windowFrame,
-              let newAnchor = HaloAnchorGeometry.calibrate(
-                  referencePoint: currentReferencePoint,
-                  windowFrame: frame
-              )
-        else {
-            suspendCalibrationIfNeeded()
-            transition(to: .suspended(.invalidPlacement))
-            return
+        guard acceptsCommands, state == .calibrating, let calibrationTarget else { return }
+        switch calibrationTarget {
+        case .pet:
+            guard let snapshot = petAccessor.currentSnapshot() ?? petSnapshot,
+                  let offset = PetAttachmentLayoutPolicy.visualCenterOffset(
+                      panelReferencePoint: currentReferencePoint,
+                      petFrame: snapshot.frame,
+                      panelSize: PetAttachmentLayoutPolicy.petAttachmentSize
+                  )
+            else {
+                suspendCalibrationIfNeeded()
+                transition(to: .suspended(.invalidPlacement))
+                return
+            }
+            petSnapshot = snapshot
+            petVisualCenterOffset = offset
+            preferences.setPetVisualCenterOffset(offset)
+        case .window:
+            guard let frame = windowAccessor.currentFrame() ?? windowFrame,
+                  let newAnchor = HaloAnchorGeometry.calibrate(
+                      referencePoint: currentReferencePoint,
+                      windowFrame: frame
+                  )
+            else {
+                suspendCalibrationIfNeeded()
+                transition(to: .suspended(.invalidPlacement))
+                return
+            }
+            windowAnchor = newAnchor
+            windowFrame = frame
+            preferences.setWindowAnchor(newAnchor)
+            petFollowingSuppressed = preCalibrationPetFollowingSuppressed ?? false
         }
-        windowAnchor = newAnchor
-        windowFrame = frame
-        preferences.setWindowAnchor(newAnchor)
-        petFollowingSuppressed = preCalibrationPetFollowingSuppressed ?? false
+        self.calibrationTarget = nil
         preCalibrationReferencePoint = nil
         preCalibrationPetFollowingSuppressed = nil
         eventContinuation.yield(.setCalibrationEnabled(false))
-        transition(to: .searching)
-        resolvePreferredTarget()
+        if targetSource == .pet {
+            applyPetPlacement()
+        } else {
+            transition(to: .searching)
+            resolvePreferredTarget()
+        }
     }
 
     func cancelCalibration() {
         guard acceptsCommands, state == .calibrating else { return }
+        let target = calibrationTarget
         suspendCalibrationIfNeeded()
-        resolvePreferredTarget()
+        if target == .pet, petSnapshot != nil {
+            applyPetPlacement()
+        } else {
+            resolvePreferredTarget()
+        }
     }
 
     func beginPresentationTransition() {}
@@ -302,6 +360,7 @@ final class WindowFollowingService: HaloWindowFollowing {
         ) {
         case let .selected(snapshot):
             petSnapshot = snapshot
+            schedulePetRingOrientation(for: snapshot.activityGeometryHint)
             transitionPetDiscovery(to: .found)
             windowGeneration += 1
             windowFrame = nil
@@ -399,8 +458,29 @@ final class WindowFollowingService: HaloWindowFollowing {
                 return
             }
             petSnapshot = snapshot
+            schedulePetRingOrientation(for: snapshot.activityGeometryHint)
             applyPetPlacement()
-        case .selectionChanged, .targetInvalidated:
+        case .activityGeometryChanged:
+            guard let snapshot = petAccessor.currentSnapshot(),
+                  snapshot.generation == petGeneration
+            else {
+                return
+            }
+            schedulePetRingOrientation(for: snapshot.activityGeometryHint)
+        case .selectionChanged:
+            if let snapshot = petAccessor.currentSnapshot(),
+               snapshot.generation == petGeneration
+            {
+                let frameChanged = snapshot.frame != petSnapshot?.frame
+                petSnapshot = snapshot
+                schedulePetRingOrientation(for: snapshot.activityGeometryHint)
+                if frameChanged {
+                    applyPetPlacement()
+                }
+            } else {
+                resolvePreferredTarget()
+            }
+        case .targetInvalidated:
             resolvePreferredTarget()
         }
     }
@@ -421,6 +501,7 @@ final class WindowFollowingService: HaloWindowFollowing {
                snapshot.generation == self.petGeneration
             {
                 self.petSnapshot = snapshot
+                self.schedulePetRingOrientation(for: snapshot.activityGeometryHint)
                 self.applyPetPlacement()
             } else {
                 self.resolvePreferredTarget()
@@ -464,6 +545,7 @@ final class WindowFollowingService: HaloWindowFollowing {
             case .pet:
                 if let snapshot = petAccessor.currentSnapshot() {
                     petSnapshot = snapshot
+                    schedulePetRingOrientation(for: snapshot.activityGeometryHint)
                     applyPetPlacement()
                 } else {
                     resolvePreferredTarget()
@@ -508,7 +590,8 @@ final class WindowFollowingService: HaloWindowFollowing {
         }
         guard let layout = PetAttachmentLayoutPolicy.centeredLayout(
             petFrame: petSnapshot.frame,
-            panelSize: PetAttachmentLayoutPolicy.petAttachmentSize
+            panelSize: PetAttachmentLayoutPolicy.petAttachmentSize,
+            visualCenterOffset: petVisualCenterOffset
         ) else {
             transitionTarget(to: .freeFloating)
             transition(to: .suspended(.invalidPlacement))
@@ -524,6 +607,40 @@ final class WindowFollowingService: HaloWindowFollowing {
         }
         transitionPlacementStatus(.centered)
         transition(to: .following)
+    }
+
+    private func schedulePetRingOrientation(for hint: PetActivityGeometryHint) {
+        let desired: PetRingOrientation
+        switch hint {
+        case .none:
+            desired = .fixedDefault
+        case .above:
+            desired = .openingTop
+        case .below:
+            desired = .openingBottom
+        case .ambiguous:
+            return
+        }
+        guard desired != petRingOrientation || pendingPetRingOrientation != nil else { return }
+        pendingPetRingOrientation = desired
+        petOrientationTask?.cancel()
+        let delay = petOrientationDebounce
+        petOrientationTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: delay)
+            guard !Task.isCancelled,
+                  let self,
+                  self.acceptsCommands,
+                  self.targetSource == .pet,
+                  self.pendingPetRingOrientation == desired
+            else {
+                return
+            }
+            self.pendingPetRingOrientation = nil
+            self.petOrientationTask = nil
+            guard self.petRingOrientation != desired else { return }
+            self.petRingOrientation = desired
+            self.eventContinuation.yield(.petRingOrientationChanged(desired))
+        }
     }
 
     private func applyWindowAnchor(finalState: WindowFollowingState) {
@@ -550,6 +667,9 @@ final class WindowFollowingService: HaloWindowFollowing {
         windowGeneration += 1
         petStabilityTask?.cancel()
         petStabilityTask = nil
+        petOrientationTask?.cancel()
+        petOrientationTask = nil
+        pendingPetRingOrientation = nil
         petSnapshot = nil
         windowFrame = nil
         petAccessor.stop()
@@ -558,8 +678,9 @@ final class WindowFollowingService: HaloWindowFollowing {
 
     private func suspendCalibrationIfNeeded() {
         guard state == .calibrating else { return }
+        let target = calibrationTarget
         eventContinuation.yield(.setCalibrationEnabled(false))
-        if let previous = preCalibrationReferencePoint {
+        if target == .window, let previous = preCalibrationReferencePoint {
             eventContinuation.yield(.placeReferencePoint(previous))
         }
         if let previousSuppression = preCalibrationPetFollowingSuppressed {
@@ -567,6 +688,7 @@ final class WindowFollowingService: HaloWindowFollowing {
         }
         preCalibrationReferencePoint = nil
         preCalibrationPetFollowingSuppressed = nil
+        calibrationTarget = nil
         transition(to: .searching)
     }
 

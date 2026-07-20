@@ -17,6 +17,7 @@ protocol HaloPanelControlling: AnyObject {
     func setSurfaceMode(_ mode: HaloSurfaceMode)
     func setReferencePoint(_ referencePoint: CGPoint)
     func setAttachmentLayout(_ layout: PetAttachmentLayout)
+    func setPetRingOrientation(_ orientation: PetRingOrientation)
     func setCalibrationEnabled(_ enabled: Bool)
     func resetToDefaultPosition()
     func update(
@@ -69,6 +70,7 @@ final class HaloPanelController: HaloPanelControlling {
         viewState = HaloViewState(
             cardModel: model,
             petRingModel: .starting,
+            petRingOrientation: .fixedDefault,
             surfaceMode: .compactCard
         )
         self.visibleFrameProvider = visibleFrameProvider
@@ -174,6 +176,11 @@ final class HaloPanelController: HaloPanelControlling {
         attachmentLayout = layout
         desiredReferencePoint = layout.referencePoint
         panel.setFrame(layout.panelFrame, display: true)
+    }
+
+    func setPetRingOrientation(_ orientation: PetRingOrientation) {
+        guard !stopped else { return }
+        viewState.petRingOrientation = orientation
     }
 
     func setCalibrationEnabled(_ enabled: Bool) {

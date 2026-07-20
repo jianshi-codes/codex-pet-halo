@@ -69,7 +69,9 @@ struct PetRingPresentationMapper {
         let value = RingMetricValue(
             remainingPercent: window.remainingPercent,
             displayedPercent: Int(window.remainingPercent.rounded(.toNearestOrAwayFromZero)),
-            remainingLevel: RemainingLevel(remainingPercent: window.remainingPercent)
+            semanticLevel: PetRingPresentationPolicy.remainingLevel(
+                for: window.remainingPercent
+            )
         )
         switch freshness {
         case .current:
@@ -90,12 +92,21 @@ struct PetRingPresentationMapper {
         let matches = (usage.dailyBuckets ?? []).filter {
             calendar.isDate($0.date, inSameDayAs: date)
         }
-        guard matches.count == 1, let bucket = matches.first else {
-            return .unavailable
+        guard matches.count == 1,
+              let bucket = matches.first,
+              let peak = usage.summary.peakDailyTokenCount,
+              peak > 0
+        else {
+            return nil
         }
+        let ratio = Double(bucket.tokenCount) / Double(peak)
         let value = TodayTokenValue(
             tokenCount: bucket.tokenCount,
-            tokenText: numberText(bucket.tokenCount)
+            tokenText: numberText(bucket.tokenCount),
+            peakDailyTokenCount: peak,
+            peakTokenText: numberText(peak),
+            consumptionRatio: ratio,
+            semanticLevel: PetRingPresentationPolicy.todayLevel(for: ratio)
         )
         switch freshness {
         case .current:
@@ -103,7 +114,7 @@ struct PetRingPresentationMapper {
         case .stale:
             return .stale(value)
         case .unavailable:
-            return .unavailable
+            return nil
         }
     }
 
@@ -116,7 +127,9 @@ struct PetRingPresentationMapper {
         if let fiveHour {
             values.append(ringAccessibilityValue(name: "Five-hour quota", metric: fiveHour))
         }
-        values.append(todayAccessibilityValue(todayTokens))
+        if let todayTokens {
+            values.append(todayAccessibilityValue(todayTokens))
+        }
         return values.joined(separator: "; ")
     }
 
@@ -126,13 +139,13 @@ struct PetRingPresentationMapper {
     ) -> String {
         guard let value = metric.value else { return "\(name), unavailable" }
         return "\(name), \(value.percentText) remaining, "
-            + "\(metric.freshnessText.lowercased()), \(value.remainingLevel.text.lowercased())"
+            + "\(metric.freshnessText.lowercased()), \(value.semanticLevel.text.lowercased())"
     }
 
-    private func todayAccessibilityValue(_ metric: TodayTokenPresentation?) -> String {
-        guard let metric else { return "Today tokens, unavailable" }
-        guard let value = metric.value else { return "Today tokens, unavailable" }
-        return "Today tokens, \(value.tokenText), \(metric.freshnessText.lowercased())"
+    private func todayAccessibilityValue(_ metric: TodayTokenPresentation) -> String {
+        let value = metric.value
+        return "Today tokens, \(value.tokenText), \(value.percentOfPeakText) of historical peak, "
+            + "\(metric.freshnessText.lowercased()), \(value.semanticLevel.text.lowercased())"
     }
 
     private func numberText(_ value: UInt64) -> String {

@@ -61,7 +61,8 @@ if [[ -z "$owned_app_server_pid" ]]; then
 fi
 
 echo "M7 live observation starts now and prints only sanitized outcomes."
-echo "Keep Pet visible and confirm the ring has a transparent center with no rectangular card."
+echo "Keep Pet visible and confirm three concentric metric rings share one transparent center with no rectangular card."
+echo "Use the menu fine-tune controls if needed, and confirm the activity dialog occupies the open side."
 echo "Then move Pet, Tuck Away, Wake, and Quit Pet Halo during the observation window."
 sleep 5
 if ! xcrun swift "$repository_root/Tools/M6CenterLockSmoke/main.swift" 60 >"$live_log" 2>&1; then
@@ -76,7 +77,7 @@ required_live_lines=(
     'Pet visible at start: yes'
     'Pet target found: yes'
     'Automatic attachment: observed'
-    'Center alignment maintained: yes'
+    'Visual-center offset maintained: yes'
     'Independent Pet movement: observed'
     'Pet Tuck Away: observed'
     'Codex-window fallback: observed'
@@ -106,14 +107,15 @@ if ! ./Scripts/m7-tests.sh >"$test_log" 2>&1; then
 fi
 
 echo "Pet Ring target selection: direct pass"
-echo "Pet/Halo center alignment and independent movement: direct pass"
+echo "Pet/Halo visual-center offset and independent movement: direct pass"
 echo "Tuck Away fallback and Wake recovery: direct pass"
 echo "Transparent center and card-background exclusion: deterministic pass"
-echo "Weekly, optional 5h, and Today token gating: deterministic pass"
+echo "Independent Weekly, optional 5h, and Today rings: deterministic pass"
+echo "Dialog-aware partial-arc orientation: deterministic/direct pass"
 echo "Pet Ring click-through and non-activation: deterministic/direct pass"
 echo "Fallback cards and Expanded rejection on Pet: deterministic pass"
 echo "Observer, panel, and owned app-server shutdown: direct pass"
-echo "Visual Pet visibility and no rectangular card: observer confirmation required"
+echo "Visual Pet containment, concentric rings, complementary dialog side, and no card: observer confirmation required"
 
 trap - EXIT
 cleanup

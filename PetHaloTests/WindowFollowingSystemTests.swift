@@ -62,11 +62,14 @@ final class WindowFollowingSystemTests: XCTestCase {
 
         store.setFollowingEnabled(true)
         store.setWindowAnchor(anchor)
+        let visualOffset = PetVisualCenterOffset(horizontal: -12, vertical: 36)
+        store.setPetVisualCenterOffset(visualOffset)
         XCTAssertEqual(
             store.load(),
             WindowFollowingPreferenceSnapshot(
                 followingEnabled: true,
-                windowAnchor: anchor
+                windowAnchor: anchor,
+                petVisualCenterOffset: visualOffset
             )
         )
 
@@ -97,6 +100,8 @@ final class WindowFollowingSystemTests: XCTestCase {
         let legacyKey = "io.github.jianshicodes.PetHalo.petFollowing.anchor.v1"
 
         store.setWindowAnchor(windowAnchor)
+        let visualOffset = PetVisualCenterOffset(horizontal: 4, vertical: 28)
+        store.setPetVisualCenterOffset(visualOffset)
         defaults.set(Data("legacy-anchor".utf8), forKey: legacyKey)
         XCTAssertNotNil(defaults.object(forKey: legacyKey))
 
@@ -105,5 +110,6 @@ final class WindowFollowingSystemTests: XCTestCase {
 
         XCTAssertNil(defaults.object(forKey: legacyKey))
         XCTAssertEqual(store.load().windowAnchor, windowAnchor)
+        XCTAssertEqual(store.load().petVisualCenterOffset, visualOffset)
     }
 }

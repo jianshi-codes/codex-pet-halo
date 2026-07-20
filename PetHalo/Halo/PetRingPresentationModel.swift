@@ -1,19 +1,9 @@
 import Foundation
 
-enum RemainingLevel: String, Equatable, Sendable {
-    case normal
-    case low
+enum PetRingSemanticLevel: String, Equatable, Sendable {
+    case healthy
+    case warning
     case critical
-
-    init(remainingPercent: Double) {
-        if remainingPercent <= 10 {
-            self = .critical
-        } else if remainingPercent <= 25 {
-            self = .low
-        } else {
-            self = .normal
-        }
-    }
 
     var text: String {
         rawValue.capitalized
@@ -23,10 +13,10 @@ enum RemainingLevel: String, Equatable, Sendable {
 struct RingMetricValue: Equatable, Sendable {
     let remainingPercent: Double
     let displayedPercent: Int
-    let remainingLevel: RemainingLevel
+    let semanticLevel: PetRingSemanticLevel
 
     var progress: Double {
-        remainingPercent / 100
+        min(max(remainingPercent / 100, 0), 1)
     }
 
     var percentText: String {
@@ -68,19 +58,28 @@ enum RingMetricPresentation: Equatable, Sendable {
 struct TodayTokenValue: Equatable, Sendable {
     let tokenCount: UInt64
     let tokenText: String
+    let peakDailyTokenCount: UInt64
+    let peakTokenText: String
+    let consumptionRatio: Double
+    let semanticLevel: PetRingSemanticLevel
+
+    var progress: Double {
+        min(max(consumptionRatio, 0), 1)
+    }
+
+    var percentOfPeakText: String {
+        "\(Int((consumptionRatio * 100).rounded(.toNearestOrAwayFromZero)))%"
+    }
 }
 
 enum TodayTokenPresentation: Equatable, Sendable {
     case current(TodayTokenValue)
     case stale(TodayTokenValue)
-    case unavailable
 
-    var value: TodayTokenValue? {
+    var value: TodayTokenValue {
         switch self {
         case let .current(value), let .stale(value):
             value
-        case .unavailable:
-            nil
         }
     }
 
@@ -90,8 +89,6 @@ enum TodayTokenPresentation: Equatable, Sendable {
             "Current"
         case .stale:
             "Stale"
-        case .unavailable:
-            "Unavailable"
         }
     }
 
@@ -111,6 +108,6 @@ struct PetRingPresentationModel: Equatable, Sendable {
         weekly: .unavailable,
         fiveHour: nil,
         todayTokens: nil,
-        accessibilityValue: "Weekly quota, unavailable; Today tokens, unavailable"
+        accessibilityValue: "Weekly quota, unavailable"
     )
 }

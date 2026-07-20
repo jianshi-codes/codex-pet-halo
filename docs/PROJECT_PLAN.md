@@ -41,11 +41,11 @@ Generate schemas from the installed Codex CLI, build a read-only protocol probe,
 
 ### M7 — Pet Ring Surface & Target-aware Presentation
 
-**Implemented — final gate validation pending.** Pet uses only a transparent, click-through, center-locked vector ring. A target-aware surface state preserves Compact/Expanded cards for Codex-window and free-floating fallbacks, rejects card requests on Pet, and restores the prior card mode on loss. The Pet-specific mapper exposes weekly remaining, an exact capability-gated five-hour window, and only the current calendar-day token bucket with independent component freshness. See [the M7 report](milestones/m7-pet-ring-presentation.md).
+**Implemented — final gate validation pending.** Pet uses only a transparent, click-through vector surface centered on the AX Pet frame plus a persisted visual-center offset. Three concentric partial rings independently present Weekly remaining, an optional exact 300-minute 5h remaining value, and Today tokens versus nonzero historical peak. Fixed semantic thresholds and debounced dialog-aware opening direction remain functional M7 policy. Compact/Expanded fallbacks remain intact and are rejected on Pet. See [the M7 report](milestones/m7-pet-ring-presentation.md).
 
 ### M8 — Visual Polish, Themes & Motion
 
-Add advanced styling, arc orientation, themes, low-usage visuals, motion preferences, and animation without using official OpenAI or Codex Pet artwork.
+Add advanced styling beyond M7's fixed functional arc/color policy, themes, decorative low-usage visuals, motion preferences, and animation without using official OpenAI or Codex Pet artwork.
 
 ### M9 — Hardening & Release Readiness
 

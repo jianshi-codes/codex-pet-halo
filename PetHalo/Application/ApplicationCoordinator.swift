@@ -54,6 +54,7 @@ final class ApplicationCoordinator: ObservableObject {
     @Published private(set) var targetStatusText = HaloFollowingTargetSource.freeFloating.statusText
     @Published private(set) var petPlacementStatus: PetPlacementStatus = .unavailable
     @Published private(set) var petPlacementStatusText = PetPlacementStatus.unavailable.statusText
+    @Published private(set) var petRingOrientation: PetRingOrientation = .fixedDefault
 
     private let logger = Logger(subsystem: "io.github.jianshicodes.PetHalo", category: "lifecycle")
     private let usageService: any CodexUsageServing
@@ -201,6 +202,13 @@ final class ApplicationCoordinator: ObservableObject {
             && windowFollowingState != .calibrating
     }
 
+    var canFineTunePetRing: Bool {
+        state == .running
+            && targetSource == .pet
+            && petDiscoveryState == .found
+            && windowFollowingState != .calibrating
+    }
+
     var canFinishCalibration: Bool {
         state == .running && windowFollowingState == .calibrating
     }
@@ -231,9 +239,21 @@ final class ApplicationCoordinator: ObservableObject {
     }
 
     func beginPetFollowingCalibration() {
-        guard state == .running, let haloPanelController else { return }
+        guard canFineTunePetRing, let haloPanelController else { return }
         windowFollowingService.beginPetCalibration(
             currentReferencePoint: haloPanelController.referencePoint
+        )
+    }
+
+    func nudgePetRing(horizontal: CGFloat, vertical: CGFloat) {
+        guard canFineTunePetRing, let haloPanelController else { return }
+        let current = haloPanelController.referencePoint
+        windowFollowingService.beginPetCalibration(currentReferencePoint: current)
+        windowFollowingService.finishCalibration(
+            currentReferencePoint: CGPoint(
+                x: current.x + horizontal,
+                y: current.y + vertical
+            )
         )
     }
 
@@ -349,6 +369,9 @@ final class ApplicationCoordinator: ObservableObject {
         case let .petPlacementStatusChanged(newStatus):
             petPlacementStatus = newStatus
             petPlacementStatusText = newStatus.statusText
+        case let .petRingOrientationChanged(newOrientation):
+            petRingOrientation = newOrientation
+            haloPanelController?.setPetRingOrientation(newOrientation)
         case let .setCalibrationEnabled(enabled):
             haloPanelController?.setCalibrationEnabled(enabled)
         case let .placeReferencePoint(referencePoint):

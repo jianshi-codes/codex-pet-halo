@@ -7,6 +7,12 @@ private let petHaloBundleIdentifier = "io.github.jianshicodes.PetHalo"
 private let preferencesDomain = "io.github.jianshicodes.PetHalo"
 private let petAnchorKey = "io.github.jianshicodes.PetHalo.petFollowing.anchor.v1"
 private let windowAnchorKey = "io.github.jianshicodes.PetHalo.windowFollowing.anchor.v1"
+private let visualCenterOffsetKey = "io.github.jianshicodes.PetHalo.petRing.visualCenterOffset.v1"
+
+private struct VisualCenterOffset: Decodable {
+    let horizontal: Double
+    let vertical: Double
+}
 
 private struct WindowGeometry {
     let frame: CGRect
@@ -117,15 +123,20 @@ private func haloPanelFrame() -> CGRect? {
         !$0.minimized && !$0.hidden
             && ((abs($0.frame.width - 176) <= 1 && abs($0.frame.height - 176) <= 1)
                 || (abs($0.frame.width - 208) <= 1 && abs($0.frame.height - 208) <= 1)
+                || (abs($0.frame.width - 252) <= 1 && abs($0.frame.height - 252) <= 1)
                 || (abs($0.frame.width - 360) <= 1 && abs($0.frame.height - 520) <= 1))
     }
     guard candidates.count == 1 else { return nil }
     return appKitFrame(candidates[0].frame)
 }
 
-private func centersAreAligned(panelFrame: CGRect, petFrame: CGRect) -> Bool {
-    abs(panelFrame.midX - petFrame.midX) <= 1
-        && abs(panelFrame.midY - petFrame.midY) <= 1
+private func visualCentersAreAligned(
+    panelFrame: CGRect,
+    petFrame: CGRect,
+    offset: VisualCenterOffset
+) -> Bool {
+    abs(panelFrame.midX - petFrame.midX - offset.horizontal) <= 1
+        && abs(panelFrame.midY - petFrame.midY - offset.vertical) <= 1
 }
 
 guard AXIsProcessTrusted() else {
@@ -154,6 +165,12 @@ let savedWindowAnchor = CFPreferencesCopyAppValue(
     windowAnchorKey as CFString,
     preferencesDomain as CFString
 ) != nil
+private let savedVisualCenterOffset = (CFPreferencesCopyAppValue(
+    visualCenterOffsetKey as CFString,
+    preferencesDomain as CFString
+) as? Data)
+    .flatMap { try? JSONDecoder().decode(VisualCenterOffset.self, from: $0) }
+    ?? VisualCenterOffset(horizontal: 0, vertical: 0)
 print("Legacy Pet anchor: \(savedPetAnchor ? "present" : "absent")")
 print("M4 window anchor: \(savedWindowAnchor ? "present" : "absent")")
 
@@ -216,8 +233,12 @@ while Date() < deadline {
         if let panelFrame = haloPanelFrame() {
             attachmentObserved = true
             petRingObserved = petRingObserved
-                || (abs(panelFrame.width - 208) <= 1 && abs(panelFrame.height - 208) <= 1)
-            if centersAreAligned(panelFrame: panelFrame, petFrame: petFrame) {
+                || (abs(panelFrame.width - 252) <= 1 && abs(panelFrame.height - 252) <= 1)
+            if visualCentersAreAligned(
+                panelFrame: panelFrame,
+                petFrame: petFrame,
+                offset: savedVisualCenterOffset
+            ) {
                 initialAlignmentObserved = true
                 if movementObserved {
                     movementAlignmentObserved = true
@@ -247,10 +268,10 @@ let centerAlignmentMaintained = initialAlignmentObserved
     && wakeAlignmentObserved
 print("Pet target found: \(firstPetFrame == nil ? "no" : "yes")")
 print("Automatic attachment: \(attachmentObserved ? "observed" : "not observed")")
-print("Center alignment sample: \(initialAlignmentObserved ? "observed" : "not observed")")
-print("Post-movement center alignment: \(movementAlignmentObserved ? "observed" : "not observed")")
-print("Post-Wake center alignment: \(wakeAlignmentObserved ? "observed" : "not observed")")
-print("Center alignment maintained: \(centerAlignmentMaintained ? "yes" : "no")")
+print("Visual-center offset sample: \(initialAlignmentObserved ? "observed" : "not observed")")
+print("Post-movement visual-center offset: \(movementAlignmentObserved ? "observed" : "not observed")")
+print("Post-Wake visual-center offset: \(wakeAlignmentObserved ? "observed" : "not observed")")
+print("Visual-center offset maintained: \(centerAlignmentMaintained ? "yes" : "no")")
 print("Independent Pet movement: \(movementObserved ? "observed" : "not observed")")
 print("Pet Tuck Away: \(disappearanceObserved ? "observed" : "not observed")")
 print("Codex-window fallback: \(fallbackObserved ? "observed" : "not observed")")

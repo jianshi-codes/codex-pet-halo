@@ -4,16 +4,19 @@ import SwiftUI
 final class HaloViewState: ObservableObject {
     @Published var cardModel: HaloPresentationModel
     @Published var petRingModel: PetRingPresentationModel
+    @Published var petRingOrientation: PetRingOrientation
     @Published var surfaceMode: HaloSurfaceMode
     @Published var isCalibrating = false
 
     init(
         cardModel: HaloPresentationModel,
         petRingModel: PetRingPresentationModel,
+        petRingOrientation: PetRingOrientation = .fixedDefault,
         surfaceMode: HaloSurfaceMode
     ) {
         self.cardModel = cardModel
         self.petRingModel = petRingModel
+        self.petRingOrientation = petRingOrientation
         self.surfaceMode = surfaceMode
     }
 }
@@ -27,7 +30,10 @@ struct HaloView: View {
         Group {
             switch state.surfaceMode {
             case .petRing:
-                PetRingView(model: state.petRingModel)
+                PetRingView(
+                    model: state.petRingModel,
+                    orientation: state.petRingOrientation
+                )
             case .compactCard:
                 cardSurface(cornerRadius: 36, padding: 14) {
                     HaloCompactView(model: state.cardModel)

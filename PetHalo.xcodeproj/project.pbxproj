@@ -25,6 +25,7 @@
 		56C0090D0694F70E7A0A0235 /* JSONRPCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44D0290C78C6A5EE7675F17E /* JSONRPCClient.swift */; };
 		6098B69858EB884122CECCC8 /* CodexAppServerProcessTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA3E4DFDEC40E481489464C6 /* CodexAppServerProcessTests.swift */; };
 		664E75B91E5405A2F5C1467C /* WindowFollowingServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E15F4363FF1EFB921617997 /* WindowFollowingServiceTests.swift */; };
+		67CC323020778A59EC11E8AF /* PetRingPresentationPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DB3589D81C683D19586393F /* PetRingPresentationPolicy.swift */; };
 		6DF192CC2CB5DA0986C4A0A9 /* ApplicationMenuModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FCA91196BF97C117A6CE257 /* ApplicationMenuModel.swift */; };
 		711A8ABD501119D8AF2ADF46 /* HaloAccessibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FF5A8C4E94A3AE44C68AF30 /* HaloAccessibilityTests.swift */; };
 		73DEC04D011B8B201B7CD3DE /* PetHaloCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31E285D59ED6AC3404B469E7 /* PetHaloCore.framework */; };
@@ -146,6 +147,7 @@
 		7AF1978CC2FC88E214BCA7F9 /* PetHaloCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PetHaloCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		86A525637B5693F3FDA11F32 /* HaloPresentationMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloPresentationMode.swift; sourceTree = "<group>"; };
 		88966A37DE9DA522A564D8C2 /* HaloView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloView.swift; sourceTree = "<group>"; };
+		8DB3589D81C683D19586393F /* PetRingPresentationPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetRingPresentationPolicy.swift; sourceTree = "<group>"; };
 		8E9AD2D98394E507F7140539 /* HaloPresentationMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloPresentationMapper.swift; sourceTree = "<group>"; };
 		94248589065E76AD0F4ED8AC /* Pet Halo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Pet Halo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A68C7C9198F8107CA5E9E1CF /* PetRingPresentationMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetRingPresentationMapperTests.swift; sourceTree = "<group>"; };
@@ -255,6 +257,7 @@
 				2CDE72BAC5439B39BD228E20 /* PetRingGeometry.swift */,
 				5311A709BB4CD6252DEEF841 /* PetRingPresentationMapper.swift */,
 				E3DE089ABE75DFCA70172888 /* PetRingPresentationModel.swift */,
+				8DB3589D81C683D19586393F /* PetRingPresentationPolicy.swift */,
 				C50A89738AFE522C295D68FB /* PetRingView.swift */,
 			);
 			path = Halo;
@@ -623,6 +626,7 @@
 				C2E47BE59E18A1880B229657 /* PetRingGeometry.swift in Sources */,
 				A06D1BFC9DDA4D637087E735 /* PetRingPresentationMapper.swift in Sources */,
 				95CC2B8C86BE58C250F3F8C3 /* PetRingPresentationModel.swift in Sources */,
+				67CC323020778A59EC11E8AF /* PetRingPresentationPolicy.swift in Sources */,
 				87DEF4461EDD118E7A3D8FE8 /* PetRingView.swift in Sources */,
 				ECD8CFE1A0A3D3729DCA82A2 /* PetTargetModels.swift in Sources */,
 				44196C28F04B02B682757680 /* SystemPetTargetDiscovery.swift in Sources */,

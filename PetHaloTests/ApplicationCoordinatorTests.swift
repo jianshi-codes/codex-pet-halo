@@ -21,6 +21,7 @@ private final class FakeHaloPanelController: HaloPanelControlling {
     private(set) var stopCount = 0
     private(set) var models: [HaloPresentationModel] = []
     private(set) var petRingModels: [PetRingPresentationModel] = []
+    private(set) var petRingOrientation: PetRingOrientation = .fixedDefault
     private(set) var operations: [FakePanelOperation] = []
     private(set) var lastSetReferencePoint: CGPoint?
     var onSetAttachment: (@MainActor (PetAttachmentLayout) -> Void)?
@@ -75,6 +76,10 @@ private final class FakeHaloPanelController: HaloPanelControlling {
         frame = layout.panelFrame
         operations.append(.setAttachment(layout, surfaceMode: surfaceMode))
         onSetAttachment?(layout)
+    }
+
+    func setPetRingOrientation(_ orientation: PetRingOrientation) {
+        petRingOrientation = orientation
     }
 
     func setCalibrationEnabled(_ enabled: Bool) {
@@ -678,6 +683,46 @@ final class ApplicationCoordinatorTests: XCTestCase {
         XCTAssertEqual(panel.surfaceMode, .expandedCard)
         XCTAssertEqual(panel.frame.size, HaloPanelController.expandedSize)
         XCTAssertFalse(panel.ignoresMouseEvents)
+        coordinator.requestTermination()
+        await coordinator.waitForShutdown()
+    }
+
+    @MainActor
+    func testPetFineTuneAndOrientationNeverExposeExpandedOrMovePanelDirectly() async throws {
+        let panel = FakeHaloPanelController()
+        let following = FakeWindowFollowingService()
+        let coordinator = ApplicationCoordinator(
+            usageService: FakeUsageService(),
+            haloPanelController: panel,
+            windowFollowingService: following,
+            terminateApplication: {}
+        )
+        coordinator.start()
+        let layout = try XCTUnwrap(PetAttachmentLayoutPolicy.centeredLayout(
+            petFrame: CGRect(x: 500, y: 300, width: 120, height: 110),
+            panelSize: PetAttachmentLayoutPolicy.petAttachmentSize
+        ))
+        following.emit(.petDiscoveryStateChanged(.found))
+        following.emit(.activatePetAttachment(layout))
+        for _ in 0 ..< 100 where panel.surfaceMode != .petRing {
+            await Task.yield()
+        }
+        let frame = panel.frame
+
+        coordinator.nudgePetRing(horizontal: 4, vertical: -4)
+        following.emit(.petRingOrientationChanged(.openingBottom))
+        for _ in 0 ..< 100 where panel.petRingOrientation != .openingBottom {
+            await Task.yield()
+        }
+
+        XCTAssertEqual(following.beginPetCount, 1)
+        XCTAssertEqual(following.finishCount, 1)
+        XCTAssertEqual(panel.petRingOrientation, .openingBottom)
+        XCTAssertEqual(panel.frame, frame)
+        XCTAssertEqual(panel.surfaceMode, .petRing)
+        XCTAssertTrue(panel.ignoresMouseEvents)
+        coordinator.setHaloMode(.expanded)
+        XCTAssertEqual(panel.surfaceMode, .petRing)
         coordinator.requestTermination()
         await coordinator.waitForShutdown()
     }

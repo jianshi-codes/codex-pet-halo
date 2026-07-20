@@ -1,13 +1,14 @@
+import AppKit
 import SwiftUI
 
 private struct PetRingArc: Shape {
+    let center: CGPoint
     let startAngleDegrees: Double
     let sweepAngleDegrees: Double
     let radius: Double
     let progress: Double
 
-    func path(in rect: CGRect) -> Path {
-        let center = CGPoint(x: rect.midX, y: rect.midY)
+    func path(in _: CGRect) -> Path {
         var path = Path()
         path.addArc(
             center: center,
@@ -23,98 +24,134 @@ private struct PetRingArc: Shape {
 struct PetRingView: View {
     let model: PetRingPresentationModel
     let geometry: PetRingGeometry
+    let orientation: PetRingOrientation
 
     init(
         model: PetRingPresentationModel,
-        geometry: PetRingGeometry = .standard
+        geometry: PetRingGeometry = .standard,
+        orientation: PetRingOrientation = .fixedDefault
     ) {
         self.model = model
         self.geometry = geometry
+        self.orientation = orientation
     }
 
     var body: some View {
         ZStack {
-            primaryArcs
-            secondaryArc
+            remainingRing(name: "Weekly", metric: model.weekly, kind: .weekly)
+            if let fiveHour = model.fiveHour {
+                remainingRing(name: "5 hour", metric: fiveHour, kind: .fiveHour)
+            }
+            if let todayTokens = model.todayTokens {
+                todayRing(todayTokens)
+            }
             labels
         }
         .frame(width: geometry.panelDiameter, height: geometry.panelDiameter)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Pet Halo usage ring")
-        .accessibilityValue(model.accessibilityValue)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Pet Halo usage rings")
     }
 
-    private var primaryArcs: some View {
-        ZStack {
-            PetRingArc(
-                startAngleDegrees: geometry.startAngleDegrees,
-                sweepAngleDegrees: geometry.sweepAngleDegrees,
-                radius: geometry.radius,
-                progress: 1
-            )
-            .stroke(.secondary.opacity(0.25), lineWidth: geometry.primaryLineWidth)
-
-            if let value = model.weekly.value {
-                PetRingArc(
-                    startAngleDegrees: geometry.startAngleDegrees,
-                    sweepAngleDegrees: geometry.sweepAngleDegrees,
-                    radius: geometry.radius,
-                    progress: value.progress
-                )
-                .stroke(
-                    .primary,
-                    style: StrokeStyle(
-                        lineWidth: geometry.primaryLineWidth,
-                        lineCap: .round,
-                        dash: model.weekly.isStale ? [5, 4] : []
-                    )
+    private func remainingRing(
+        name: String,
+        metric: RingMetricPresentation,
+        kind: PetRingMetricKind
+    ) -> some View {
+        let value = metric.value
+        return ZStack {
+            track(kind: kind)
+            if let value {
+                progressArc(
+                    kind: kind,
+                    progress: value.progress,
+                    level: value.semanticLevel,
+                    isStale: metric.isStale
                 )
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(name) remaining")
+        .accessibilityValue(remainingAccessibilityValue(metric))
+    }
+
+    private func todayRing(_ metric: TodayTokenPresentation) -> some View {
+        let value = metric.value
+        return ZStack {
+            track(kind: .today)
+            progressArc(
+                kind: .today,
+                progress: value.progress,
+                level: value.semanticLevel,
+                isStale: metric.isStale
+            )
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Today tokens")
+        .accessibilityValue(
+            "\(value.tokenText), \(value.percentOfPeakText) of historical peak, "
+                + "\(metric.freshnessText.lowercased()), "
+                + value.semanticLevel.text.lowercased()
+        )
+    }
+
+    private func track(kind: PetRingMetricKind) -> some View {
+        let angles = geometry.angles(for: orientation)
+        return PetRingArc(
+            center: geometry.ringCenter(in: geometry.panelSize),
+            startAngleDegrees: angles.startAngleDegrees,
+            sweepAngleDegrees: angles.sweepAngleDegrees,
+            radius: geometry.radius(for: kind),
+            progress: 1
+        )
+        .stroke(
+            Color(nsColor: .separatorColor).opacity(0.35),
+            style: StrokeStyle(lineWidth: geometry.lineWidth, lineCap: .round)
+        )
         .accessibilityHidden(true)
     }
 
-    @ViewBuilder
-    private var secondaryArc: some View {
-        if let fiveHour = model.fiveHour, let value = fiveHour.value {
-            PetRingArc(
-                startAngleDegrees: geometry.startAngleDegrees,
-                sweepAngleDegrees: geometry.sweepAngleDegrees,
-                radius: geometry.radius - geometry.primaryLineWidth,
-                progress: value.progress
+    private func progressArc(
+        kind: PetRingMetricKind,
+        progress: Double,
+        level: PetRingSemanticLevel,
+        isStale: Bool
+    ) -> some View {
+        let angles = geometry.angles(for: orientation)
+        return PetRingArc(
+            center: geometry.ringCenter(in: geometry.panelSize),
+            startAngleDegrees: angles.startAngleDegrees,
+            sweepAngleDegrees: angles.sweepAngleDegrees,
+            radius: geometry.radius(for: kind),
+            progress: progress
+        )
+        .stroke(
+            semanticColor(level).opacity(isStale ? 0.55 : 0.9),
+            style: StrokeStyle(
+                lineWidth: geometry.lineWidth,
+                lineCap: .round,
+                dash: isStale ? [5, 4] : []
             )
-            .stroke(
-                .secondary,
-                style: StrokeStyle(
-                    lineWidth: geometry.secondaryLineWidth,
-                    lineCap: .round,
-                    dash: fiveHour.isStale ? [3, 3] : []
-                )
-            )
-            .accessibilityHidden(true)
-        }
+        )
+        .accessibilityHidden(true)
     }
 
     private var labels: some View {
-        GeometryReader { proxy in
-            weeklyLabel
-                .position(x: proxy.size.width / 2, y: 8)
+        GeometryReader { _ in
+            metricLabel(prefix: "W", metric: model.weekly)
+                .position(geometry.labelPosition(for: .weekly, orientation: orientation))
 
             if let fiveHour = model.fiveHour {
                 metricLabel(prefix: "5h", metric: fiveHour)
-                    .position(x: proxy.size.width * 0.23, y: proxy.size.height - 8)
+                    .position(geometry.labelPosition(for: .fiveHour, orientation: orientation))
             }
 
             if let todayTokens = model.todayTokens {
                 todayLabel(todayTokens)
-                    .position(x: proxy.size.width * 0.76, y: proxy.size.height - 8)
+                    .position(geometry.labelPosition(for: .today, orientation: orientation))
             }
         }
         .font(.caption2.monospacedDigit().weight(.semibold))
-    }
-
-    private var weeklyLabel: some View {
-        metricLabel(prefix: "W", metric: model.weekly)
+        .accessibilityHidden(true)
     }
 
     private func metricLabel(
@@ -122,15 +159,31 @@ struct PetRingView: View {
         metric: RingMetricPresentation
     ) -> some View {
         let valueText = metric.value?.percentText ?? "—"
-        let levelText = metric.value.map { $0.remainingLevel == .normal ? "" : " \($0.remainingLevel.text)" }
-            ?? ""
         let staleText = metric.isStale ? " Stale" : ""
-        return Text("\(prefix) \(valueText)\(levelText)\(staleText)")
+        return Text("\(prefix) \(valueText)\(staleText)")
+            .fixedSize()
     }
 
     private func todayLabel(_ metric: TodayTokenPresentation) -> some View {
-        let valueText = metric.value?.tokenText ?? "—"
         let staleText = metric.isStale ? " Stale" : ""
-        return Text("Today \(valueText)\(staleText)")
+        return Text("Today \(metric.value.tokenText)\(staleText)")
+            .fixedSize()
+    }
+
+    private func remainingAccessibilityValue(_ metric: RingMetricPresentation) -> String {
+        guard let value = metric.value else { return "Unavailable" }
+        return "\(value.percentText), \(metric.freshnessText.lowercased()), "
+            + value.semanticLevel.text.lowercased()
+    }
+
+    private func semanticColor(_ level: PetRingSemanticLevel) -> Color {
+        switch level {
+        case .healthy:
+            Color(nsColor: .systemGreen)
+        case .warning:
+            Color(nsColor: .systemOrange)
+        case .critical:
+            Color(nsColor: .systemRed)
+        }
     }
 }

@@ -61,17 +61,20 @@ The M3 panel itself does not discover or inspect Codex. M4 through M6 own the se
 | Component | M7 contract |
 | --- | --- |
 | Surface state | Pet selects `petRing`; Codex-window/free-floating select `compactCard` or `expandedCard` |
-| Ring geometry | Fixed `208×208` center-locked panel, 84-point radius, 10/5-point vector strokes, and 158-point transparent center |
+| Ring geometry | Fixed `252×252` panel with independent 104/94/84-point radii, 6-point vector strokes, and 162-point transparent center |
+| Visual center | AX midpoint plus one persisted fixed `dx/dy`; every arc and absolute-position label shares the panel midpoint |
 | Pet interaction | Always click-through, shadowless, non-activating, and unable to become key or main |
 | Card fallback | Compact/Expanded, Account Usage, scrolling, and non-activation remain unchanged outside Pet |
 | Weekly | Domain `remainingPercent` with rate-limit component freshness |
 | Five-hour | Present only for an available exact 300-minute capability |
-| Today tokens | Exactly one daily bucket matching the injected Calendar day; missing/ambiguous is unavailable and explicit zero remains zero |
-| Accessibility | One coherent ring group; text exposes freshness and normal/low/critical state; decorative arcs are hidden |
+| Today tokens | Current-day tokens divided by nonzero historical peak; omit missing inputs, clamp arc progress at 100%, preserve actual token text |
+| Semantic policy | Remaining: healthy ≥50%, warning 20–49%, critical <20%; Today: healthy ≤50%, warning 51–80%, critical >80% |
+| Orientation | Fixed 260-degree partial arcs; dialog above opens top, dialog below opens bottom, no dialog uses the default, ambiguous retains prior after debounce |
+| Accessibility | Every ring owns its label/value; stale also uses opacity/dash/text and an explicit stale accessibility state |
 
 `ApplicationCoordinator` remains the single owner of target, Usage, and presentation state. It records both the fallback card choice and non-Pet reference before entering Pet. On Pet loss, a delivered M4 reference is retained; otherwise the pre-Pet free-floating reference is restored before the card is resized. A direct Compact/Expanded command cannot change the Pet Ring, and `360×520` can never be applied at the Pet midpoint.
 
-M7 uses one fixed full-ring orientation and no animation. Advanced polish, arc angle/orientation changes, themes, low-usage styling, glow, motion preferences, and animations are M8 work.
+Activity orientation is derived only after the near-square Pet core has been selected and cannot change discovery, tracking, placement, offset, or fallback. M7 uses no animation. Advanced polish beyond the fixed functional arc/color policy, themes, decorative low-usage styling, glow, motion preferences, and animations are M8 work.
 
 ## M4 window-following contract
 
@@ -124,6 +127,8 @@ The official [Codex Pets documentation](https://learn.chatgpt.com/docs/pets.md) 
 | Fallback | Pet loss or ambiguity uses the preserved M4 anchor, then M3 free-floating; Wake restores centered Pet placement |
 
 M6 does not change the undocumented nature of Route A. Local screenshots and sanitized geometry showed that inferring a visible head/feet edge from the near-square AX Pet surface was not stable enough. The compatibility contract therefore uses only the frame midpoint and validates the Halo panel midpoint directly. The accessor observes selected Pet core surfaces and application window creation needed for Pet recreation, not activity-window geometry. The policy is deterministic and fake-driven in CI, while direct compatibility remains a local interaction gate against the installed Codex Desktop build.
+
+M7 preserves that raw AX midpoint as the tracking basis while adding a separate fixed visual-center offset to the complete Pet Ring panel. It does not reactivate the M5 normalized anchor. M7 also observes only wide activity-window geometry as a post-selection arc-orientation hint; it is not an M6 placement input.
 
 ## Protocol matrix for Codex CLI 0.145.0-alpha.18
 
