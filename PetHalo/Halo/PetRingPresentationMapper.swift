@@ -4,6 +4,7 @@ import PetHaloCore
 struct PetRingPresentationMapper {
     private var calendar: Calendar
     private let locale: Locale
+    private let compactTokenFormatter: CompactTokenFormatter
 
     init(
         calendar: Calendar = .autoupdatingCurrent,
@@ -14,6 +15,7 @@ struct PetRingPresentationMapper {
         calendar.timeZone = timeZone
         self.calendar = calendar
         self.locale = locale
+        compactTokenFormatter = CompactTokenFormatter(locale: locale)
     }
 
     func map(_ state: CodexUsageState, date: Date) -> PetRingPresentationModel {
@@ -103,6 +105,7 @@ struct PetRingPresentationMapper {
         let value = TodayTokenValue(
             tokenCount: bucket.tokenCount,
             tokenText: numberText(bucket.tokenCount),
+            compactTokenText: compactTokenFormatter.string(from: bucket.tokenCount),
             peakDailyTokenCount: peak,
             peakTokenText: numberText(peak),
             consumptionRatio: ratio,

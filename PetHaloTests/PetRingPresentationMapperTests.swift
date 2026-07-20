@@ -70,6 +70,7 @@ final class PetRingPresentationMapperTests: XCTestCase {
 
         XCTAssertEqual(model.todayTokens?.value.tokenCount, 12_345)
         XCTAssertEqual(model.todayTokens?.value.tokenText, "12,345")
+        XCTAssertEqual(model.todayTokens?.value.compactTokenText, "12.3K")
         XCTAssertEqual(model.todayTokens?.value.peakDailyTokenCount, 20_000)
         XCTAssertEqual(model.todayTokens?.value.progress, 0.61725)
         XCTAssertEqual(model.todayTokens?.freshnessText, "Current")
@@ -124,6 +125,8 @@ final class PetRingPresentationMapperTests: XCTestCase {
         XCTAssertEqual(model.todayTokens?.value.progress, 1)
         XCTAssertEqual(model.todayTokens?.value.tokenCount, 26_479_888)
         XCTAssertEqual(model.todayTokens?.value.tokenText, "26,479,888")
+        XCTAssertEqual(model.todayTokens?.value.compactTokenText, "26.5M")
+        XCTAssertEqual(model.todayTokens?.value.percentOfPeakText, "132%")
         XCTAssertEqual(model.todayTokens?.value.semanticLevel, .critical)
     }
 
@@ -139,6 +142,7 @@ final class PetRingPresentationMapperTests: XCTestCase {
         )
 
         XCTAssertEqual(model.todayTokens?.value.tokenText, "0")
+        XCTAssertEqual(model.todayTokens?.value.compactTokenText, "0")
         XCTAssertEqual(model.todayTokens?.value.progress, 0)
         XCTAssertEqual(model.todayTokens?.value.semanticLevel, .healthy)
     }
@@ -166,6 +170,40 @@ final class PetRingPresentationMapperTests: XCTestCase {
 
         XCTAssertNil(model.todayTokens)
         XCTAssertFalse(model.accessibilityValue.contains("Today tokens"))
+    }
+
+    func testCompactTokenFormatterUsesLocalizedKMBValues() {
+        let formatter = CompactTokenFormatter(locale: locale)
+
+        XCTAssertEqual(formatter.string(from: 999), "999")
+        XCTAssertEqual(formatter.string(from: 1_000), "1K")
+        XCTAssertEqual(formatter.string(from: 1_200), "1.2K")
+        XCTAssertEqual(formatter.string(from: 1_000_000), "1M")
+        XCTAssertEqual(formatter.string(from: 50_570_762), "50.6M")
+        XCTAssertEqual(formatter.string(from: 2_340_000_000), "2.3B")
+        XCTAssertEqual(
+            CompactTokenFormatter(locale: Locale(identifier: "de_DE"))
+                .string(from: 1_500),
+            "1,5K"
+        )
+    }
+
+    func testTodayAccessibilityRetainsExactCountWhileVisibleValueIsCompact() {
+        let model = mapper().map(
+            state(
+                accountUsage: .available(accountUsage(
+                    buckets: [DailyAccountUsage(date: date, tokenCount: 50_570_762)],
+                    peak: 80_000_000
+                )),
+                usageFreshness: .current
+            ),
+            date: date
+        )
+
+        XCTAssertEqual(model.todayTokens?.value.compactTokenText, "50.6M")
+        XCTAssertEqual(model.todayTokens?.value.percentOfPeakText, "63%")
+        XCTAssertTrue(model.accessibilityValue.contains("50,570,762"))
+        XCTAssertFalse(model.accessibilityValue.contains("50.6M"))
     }
 
     func testPetModelContainsNoDetailedAccountUsageFields() {
@@ -225,17 +263,62 @@ final class PetRingPresentationMapperTests: XCTestCase {
             geometry.labelPosition(for: .weekly, orientation: .openingTop),
             geometry.labelPosition(for: .weekly, orientation: .openingBottom)
         )
-        XCTAssertLessThan(
-            geometry.labelPosition(for: .weekly, orientation: .openingTop).x,
-            geometry.labelPosition(for: .fiveHour, orientation: .openingTop).x
-        )
-        XCTAssertLessThan(
-            geometry.labelPosition(for: .fiveHour, orientation: .openingTop).x,
-            geometry.labelPosition(for: .today, orientation: .openingTop).x
-        )
+        let metrics: [PetRingMetricKind] = [.weekly, .fiveHour, .today]
+        let topAngles = metrics.map {
+            geometry.labelAngleDegrees(for: $0, orientation: .openingTop)
+        }
+        XCTAssertEqual(Set(topAngles).count, 3)
+        let panelBounds = CGRect(origin: .zero, size: geometry.panelSize)
+        for metric in metrics {
+            let top = geometry.labelPosition(for: metric, orientation: .openingTop)
+            let bottom = geometry.labelPosition(for: metric, orientation: .openingBottom)
+            XCTAssertEqual(top.x, bottom.x, accuracy: 0.001)
+            XCTAssertEqual(top.y + bottom.y, center.y * 2, accuracy: 0.001)
+            XCTAssertTrue(panelBounds.contains(
+                geometry.labelFrame(for: metric, orientation: .openingTop)
+            ))
+            XCTAssertTrue(panelBounds.contains(
+                geometry.labelFrame(for: metric, orientation: .openingBottom)
+            ))
+        }
+        let topFrames = metrics.map {
+            geometry.labelFrame(for: $0, orientation: .openingTop)
+        }
+        XCTAssertFalse(topFrames[0].intersects(topFrames[1]))
+        XCTAssertFalse(topFrames[0].intersects(topFrames[2]))
+        XCTAssertFalse(topFrames[1].intersects(topFrames[2]))
         XCTAssertEqual(geometry.angles(for: .openingTop).sweepAngleDegrees, 260)
         XCTAssertEqual(geometry.angles(for: .openingBottom).sweepAngleDegrees, 260)
     }
+
+    #if DEBUG
+    func testDebugOrientationPreviewAffectsOnlyEffectiveAngles() {
+        XCTAssertEqual(
+            PetRingOrientationPreview.from(arguments: ["app"]),
+            .auto
+        )
+        XCTAssertEqual(
+            PetRingOrientationPreview.from(arguments: [
+                "app", "--pet-ring-orientation=gap-above",
+            ]),
+            .forceGapAbove
+        )
+        XCTAssertEqual(
+            PetRingOrientationPreview.from(arguments: [
+                "app", "--pet-ring-orientation=gap-below",
+            ]),
+            .forceGapBelow
+        )
+        XCTAssertEqual(
+            PetRingOrientationPreview.forceGapAbove.orientation(auto: .openingBottom),
+            .openingTop
+        )
+        XCTAssertEqual(
+            PetRingOrientationPreview.forceGapBelow.orientation(auto: .openingTop),
+            .openingBottom
+        )
+    }
+    #endif
 
     private func mapper() -> PetRingPresentationMapper {
         PetRingPresentationMapper(

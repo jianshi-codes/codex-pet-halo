@@ -32,7 +32,8 @@ struct HaloView: View {
             case .petRing:
                 PetRingView(
                     model: state.petRingModel,
-                    orientation: state.petRingOrientation
+                    orientation: state.petRingOrientation,
+                    isCalibrating: state.isCalibrating
                 )
             case .compactCard:
                 cardSurface(cornerRadius: 36, padding: 14) {

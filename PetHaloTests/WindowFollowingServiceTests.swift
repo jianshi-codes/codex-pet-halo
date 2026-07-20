@@ -106,7 +106,8 @@ private final class FakePetAccessor: PetTargetAccessing {
             let current = PetTargetSnapshot(
                 generation: generation,
                 frame: snapshot.frame,
-                activityGeometryHint: snapshot.activityGeometryHint
+                activityGeometryHint: snapshot.activityGeometryHint,
+                activityVerticalDelta: snapshot.activityVerticalDelta
             )
             self.snapshot = current
             return .selected(current)
@@ -116,6 +117,9 @@ private final class FakePetAccessor: PetTargetAccessing {
     }
 
     func currentSnapshot() -> PetTargetSnapshot? { snapshot }
+    func currentTrackedFrame() -> PetTrackedFrameSample? {
+        snapshot.map { PetTrackedFrameSample(generation: $0.generation, frame: $0.frame) }
+    }
     func stop() { stopCount += 1 }
 
     func emit(_ event: PetTargetObservationEvent, generation: Int? = nil) {
@@ -212,7 +216,9 @@ private final class FollowingEventRecorder {
     var layouts: [PetAttachmentLayout] {
         events.compactMap { event in
             switch event {
-            case let .activatePetAttachment(layout), let .placePetAttachment(layout):
+            case let .activatePetAttachment(layout):
+                layout
+            case let .placePetAttachment(layout, _):
                 layout
             default:
                 nil
@@ -224,6 +230,24 @@ private final class FollowingEventRecorder {
         events.compactMap { event in
             if case let .petRingOrientationChanged(orientation) = event {
                 return orientation
+            }
+            return nil
+        }
+    }
+
+    var placementModes: [PetAttachmentUpdateMode] {
+        events.compactMap { event in
+            if case let .placePetAttachment(_, mode) = event {
+                return mode
+            }
+            return nil
+        }
+    }
+
+    var activationLayouts: [PetAttachmentLayout] {
+        events.compactMap { event in
+            if case let .activatePetAttachment(layout) = event {
+                return layout
             }
             return nil
         }
@@ -348,9 +372,82 @@ final class WindowFollowingServiceTests: XCTestCase {
         let layout = try XCTUnwrap(recorder.layouts.last)
         XCTAssertEqual(layout.panelFrame.midX, moved.midX)
         XCTAssertEqual(layout.panelFrame.midY, moved.midY)
+        XCTAssertEqual(recorder.placementModes.last, .follow)
         XCTAssertEqual(context.windowAccessor.resolveCount, 0)
         recorder.stop()
         await context.service.stop()
+    }
+
+    @MainActor
+    func testPetMovementIsIndependentFromDialogDebounceAndReplacementSnaps() async throws {
+        let initial = CGRect(x: 500, y: 300, width: 120, height: 110)
+        let moved = initial.offsetBy(dx: 12, dy: -8)
+        let replacement = initial.offsetBy(dx: 28, dy: 14)
+        let context = makeContext(
+            petAccessResult: .selected(PetTargetSnapshot(generation: 0, frame: initial)),
+            enabled: true,
+            orientationDebounce: .seconds(10)
+        )
+        let recorder = FollowingEventRecorder()
+        recorder.start(context.service.events())
+        context.service.start()
+        await waitForLayout(recorder)
+        let generation = try XCTUnwrap(context.petAccessor.snapshot?.generation)
+
+        context.petAccessor.snapshot = PetTargetSnapshot(generation: generation, frame: moved)
+        context.petAccessor.emit(.geometryChanged)
+        for _ in 0 ..< 100 where recorder.layouts.last?.panelFrame.midX != moved.midX {
+            await Task.yield()
+        }
+        XCTAssertEqual(recorder.layouts.last?.panelFrame.midX, moved.midX)
+        XCTAssertEqual(recorder.placementModes.last, .follow)
+
+        context.petAccessor.snapshot = PetTargetSnapshot(
+            generation: generation,
+            frame: replacement
+        )
+        context.petAccessor.emit(.selectionChanged)
+        for _ in 0 ..< 100 where recorder.layouts.last?.panelFrame.midX != replacement.midX {
+            await Task.yield()
+        }
+        XCTAssertEqual(recorder.placementModes.last, .snap)
+        XCTAssertTrue(recorder.orientations.isEmpty)
+        recorder.stop()
+        await context.service.stop()
+    }
+
+    @MainActor
+    func testDisplayRefreshSamplingReadsSelectedPetFrameWithoutWaitingForAnotherEvent() async throws {
+        let initial = CGRect(x: 500, y: 300, width: 120, height: 110)
+        let offset = PetVisualCenterOffset(horizontal: -5, vertical: 133)
+        let context = makeContext(
+            petAccessResult: .selected(PetTargetSnapshot(generation: 0, frame: initial)),
+            enabled: true,
+            petVisualCenterOffset: offset
+        )
+        let recorder = FollowingEventRecorder()
+        recorder.start(context.service.events())
+        context.service.start()
+        await waitForLayout(recorder)
+        let eventCount = recorder.events.count
+        let generation = try XCTUnwrap(context.petAccessor.snapshot?.generation)
+        let moved = initial.offsetBy(dx: 48, dy: -27)
+        context.petAccessor.snapshot = PetTargetSnapshot(generation: generation, frame: moved)
+
+        let sampled = try XCTUnwrap(context.service.samplePetAttachmentLayout())
+
+        XCTAssertEqual(sampled.panelFrame.midX, moved.midX + offset.horizontal)
+        XCTAssertEqual(sampled.panelFrame.midY, moved.midY + offset.vertical)
+        XCTAssertEqual(recorder.events.count, eventCount)
+
+        context.petAccessor.snapshot = PetTargetSnapshot(
+            generation: generation + 1,
+            frame: moved.offsetBy(dx: 20, dy: 0)
+        )
+        XCTAssertNil(context.service.samplePetAttachmentLayout())
+        recorder.stop()
+        await context.service.stop()
+        XCTAssertNil(context.service.samplePetAttachmentLayout())
     }
 
     @MainActor
@@ -419,8 +516,8 @@ final class WindowFollowingServiceTests: XCTestCase {
         context.service.beginPetCalibration(currentReferencePoint: initial.referencePoint)
         context.service.finishCalibration(
             currentReferencePoint: CGPoint(
-                x: initial.referencePoint.x - 12,
-                y: initial.referencePoint.y + 36
+                x: initial.referencePoint.x + 18,
+                y: initial.referencePoint.y - 132
             )
         )
         for _ in 0 ..< 100 where recorder.layouts.last == initial { await Task.yield() }
@@ -428,14 +525,112 @@ final class WindowFollowingServiceTests: XCTestCase {
         let layout = try XCTUnwrap(recorder.layouts.last)
         XCTAssertEqual(context.service.state, .following)
         XCTAssertEqual(context.service.targetSource, .pet)
-        XCTAssertEqual(layout.panelFrame.midX, petFrame.midX - 12)
-        XCTAssertEqual(layout.panelFrame.midY, petFrame.midY + 36)
+        XCTAssertEqual(layout.panelFrame.midX, petFrame.midX + 18)
+        XCTAssertEqual(layout.panelFrame.midY, petFrame.midY - 132)
         XCTAssertEqual(
             context.preferences.petVisualCenterOffsetWrites,
-            [PetVisualCenterOffset(horizontal: -12, vertical: 36)]
+            [PetVisualCenterOffset(horizontal: 18, vertical: -132)]
         )
         XCTAssertTrue(context.preferences.windowAnchorWrites.isEmpty)
         XCTAssertEqual(context.petAccessor.resolveCount, petResolveCount)
+        recorder.stop()
+        await context.service.stop()
+    }
+
+    @MainActor
+    func testPetMovementCannotOverrideAnActiveVisualCenterCalibration() async throws {
+        let petFrame = CGRect(x: 500, y: 300, width: 120, height: 110)
+        let context = makeContext(
+            petAccessResult: .selected(PetTargetSnapshot(generation: 0, frame: petFrame)),
+            enabled: true
+        )
+        let recorder = FollowingEventRecorder()
+        recorder.start(context.service.events())
+        context.service.start()
+        await waitForLayout(recorder)
+        let initial = try XCTUnwrap(recorder.layouts.last)
+        context.service.beginPetCalibration(currentReferencePoint: initial.referencePoint)
+
+        let generation = try XCTUnwrap(context.petAccessor.snapshot?.generation)
+        context.petAccessor.snapshot = PetTargetSnapshot(
+            generation: generation,
+            frame: petFrame.offsetBy(dx: 40, dy: 25)
+        )
+        context.petAccessor.emit(.geometryChanged)
+        for _ in 0 ..< 20 { await Task.yield() }
+
+        XCTAssertEqual(context.service.state, .calibrating)
+        XCTAssertEqual(recorder.layouts.last, initial)
+        context.service.cancelCalibration()
+        for _ in 0 ..< 100 where recorder.layouts.last == initial { await Task.yield() }
+        XCTAssertEqual(recorder.layouts.last?.panelFrame.midX, petFrame.midX + 40)
+        XCTAssertEqual(recorder.layouts.last?.panelFrame.midY, petFrame.midY + 25)
+        XCTAssertEqual(recorder.placementModes.last, .snap)
+        recorder.stop()
+        await context.service.stop()
+    }
+
+    @MainActor
+    func testResetVisualCenterPersistsOnlyZeroOffsetAndSnaps() async throws {
+        let petFrame = CGRect(x: 500, y: 300, width: 120, height: 110)
+        let context = makeContext(
+            petAccessResult: .selected(PetTargetSnapshot(generation: 0, frame: petFrame)),
+            enabled: true,
+            petVisualCenterOffset: PetVisualCenterOffset(horizontal: -12, vertical: 36)
+        )
+        let recorder = FollowingEventRecorder()
+        recorder.start(context.service.events())
+        context.service.start()
+        await waitForLayout(recorder)
+
+        let initial = try XCTUnwrap(recorder.layouts.last)
+        context.service.beginPetCalibration(currentReferencePoint: initial.referencePoint)
+        XCTAssertEqual(context.service.state, .calibrating)
+        context.service.resetPetVisualCenter()
+        for _ in 0 ..< 100 where recorder.layouts.last?.panelFrame.midX != petFrame.midX {
+            await Task.yield()
+        }
+
+        XCTAssertEqual(context.preferences.petVisualCenterOffsetWrites, [.zero])
+        XCTAssertEqual(context.service.state, .following)
+        XCTAssertTrue(recorder.events.contains(.setCalibrationEnabled(true)))
+        XCTAssertTrue(recorder.events.contains(.setCalibrationEnabled(false)))
+        XCTAssertTrue(context.preferences.windowAnchorWrites.isEmpty)
+        XCTAssertEqual(recorder.layouts.last?.panelFrame.midX, petFrame.midX)
+        XCTAssertEqual(recorder.layouts.last?.panelFrame.midY, petFrame.midY)
+        XCTAssertEqual(recorder.placementModes.last, .snap)
+        recorder.stop()
+        await context.service.stop()
+    }
+
+    @MainActor
+    func testAutoOrientationUsesCalibratedVisualPetCenter() async throws {
+        let petFrame = CGRect(x: 500, y: 300, width: 120, height: 110)
+        let context = makeContext(
+            petAccessResult: .selected(PetTargetSnapshot(
+                generation: 0,
+                frame: petFrame,
+                activityGeometryHint: .above,
+                activityVerticalDelta: 80
+            )),
+            enabled: true,
+            petVisualCenterOffset: PetVisualCenterOffset(horizontal: -5, vertical: 133),
+            orientationDebounce: .milliseconds(1)
+        )
+        let recorder = FollowingEventRecorder()
+        recorder.start(context.service.events())
+        context.service.start()
+        await waitForLayout(recorder)
+        for _ in 0 ..< 100 where recorder.orientations.last != .openingBottom {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+
+        XCTAssertEqual(recorder.orientations.last, .openingBottom)
+        context.service.resetPetVisualCenter()
+        for _ in 0 ..< 100 where recorder.orientations.last != .openingTop {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        XCTAssertEqual(recorder.orientations.last, .openingTop)
         recorder.stop()
         await context.service.stop()
     }
@@ -545,6 +740,7 @@ final class WindowFollowingServiceTests: XCTestCase {
         XCTAssertEqual(recovered.panelFrame.midX, petFrame.midX - 8)
         XCTAssertEqual(recovered.panelFrame.midY, petFrame.midY + 32)
         XCTAssertEqual(context.preferences.snapshot.petVisualCenterOffset, offset)
+        XCTAssertEqual(recorder.activationLayouts.last, recovered)
         recorder.stop()
         await context.service.stop()
     }
@@ -640,7 +836,8 @@ final class WindowFollowingServiceTests: XCTestCase {
         enabled: Bool = false,
         anchor: HaloWindowAnchor? = nil,
         petVisualCenterOffset: PetVisualCenterOffset = .zero,
-        orientationDebounce: Duration = .milliseconds(180)
+        orientationDebounce: Duration = .milliseconds(180),
+        movementRetry: Duration = .milliseconds(16)
     ) -> Context {
         let locator = FakeApplicationLocator(locatorSelection)
         let petAccessor = FakePetAccessor(result: petAccessResult)
@@ -658,7 +855,8 @@ final class WindowFollowingServiceTests: XCTestCase {
             windowAccessor: windowAccessor,
             systemEvents: events,
             preferences: preferences,
-            petOrientationDebounce: orientationDebounce
+            petOrientationDebounce: orientationDebounce,
+            petMovementRetry: movementRetry
         )
         return Context(
             service: service,

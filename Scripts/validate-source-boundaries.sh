@@ -20,7 +20,7 @@ if grep -EnR 'thread/|turn/|account/(login|logout|rateLimitResetCredit|workspace
 fi
 
 if grep -EnR 'AXUIElement|AXObserver|AXIsProcessTrusted|NSWorkspace|NSRunningApplication\.runningApplications' PetHalo PetHaloCore \
-    | grep -Ev '^PetHalo/WindowFollowing/(SystemWindowFollowing|SystemPetTargetDiscovery)\.swift:'; then
+    | grep -Ev '^PetHalo/WindowFollowing/(SystemWindowFollowing|SystemPetTargetDiscovery|SystemMotionPreference)\.swift:'; then
     echo "error: Accessibility or exact application discovery escaped the reviewed boundaries" >&2
     exit 1
 fi

@@ -58,6 +58,7 @@ enum RingMetricPresentation: Equatable, Sendable {
 struct TodayTokenValue: Equatable, Sendable {
     let tokenCount: UInt64
     let tokenText: String
+    let compactTokenText: String
     let peakDailyTokenCount: UInt64
     let peakTokenText: String
     let consumptionRatio: Double

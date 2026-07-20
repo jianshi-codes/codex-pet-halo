@@ -24,6 +24,7 @@ protocol PetTargetAccessing: AnyObject {
         onEvent: @escaping @MainActor (PetTargetObservationEvent, Int) -> Void
     ) -> PetTargetAccessResult
     func currentSnapshot() -> PetTargetSnapshot?
+    func currentTrackedFrame() -> PetTrackedFrameSample?
     func stop()
 }
 
@@ -83,7 +84,6 @@ final class PetAXCallbackBox: @unchecked Sendable {
         guard shouldSchedule else { return }
 
         Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .milliseconds(80))
             self?.deliver()
         }
     }
@@ -131,6 +131,7 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
         let activityObservedIdentities: Set<Int>
         let petFrame: CGRect
         let activityGeometryHint: PetActivityGeometryHint
+        let activityVerticalDelta: Double?
     }
 
     private var applicationElement: AXUIElement?
@@ -248,7 +249,8 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
         return .selected(PetTargetSnapshot(
             generation: generation,
             frame: petFrame,
-            activityGeometryHint: selection.activityGeometryHint
+            activityGeometryHint: selection.activityGeometryHint,
+            activityVerticalDelta: selection.activityVerticalDelta
         ))
     }
 
@@ -263,8 +265,21 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
         return PetTargetSnapshot(
             generation: generation,
             frame: petFrame,
-            activityGeometryHint: selection.activityGeometryHint
+            activityGeometryHint: selection.activityGeometryHint,
+            activityVerticalDelta: selection.activityVerticalDelta
         )
+    }
+
+    func currentTrackedFrame() -> PetTrackedFrameSample? {
+        guard !targetElements.isEmpty else { return nil }
+        let frames = targetElements.compactMap(accessibilityFrame(of:))
+        guard frames.count == targetElements.count,
+              let frame = PetTrackedFrameResolver.resolve(frames),
+              let appKitFrame = appKitFrame(fromAccessibilityFrame: frame)
+        else {
+            return nil
+        }
+        return PetTrackedFrameSample(generation: generation, frame: appKitFrame)
     }
 
     func stop() {
@@ -348,7 +363,8 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
                 observedIdentities: memberIdentities,
                 activityObservedIdentities: activity.observedIdentities,
                 petFrame: petFrame,
-                activityGeometryHint: activity.hint
+                activityGeometryHint: activity.hint,
+                activityVerticalDelta: activity.activityVerticalDelta
             ))
         }
     }

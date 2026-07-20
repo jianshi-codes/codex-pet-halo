@@ -17,6 +17,8 @@ protocol HaloPanelControlling: AnyObject {
     func setSurfaceMode(_ mode: HaloSurfaceMode)
     func setReferencePoint(_ referencePoint: CGPoint)
     func setAttachmentLayout(_ layout: PetAttachmentLayout)
+    func followAttachmentLayout(_ layout: PetAttachmentLayout)
+    func setPetAttachmentSampler(_ sampler: @escaping @MainActor () -> PetAttachmentLayout?)
     func setPetRingOrientation(_ orientation: PetRingOrientation)
     func setCalibrationEnabled(_ enabled: Bool)
     func resetToDefaultPosition()
@@ -45,6 +47,8 @@ final class HaloPanelController: HaloPanelControlling {
     private let screenGeometryProvider: () -> [ScreenGeometry]
     private var desiredReferencePoint = CGPoint.zero
     private(set) var attachmentLayout: PetAttachmentLayout?
+    private var petFrameFollower: PetFrameFollower?
+    private var petAttachmentSampler: (@MainActor () -> PetAttachmentLayout?)?
     private var stopped = false
 
     var isVisible: Bool {
@@ -115,6 +119,18 @@ final class HaloPanelController: HaloPanelControlling {
         }
         self.panel = panel
         desiredReferencePoint = HaloPlacementGeometry.referencePoint(for: frame)
+        petFrameFollower = PetFrameFollower(
+            displayLink: WindowDisplayLinkDriver(window: panel),
+            reduceMotion: {
+                SystemMotionPreference().shouldReduceMotion
+            },
+            sampleLatest: { [weak self] in
+                self?.petAttachmentSampler?()
+            },
+            apply: { [weak self] layout in
+                self?.applyFollowerLayout(layout)
+            }
+        )
     }
 
     func show() {
@@ -138,6 +154,7 @@ final class HaloPanelController: HaloPanelControlling {
         guard surfaceMode != mode else { return }
         surfaceMode = mode
         if let cardMode = mode.cardMode {
+            petFrameFollower?.reset()
             self.mode = cardMode
         } else {
             isCalibrationEnabled = false
@@ -154,28 +171,27 @@ final class HaloPanelController: HaloPanelControlling {
 
     func setReferencePoint(_ referencePoint: CGPoint) {
         guard !stopped, panel != nil else { return }
+        petFrameFollower?.reset()
         attachmentLayout = nil
         desiredReferencePoint = referencePoint
         setFrame(referencePoint: referencePoint, size: Self.size(for: surfaceMode))
     }
 
     func setAttachmentLayout(_ layout: PetAttachmentLayout) {
-        guard !stopped,
-              let panel,
-              layout.referencePoint.x.isFinite,
-              layout.referencePoint.y.isFinite,
-              layout.panelFrame.origin.x.isFinite,
-              layout.panelFrame.origin.y.isFinite,
-              layout.panelFrame.width.isFinite,
-              layout.panelFrame.height.isFinite,
-              layout.panelFrame.width > 0,
-              layout.panelFrame.height > 0
-        else {
-            return
-        }
-        attachmentLayout = layout
-        desiredReferencePoint = layout.referencePoint
-        panel.setFrame(layout.panelFrame, display: true)
+        guard isValid(layout) else { return }
+        petFrameFollower?.snap(to: layout)
+    }
+
+    func followAttachmentLayout(_ layout: PetAttachmentLayout) {
+        guard isValid(layout) else { return }
+        petFrameFollower?.follow(to: layout)
+    }
+
+    func setPetAttachmentSampler(
+        _ sampler: @escaping @MainActor () -> PetAttachmentLayout?
+    ) {
+        guard !stopped else { return }
+        petAttachmentSampler = sampler
     }
 
     func setPetRingOrientation(_ orientation: PetRingOrientation) {
@@ -188,6 +204,9 @@ final class HaloPanelController: HaloPanelControlling {
         isCalibrationEnabled = enabled
         viewState.isCalibrating = enabled
         panel.calibrationEnabled = enabled
+        if enabled {
+            petFrameFollower?.pause()
+        }
         updateMousePolicy(panel: panel)
     }
 
@@ -216,6 +235,9 @@ final class HaloPanelController: HaloPanelControlling {
     func stop() {
         guard !stopped else { return }
         stopped = true
+        petFrameFollower?.stop()
+        petFrameFollower = nil
+        petAttachmentSampler = nil
         panel?.calibrationEnabled = false
         panel?.calibrationDragHandler = nil
         panel?.orderOut(nil)
@@ -275,13 +297,31 @@ final class HaloPanelController: HaloPanelControlling {
     }
 
     private func updateMousePolicy(panel: HaloPanel) {
-        if surfaceMode == .petRing {
-            panel.ignoresMouseEvents = true
-        } else if isCalibrationEnabled {
+        if isCalibrationEnabled {
             panel.ignoresMouseEvents = false
         } else {
             panel.ignoresMouseEvents = surfaceMode != .expandedCard
         }
+    }
+
+    private func isValid(_ layout: PetAttachmentLayout) -> Bool {
+        !stopped
+            && panel != nil
+            && layout.referencePoint.x.isFinite
+            && layout.referencePoint.y.isFinite
+            && layout.panelFrame.origin.x.isFinite
+            && layout.panelFrame.origin.y.isFinite
+            && layout.panelFrame.width.isFinite
+            && layout.panelFrame.height.isFinite
+            && layout.panelFrame.width > 0
+            && layout.panelFrame.height > 0
+    }
+
+    private func applyFollowerLayout(_ layout: PetAttachmentLayout) {
+        guard !stopped, let panel else { return }
+        attachmentLayout = layout
+        desiredReferencePoint = layout.referencePoint
+        panel.setFrame(layout.panelFrame, display: true)
     }
 
     private static func frame(_ proposed: NSRect, containedIn visibleFrame: NSRect) -> NSRect {

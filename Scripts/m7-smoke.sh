@@ -62,7 +62,7 @@ fi
 
 echo "M7 live observation starts now and prints only sanitized outcomes."
 echo "Keep Pet visible and confirm three concentric metric rings share one transparent center with no rectangular card."
-echo "Use the menu fine-tune controls if needed, and confirm the activity dialog occupies the open side."
+echo "Use Adjust Ring Center if needed, and confirm the activity surface occupies the open side."
 echo "Then move Pet, Tuck Away, Wake, and Quit Pet Halo during the observation window."
 sleep 5
 if ! xcrun swift "$repository_root/Tools/M6CenterLockSmoke/main.swift" 60 >"$live_log" 2>&1; then

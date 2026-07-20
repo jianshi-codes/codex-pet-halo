@@ -24,6 +24,8 @@ private final class XCTestDisabledWindowFollowingService: HaloWindowFollowing {
     func beginWindowCalibration(currentReferencePoint: CGPoint) {}
     func finishCalibration(currentReferencePoint: CGPoint) {}
     func cancelCalibration() {}
+    func resetPetVisualCenter() {}
+    func samplePetAttachmentLayout() -> PetAttachmentLayout? { nil }
     func beginPresentationTransition() {}
     func finishPresentationTransition(panelSize: CGSize) {}
 }
@@ -55,6 +57,10 @@ final class ApplicationCoordinator: ObservableObject {
     @Published private(set) var petPlacementStatus: PetPlacementStatus = .unavailable
     @Published private(set) var petPlacementStatusText = PetPlacementStatus.unavailable.statusText
     @Published private(set) var petRingOrientation: PetRingOrientation = .fixedDefault
+    #if DEBUG
+    @Published private(set) var petRingOrientationPreview =
+        PetRingOrientationPreview.from(arguments: ProcessInfo.processInfo.arguments)
+    #endif
 
     private let logger = Logger(subsystem: "io.github.jianshicodes.PetHalo", category: "lifecycle")
     private let usageService: any CodexUsageServing
@@ -72,6 +78,7 @@ final class ApplicationCoordinator: ObservableObject {
     private var shutdownComplete = false
     private var previousNonPetHaloMode: HaloPresentationMode?
     private var previousNonPetReferencePoint: CGPoint?
+    private var productionPetRingOrientation: PetRingOrientation = .fixedDefault
 
     init(
         usageService: (any CodexUsageServing)? = nil,
@@ -118,6 +125,9 @@ final class ApplicationCoordinator: ObservableObject {
     func start() {
         guard state == .initialized else { return }
         state = .running
+        haloPanelController?.setPetAttachmentSampler { [weak self] in
+            self?.windowFollowingService.samplePetAttachmentLayout()
+        }
         logger.info("Application lifecycle started")
         bridgeStateTask = Task { [weak self, usageService] in
             let stream = await usageService.states()
@@ -135,6 +145,7 @@ final class ApplicationCoordinator: ObservableObject {
         }
         updateUsageState(Self.startingUsageState)
         haloPanelController?.setSurfaceMode(.compactCard)
+        applyEffectivePetRingOrientation()
         haloMode = .compact
         haloSurfaceMode = .compactCard
         haloPanelController?.show()
@@ -213,6 +224,10 @@ final class ApplicationCoordinator: ObservableObject {
         state == .running && windowFollowingState == .calibrating
     }
 
+    var isAdjustingPetRingCenter: Bool {
+        canFinishCalibration && targetSource == .pet
+    }
+
     var canDisableWindowFollowing: Bool {
         state == .running && windowFollowingState != .disabled
     }
@@ -246,16 +261,28 @@ final class ApplicationCoordinator: ObservableObject {
     }
 
     func nudgePetRing(horizontal: CGFloat, vertical: CGFloat) {
-        guard canFineTunePetRing, let haloPanelController else { return }
+        guard isAdjustingPetRingCenter, let haloPanelController else { return }
         let current = haloPanelController.referencePoint
-        windowFollowingService.beginPetCalibration(currentReferencePoint: current)
-        windowFollowingService.finishCalibration(
-            currentReferencePoint: CGPoint(
+        haloPanelController.setReferencePoint(
+            CGPoint(
                 x: current.x + horizontal,
                 y: current.y + vertical
             )
         )
     }
+
+    func resetPetVisualCenter() {
+        guard state == .running, targetSource == .pet else { return }
+        windowFollowingService.resetPetVisualCenter()
+    }
+
+    #if DEBUG
+    func setPetRingOrientationPreview(_ preview: PetRingOrientationPreview) {
+        guard state == .running else { return }
+        petRingOrientationPreview = preview
+        applyEffectivePetRingOrientation()
+    }
+    #endif
 
     func beginWindowFallbackCalibration() {
         guard canCalibrateWindowFallback, let haloPanelController else { return }
@@ -370,8 +397,8 @@ final class ApplicationCoordinator: ObservableObject {
             petPlacementStatus = newStatus
             petPlacementStatusText = newStatus.statusText
         case let .petRingOrientationChanged(newOrientation):
-            petRingOrientation = newOrientation
-            haloPanelController?.setPetRingOrientation(newOrientation)
+            productionPetRingOrientation = newOrientation
+            applyEffectivePetRingOrientation()
         case let .setCalibrationEnabled(enabled):
             haloPanelController?.setCalibrationEnabled(enabled)
         case let .placeReferencePoint(referencePoint):
@@ -379,11 +406,28 @@ final class ApplicationCoordinator: ObservableObject {
         case let .activatePetAttachment(layout):
             applyTargetSource(.pet)
             haloPanelController?.setAttachmentLayout(layout)
-        case let .placePetAttachment(layout):
-            haloPanelController?.setAttachmentLayout(layout)
+        case let .placePetAttachment(layout, mode):
+            switch mode {
+            case .snap:
+                haloPanelController?.setAttachmentLayout(layout)
+            case .follow:
+                haloPanelController?.followAttachmentLayout(layout)
+            }
         case .resetToDefaultPosition:
             haloPanelController?.resetToDefaultPosition()
         }
+    }
+
+    private func applyEffectivePetRingOrientation() {
+        #if DEBUG
+        let effective = petRingOrientationPreview.orientation(
+            auto: productionPetRingOrientation
+        )
+        #else
+        let effective = productionPetRingOrientation
+        #endif
+        petRingOrientation = effective
+        haloPanelController?.setPetRingOrientation(effective)
     }
 
     private func applyTargetSource(_ newSource: HaloFollowingTargetSource) {

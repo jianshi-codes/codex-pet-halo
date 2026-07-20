@@ -25,6 +25,7 @@ private final class FakeHaloPanelController: HaloPanelControlling {
     private(set) var operations: [FakePanelOperation] = []
     private(set) var lastSetReferencePoint: CGPoint?
     var onSetAttachment: (@MainActor (PetAttachmentLayout) -> Void)?
+    var petAttachmentSampler: (@MainActor () -> PetAttachmentLayout?)?
     private var stopped = false
 
     var referencePoint: CGPoint {
@@ -78,6 +79,16 @@ private final class FakeHaloPanelController: HaloPanelControlling {
         onSetAttachment?(layout)
     }
 
+    func followAttachmentLayout(_ layout: PetAttachmentLayout) {
+        setAttachmentLayout(layout)
+    }
+
+    func setPetAttachmentSampler(
+        _ sampler: @escaping @MainActor () -> PetAttachmentLayout?
+    ) {
+        petAttachmentSampler = sampler
+    }
+
     func setPetRingOrientation(_ orientation: PetRingOrientation) {
         petRingOrientation = orientation
     }
@@ -85,8 +96,7 @@ private final class FakeHaloPanelController: HaloPanelControlling {
     func setCalibrationEnabled(_ enabled: Bool) {
         guard !stopped else { return }
         isCalibrationEnabled = enabled
-        ignoresMouseEvents = surfaceMode == .petRing
-            || (!enabled && surfaceMode == .compactCard)
+        ignoresMouseEvents = enabled ? false : surfaceMode != .expandedCard
     }
 
     func resetToDefaultPosition() {
@@ -128,6 +138,7 @@ private final class FakeWindowFollowingService: HaloWindowFollowing {
     private(set) var beginWindowCount = 0
     private(set) var finishCount = 0
     private(set) var cancelCount = 0
+    private(set) var resetPetVisualCenterCount = 0
     private(set) var presentationTransitionCount = 0
     var eventsOnCancel: [HaloWindowFollowingEvent] = []
 
@@ -158,6 +169,8 @@ private final class FakeWindowFollowingService: HaloWindowFollowing {
             continuation.yield(event)
         }
     }
+    func resetPetVisualCenter() { resetPetVisualCenterCount += 1 }
+    func samplePetAttachmentLayout() -> PetAttachmentLayout? { nil }
     func beginPresentationTransition() { presentationTransitionCount += 1 }
     func finishPresentationTransition(panelSize: CGSize) { presentationTransitionCount += 1 }
 
@@ -688,7 +701,7 @@ final class ApplicationCoordinatorTests: XCTestCase {
     }
 
     @MainActor
-    func testPetFineTuneAndOrientationNeverExposeExpandedOrMovePanelDirectly() async throws {
+    func testPetCenterAdjustmentAndOrientationPreviewPreservePetSurface() async throws {
         let panel = FakeHaloPanelController()
         let following = FakeWindowFollowingService()
         let coordinator = ApplicationCoordinator(
@@ -707,9 +720,22 @@ final class ApplicationCoordinatorTests: XCTestCase {
         for _ in 0 ..< 100 where panel.surfaceMode != .petRing {
             await Task.yield()
         }
-        let frame = panel.frame
+        coordinator.beginPetFollowingCalibration()
+        following.emit(.stateChanged(.calibrating))
+        following.emit(.setCalibrationEnabled(true))
+        for _ in 0 ..< 100
+            where !coordinator.isAdjustingPetRingCenter || panel.ignoresMouseEvents
+        {
+            await Task.yield()
+        }
+        XCTAssertFalse(panel.ignoresMouseEvents)
 
         coordinator.nudgePetRing(horizontal: 4, vertical: -4)
+        let adjustedFrame = panel.frame
+        XCTAssertEqual(adjustedFrame.origin, CGPoint(x: layout.panelFrame.minX + 4, y: layout.panelFrame.minY - 4))
+        coordinator.finishWindowFollowingCalibration()
+        following.emit(.setCalibrationEnabled(false))
+        following.emit(.stateChanged(.following))
         following.emit(.petRingOrientationChanged(.openingBottom))
         for _ in 0 ..< 100 where panel.petRingOrientation != .openingBottom {
             await Task.yield()
@@ -718,9 +744,22 @@ final class ApplicationCoordinatorTests: XCTestCase {
         XCTAssertEqual(following.beginPetCount, 1)
         XCTAssertEqual(following.finishCount, 1)
         XCTAssertEqual(panel.petRingOrientation, .openingBottom)
-        XCTAssertEqual(panel.frame, frame)
+        XCTAssertEqual(panel.frame, adjustedFrame)
         XCTAssertEqual(panel.surfaceMode, .petRing)
         XCTAssertTrue(panel.ignoresMouseEvents)
+        coordinator.resetPetVisualCenter()
+        XCTAssertEqual(following.resetPetVisualCenterCount, 1)
+
+        #if DEBUG
+        let frameBeforePreview = panel.frame
+        coordinator.setPetRingOrientationPreview(.forceGapAbove)
+        XCTAssertEqual(panel.petRingOrientation, .openingTop)
+        XCTAssertEqual(panel.frame, frameBeforePreview)
+        coordinator.setPetRingOrientationPreview(.forceGapBelow)
+        XCTAssertEqual(panel.petRingOrientation, .openingBottom)
+        XCTAssertEqual(panel.frame, frameBeforePreview)
+        #endif
+
         coordinator.setHaloMode(.expanded)
         XCTAssertEqual(panel.surfaceMode, .petRing)
         coordinator.requestTermination()

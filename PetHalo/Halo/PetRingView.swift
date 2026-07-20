@@ -25,15 +25,18 @@ struct PetRingView: View {
     let model: PetRingPresentationModel
     let geometry: PetRingGeometry
     let orientation: PetRingOrientation
+    let isCalibrating: Bool
 
     init(
         model: PetRingPresentationModel,
         geometry: PetRingGeometry = .standard,
-        orientation: PetRingOrientation = .fixedDefault
+        orientation: PetRingOrientation = .fixedDefault,
+        isCalibrating: Bool = false
     ) {
         self.model = model
         self.geometry = geometry
         self.orientation = orientation
+        self.isCalibrating = isCalibrating
     }
 
     var body: some View {
@@ -46,10 +49,36 @@ struct PetRingView: View {
                 todayRing(todayTokens)
             }
             labels
+            if isCalibrating {
+                calibrationOverlay
+            }
         }
         .frame(width: geometry.panelDiameter, height: geometry.panelDiameter)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Pet Halo usage rings")
+    }
+
+    private var calibrationOverlay: some View {
+        ZStack {
+            Circle()
+                .stroke(
+                    Color(nsColor: .controlAccentColor).opacity(0.8),
+                    style: StrokeStyle(lineWidth: 1, dash: [4, 3])
+                )
+                .frame(
+                    width: geometry.transparentCenterDiameter,
+                    height: geometry.transparentCenterDiameter
+                )
+            Rectangle()
+                .fill(Color(nsColor: .controlAccentColor).opacity(0.8))
+                .frame(width: 24, height: 1)
+            Rectangle()
+                .fill(Color(nsColor: .controlAccentColor).opacity(0.8))
+                .frame(width: 1, height: 24)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Adjust Ring Center calibration active")
+        .allowsHitTesting(false)
     }
 
     private func remainingRing(
@@ -138,15 +167,27 @@ struct PetRingView: View {
     private var labels: some View {
         GeometryReader { _ in
             metricLabel(prefix: "W", metric: model.weekly)
+                .frame(
+                    width: geometry.labelSize(for: .weekly).width,
+                    height: geometry.labelSize(for: .weekly).height
+                )
                 .position(geometry.labelPosition(for: .weekly, orientation: orientation))
 
             if let fiveHour = model.fiveHour {
                 metricLabel(prefix: "5h", metric: fiveHour)
+                    .frame(
+                        width: geometry.labelSize(for: .fiveHour).width,
+                        height: geometry.labelSize(for: .fiveHour).height
+                    )
                     .position(geometry.labelPosition(for: .fiveHour, orientation: orientation))
             }
 
             if let todayTokens = model.todayTokens {
                 todayLabel(todayTokens)
+                    .frame(
+                        width: geometry.labelSize(for: .today).width,
+                        height: geometry.labelSize(for: .today).height
+                    )
                     .position(geometry.labelPosition(for: .today, orientation: orientation))
             }
         }
@@ -159,15 +200,17 @@ struct PetRingView: View {
         metric: RingMetricPresentation
     ) -> some View {
         let valueText = metric.value?.percentText ?? "—"
-        let staleText = metric.isStale ? " Stale" : ""
-        return Text("\(prefix) \(valueText)\(staleText)")
-            .fixedSize()
+        return Text("\(prefix) \(valueText)")
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
     }
 
     private func todayLabel(_ metric: TodayTokenPresentation) -> some View {
-        let staleText = metric.isStale ? " Stale" : ""
-        return Text("Today \(metric.value.tokenText)\(staleText)")
-            .fixedSize()
+        return Text(
+            "T \(metric.value.compactTokenText) · \(metric.value.percentOfPeakText)"
+        )
+        .lineLimit(1)
+        .minimumScaleFactor(0.65)
     }
 
     private func remainingAccessibilityValue(_ metric: RingMetricPresentation) -> String {

@@ -22,16 +22,24 @@ struct PetTargetSnapshot: Equatable, Sendable {
     let generation: Int
     let frame: CGRect
     let activityGeometryHint: PetActivityGeometryHint
+    let activityVerticalDelta: Double?
 
     init(
         generation: Int,
         frame: CGRect,
-        activityGeometryHint: PetActivityGeometryHint = .none
+        activityGeometryHint: PetActivityGeometryHint = .none,
+        activityVerticalDelta: Double? = nil
     ) {
         self.generation = generation
         self.frame = frame
         self.activityGeometryHint = activityGeometryHint
+        self.activityVerticalDelta = activityVerticalDelta
     }
+}
+
+struct PetTrackedFrameSample: Equatable, Sendable {
+    let generation: Int
+    let frame: CGRect
 }
 
 struct PetAttachmentLayout: Equatable, Sendable {
@@ -41,6 +49,7 @@ struct PetAttachmentLayout: Equatable, Sendable {
 
 struct PetVisualCenterOffset: Codable, Equatable, Sendable {
     static let zero = PetVisualCenterOffset(horizontal: 0, vertical: 0)
+    static let maximumMagnitude = PetRingGeometry.standard.panelDiameter
 
     let horizontal: Double
     let vertical: Double
@@ -48,8 +57,8 @@ struct PetVisualCenterOffset: Codable, Equatable, Sendable {
     var isValid: Bool {
         horizontal.isFinite
             && vertical.isFinite
-            && abs(horizontal) <= PetRingGeometry.standard.panelDiameter / 2
-            && abs(vertical) <= PetRingGeometry.standard.panelDiameter / 2
+            && abs(horizontal) <= Self.maximumMagnitude
+            && abs(vertical) <= Self.maximumMagnitude
     }
 }
 
@@ -63,6 +72,7 @@ enum PetActivityGeometryHint: Equatable, Sendable {
 struct PetActivityGeometryResolution: Equatable, Sendable {
     let hint: PetActivityGeometryHint
     let observedIdentities: Set<Int>
+    let activityVerticalDelta: Double?
 }
 
 enum PetPlacementStatus: Equatable, Sendable {
@@ -134,11 +144,15 @@ struct PetWindowCandidate: Equatable, Sendable {
               frame.width > 0,
               frame.height > 0,
               role == "AXWindow",
-              subrole == "AXDialog"
+              subrole == "AXDialog" || subrole == "AXSystemDialog"
         else {
             return false
         }
         return frame.width / frame.height > 1.5
+    }
+
+    var isPreferredActivitySurface: Bool {
+        isEligibleActivitySurface && subrole == "AXSystemDialog"
     }
 }
 
@@ -183,6 +197,40 @@ enum PetWindowSelector {
     }
 }
 
+enum PetTrackedFrameResolver {
+    static func resolve(_ frames: [CGRect]) -> CGRect? {
+        guard !frames.isEmpty,
+              frames.allSatisfy({
+                  $0.isFinite && $0.width > 0 && $0.height > 0
+              })
+        else {
+            return nil
+        }
+        let groups = Dictionary(grouping: frames, by: FrameKey.init)
+        guard groups.count == 1, let group = groups.values.first else { return nil }
+        return CGRect(
+            x: group.map(\.minX).reduce(0, +) / CGFloat(group.count),
+            y: group.map(\.minY).reduce(0, +) / CGFloat(group.count),
+            width: group.map(\.width).reduce(0, +) / CGFloat(group.count),
+            height: group.map(\.height).reduce(0, +) / CGFloat(group.count)
+        )
+    }
+
+    private struct FrameKey: Hashable {
+        let x: Int
+        let y: Int
+        let width: Int
+        let height: Int
+
+        init(_ frame: CGRect) {
+            x = Int((frame.minX * 2).rounded())
+            y = Int((frame.minY * 2).rounded())
+            width = Int((frame.width * 2).rounded())
+            height = Int((frame.height * 2).rounded())
+        }
+    }
+}
+
 enum PetActivityGeometryResolver {
     static func resolve(
         petFrame: CGRect,
@@ -195,22 +243,29 @@ enum PetActivityGeometryResolver {
                 && horizontalOverlap($0.frame, petFrame)
         }
         let identities = Set(activity.map(\.identity))
-        guard activity.count == 1, let dialog = activity.first else {
+        let preferred = activity.filter(\.isPreferredActivitySurface)
+        let orientedActivity = preferred.isEmpty
+            ? activity.filter { $0.subrole == "AXDialog" }
+            : preferred
+        guard orientedActivity.count == 1, let dialog = orientedActivity.first else {
             return PetActivityGeometryResolution(
                 hint: activity.isEmpty ? .none : .ambiguous,
-                observedIdentities: identities
+                observedIdentities: identities,
+                activityVerticalDelta: nil
             )
         }
         let delta = dialog.frame.midY - petFrame.midY
         guard abs(delta) > 1 else {
             return PetActivityGeometryResolution(
                 hint: .ambiguous,
-                observedIdentities: identities
+                observedIdentities: identities,
+                activityVerticalDelta: nil
             )
         }
         return PetActivityGeometryResolution(
             hint: delta < 0 ? .above : .below,
-            observedIdentities: identities
+            observedIdentities: identities,
+            activityVerticalDelta: -delta
         )
     }
 

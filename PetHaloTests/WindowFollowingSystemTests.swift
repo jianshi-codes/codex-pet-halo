@@ -37,13 +37,15 @@ final class WindowFollowingSystemTests: XCTestCase {
             box.enqueue(.geometryChanged)
         }
         box.enqueue(.selectionChanged)
-        try? await Task.sleep(for: .milliseconds(100))
+        for _ in 0 ..< 10 where received.isEmpty {
+            await Task.yield()
+        }
         XCTAssertEqual(received.map(\.0), [.selectionChanged])
         XCTAssertEqual(received.map(\.1), [11])
 
         box.enqueue(.targetInvalidated)
         box.deactivate()
-        try? await Task.sleep(for: .milliseconds(100))
+        for _ in 0 ..< 10 { await Task.yield() }
         XCTAssertEqual(received.map(\.0), [.selectionChanged])
     }
 

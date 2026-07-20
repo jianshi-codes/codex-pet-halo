@@ -128,11 +128,92 @@ final class HaloPanelTests: XCTestCase {
         XCTAssertTrue(panel.styleMask.contains(.nonactivatingPanel))
 
         controller.setCalibrationEnabled(true)
+        XCTAssertFalse(panel.ignoresMouseEvents)
+        XCTAssertTrue(panel.calibrationEnabled)
+        controller.setCalibrationEnabled(false)
         XCTAssertTrue(panel.ignoresMouseEvents)
         controller.setMode(.expanded)
         XCTAssertTrue(panel.hasShadow)
         XCTAssertFalse(panel.ignoresMouseEvents)
         controller.stop()
+    }
+
+    @MainActor
+    func testDisplayLinkedFollowerCollapsesLatestFramesAndAppliesNewestWithoutOvershoot() {
+        let displayLink = FakeDisplayLinkDriver()
+        var applied: [PetAttachmentLayout] = []
+        var sampledLayout = petLayout(x: 20)
+        let follower = PetFrameFollower(
+            displayLink: displayLink,
+            reduceMotion: { false },
+            sampleLatest: { sampledLayout },
+            apply: { applied.append($0) }
+        )
+        follower.snap(to: petLayout(x: 0))
+        follower.follow(to: petLayout(x: 10))
+
+        displayLink.fire()
+        XCTAssertEqual(applied.map(\.panelFrame.origin.x), [0, 20])
+        sampledLayout = petLayout(x: 30)
+        displayLink.fire()
+        XCTAssertEqual(applied.last?.panelFrame.origin.x, 30)
+        XCTAssertTrue(applied.dropFirst().allSatisfy {
+            $0.panelFrame.origin.x >= 0 && $0.panelFrame.origin.x <= 30
+        })
+        XCTAssertFalse(applied.contains { $0.panelFrame.origin.x == 10 })
+        for _ in 0 ..< PetFrameFollowerPolicy.standard.stableRefreshCount {
+            displayLink.fire()
+        }
+        XCTAssertTrue(displayLink.isPaused)
+    }
+
+    func testDisplayLinkedFollowerPolicyUsesDocumentedTimingConstants() {
+        XCTAssertEqual(PetFrameFollowerPolicy.standard.snapDistance, 1.25)
+        XCTAssertEqual(PetFrameFollowerPolicy.standard.discontinuityDistance, 96)
+        XCTAssertEqual(PetFrameFollowerPolicy.standard.stableRefreshCount, 4)
+    }
+
+    @MainActor
+    func testDisplayLinkedFollowerSnapsLargeJumpsAndReduceMotion() {
+        let displayLink = FakeDisplayLinkDriver()
+        var applied: [PetAttachmentLayout] = []
+        var reduceMotion = false
+        let follower = PetFrameFollower(
+            displayLink: displayLink,
+            reduceMotion: { reduceMotion },
+            apply: { applied.append($0) }
+        )
+        follower.snap(to: petLayout(x: 0))
+        follower.follow(to: petLayout(x: 120))
+        XCTAssertEqual(applied.last?.panelFrame.origin.x, 120)
+
+        follower.follow(to: petLayout(x: 120.5))
+        XCTAssertEqual(applied.last?.panelFrame.origin.x, 120.5)
+
+        reduceMotion = true
+        follower.follow(to: petLayout(x: 140))
+        XCTAssertEqual(applied.last?.panelFrame.origin.x, 140)
+        XCTAssertTrue(displayLink.isPaused)
+    }
+
+    @MainActor
+    func testDisplayLinkedFollowerRejectsCallbacksAfterShutdown() {
+        let displayLink = FakeDisplayLinkDriver()
+        var applied: [PetAttachmentLayout] = []
+        let follower = PetFrameFollower(
+            displayLink: displayLink,
+            reduceMotion: { false },
+            apply: { applied.append($0) }
+        )
+        follower.snap(to: petLayout(x: 0))
+        follower.follow(to: petLayout(x: 20))
+        let countBeforeStop = applied.count
+
+        follower.stop()
+        displayLink.fireCapturedCallback()
+
+        XCTAssertEqual(applied.count, countBeforeStop)
+        XCTAssertEqual(displayLink.stopCount, 1)
     }
 
     @MainActor
@@ -274,5 +355,45 @@ final class HaloPanelTests: XCTestCase {
             )
         ),
         aggregateFreshness: .current
+    )
+}
+
+@MainActor
+private final class FakeDisplayLinkDriver: DisplayLinkDriving {
+    private var callback: (@MainActor () -> Void)?
+    private var capturedCallback: (@MainActor () -> Void)?
+    private(set) var isPaused = true
+    private(set) var stopCount = 0
+
+    func start(callback: @escaping @MainActor () -> Void) {
+        self.callback = callback
+        capturedCallback = callback
+    }
+
+    func setPaused(_ paused: Bool) {
+        isPaused = paused
+    }
+
+    func stop() {
+        callback = nil
+        stopCount += 1
+        isPaused = true
+    }
+
+    func fire() {
+        guard !isPaused else { return }
+        callback?()
+    }
+
+    func fireCapturedCallback() {
+        capturedCallback?()
+    }
+}
+
+private func petLayout(x: CGFloat) -> PetAttachmentLayout {
+    let frame = CGRect(x: x, y: 20, width: 252, height: 252)
+    return PetAttachmentLayout(
+        referencePoint: HaloPlacementGeometry.referencePoint(for: frame),
+        panelFrame: frame
     )
 }
