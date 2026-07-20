@@ -61,7 +61,7 @@ The M3 panel itself does not discover or inspect Codex. M4 through M6 own the se
 | Component | M7 contract |
 | --- | --- |
 | Surface state | Pet selects `petRing`; Codex-window/free-floating select `compactCard` or `expandedCard` |
-| Ring geometry | Fixed `252×252` panel with independent 104/94/84-point radii, 6-point vector strokes, and 162-point transparent center |
+| Ring geometry | Fixed `448×252` transparent panel centered on the Pet; unchanged independent 104/94/84-point radii, 6-point vector strokes, and 162-point transparent center; added horizontal canvas holds external labels |
 | Visual center | AX midpoint plus one persisted fixed `dx/dy`; every arc and absolute-position label shares the panel midpoint |
 | Pet interaction | Normally click-through and temporarily draggable only during explicit `Adjust Ring Center`; always shadowless, non-activating, and unable to become key or main |
 | Card fallback | Compact/Expanded, Account Usage, scrolling, and non-activation remain unchanged outside Pet |

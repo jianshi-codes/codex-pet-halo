@@ -53,7 +53,7 @@ struct PetRingView: View {
                 calibrationOverlay
             }
         }
-        .frame(width: geometry.panelDiameter, height: geometry.panelDiameter)
+        .frame(width: geometry.panelSize.width, height: geometry.panelSize.height)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Pet Halo usage rings")
     }
@@ -166,7 +166,9 @@ struct PetRingView: View {
 
     private var labels: some View {
         GeometryReader { _ in
-            metricLabel(prefix: "W", metric: model.weekly)
+            connector(for: .weekly, isStale: model.weekly.isStale)
+
+            metricLabel(prefix: "W", metric: model.weekly, kind: .weekly)
                 .frame(
                     width: geometry.labelSize(for: .weekly).width,
                     height: geometry.labelSize(for: .weekly).height
@@ -174,7 +176,9 @@ struct PetRingView: View {
                 .position(geometry.labelPosition(for: .weekly, orientation: orientation))
 
             if let fiveHour = model.fiveHour {
-                metricLabel(prefix: "5h", metric: fiveHour)
+                connector(for: .fiveHour, isStale: fiveHour.isStale)
+
+                metricLabel(prefix: "5h", metric: fiveHour, kind: .fiveHour)
                     .frame(
                         width: geometry.labelSize(for: .fiveHour).width,
                         height: geometry.labelSize(for: .fiveHour).height
@@ -183,7 +187,9 @@ struct PetRingView: View {
             }
 
             if let todayTokens = model.todayTokens {
-                todayLabel(todayTokens)
+                connector(for: .today, isStale: todayTokens.isStale)
+
+                todayLabel(todayTokens, kind: .today)
                     .frame(
                         width: geometry.labelSize(for: .today).width,
                         height: geometry.labelSize(for: .today).height
@@ -191,26 +197,81 @@ struct PetRingView: View {
                     .position(geometry.labelPosition(for: .today, orientation: orientation))
             }
         }
-        .font(.caption2.monospacedDigit().weight(.semibold))
         .accessibilityHidden(true)
+    }
+
+    private func connector(
+        for kind: PetRingMetricKind,
+        isStale: Bool
+    ) -> some View {
+        let segment = geometry.connectorSegment(for: kind, orientation: orientation)
+        return Path { path in
+            path.move(to: segment.ringPoint)
+            path.addLine(to: segment.capsulePoint)
+        }
+        .stroke(
+            Color(nsColor: .separatorColor).opacity(isStale ? 0.32 : 0.58),
+            style: StrokeStyle(lineWidth: 1, lineCap: .round, dash: [2, 3])
+        )
     }
 
     private func metricLabel(
         prefix: String,
-        metric: RingMetricPresentation
+        metric: RingMetricPresentation,
+        kind: PetRingMetricKind
     ) -> some View {
         let valueText = metric.value?.percentText ?? "—"
-        return Text("\(prefix) \(valueText)")
-            .lineLimit(1)
-            .minimumScaleFactor(0.8)
+        return capsuleLabel(
+            key: prefix,
+            value: valueText,
+            kind: kind,
+            isStale: metric.isStale
+        )
     }
 
-    private func todayLabel(_ metric: TodayTokenPresentation) -> some View {
-        return Text(
-            "T \(metric.value.compactTokenText) · \(metric.value.percentOfPeakText)"
+    private func todayLabel(
+        _ metric: TodayTokenPresentation,
+        kind: PetRingMetricKind
+    ) -> some View {
+        capsuleLabel(
+            key: "T",
+            value: "\(metric.value.compactTokenText) · \(metric.value.percentOfPeakText)",
+            kind: kind,
+            isStale: metric.isStale
         )
+    }
+
+    private func capsuleLabel(
+        key: String,
+        value: String,
+        kind: PetRingMetricKind,
+        isStale: Bool
+    ) -> some View {
+        let identityColor = identityColor(for: kind)
+        return HStack(spacing: 4) {
+            Circle()
+                .fill(identityColor)
+                .frame(width: 6, height: 6)
+            Text(key)
+                .foregroundStyle(identityColor)
+            Text(value)
+                .foregroundStyle(Color(nsColor: .labelColor))
+        }
+        .font(.caption2.monospacedDigit().weight(.semibold))
         .lineLimit(1)
-        .minimumScaleFactor(0.65)
+        .minimumScaleFactor(kind == .today ? 0.72 : 0.82)
+        .padding(.horizontal, 6)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(
+            Capsule()
+                .fill(Color(nsColor: .windowBackgroundColor).opacity(0.88))
+        )
+        .overlay(
+            Capsule()
+                .stroke(Color(nsColor: .separatorColor).opacity(0.45), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.12), radius: 3, x: 0, y: 1)
+        .opacity(isStale ? 0.58 : 1)
     }
 
     private func remainingAccessibilityValue(_ metric: RingMetricPresentation) -> String {
@@ -228,5 +289,16 @@ struct PetRingView: View {
         case .critical:
             Color(nsColor: .systemRed)
         }
+    }
+
+    private func identityColor(for metric: PetRingMetricKind) -> Color {
+        let identity = PetRingPresentationPolicy.identityColor(for: metric)
+        return Color(
+            .sRGB,
+            red: Double(identity.red) / 255,
+            green: Double(identity.green) / 255,
+            blue: Double(identity.blue) / 255,
+            opacity: 1
+        )
     }
 }

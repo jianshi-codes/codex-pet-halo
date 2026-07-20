@@ -118,6 +118,7 @@ final class HaloPanelTests: XCTestCase {
         controller.setSurfaceMode(.petRing)
 
         XCTAssertEqual(controller.surfaceMode, .petRing)
+        XCTAssertEqual(HaloPanelController.petRingSize, NSSize(width: 448, height: 252))
         XCTAssertEqual(panel.frame.size, HaloPanelController.petRingSize)
         XCTAssertEqual(panel.backgroundColor, .clear)
         XCTAssertFalse(panel.isOpaque)

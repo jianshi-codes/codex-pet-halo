@@ -34,8 +34,8 @@ final class HaloPanelController: HaloPanelControlling {
     static let compactSize = NSSize(width: 176, height: 176)
     static let expandedSize = NSSize(width: 360, height: 520)
     static let petRingSize = NSSize(
-        width: PetRingGeometry.standard.panelDiameter,
-        height: PetRingGeometry.standard.panelDiameter
+        width: PetRingGeometry.standard.panelSize.width,
+        height: PetRingGeometry.standard.panelSize.height
     )
 
     private(set) var panel: HaloPanel?

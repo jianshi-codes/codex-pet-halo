@@ -65,14 +65,20 @@ struct PetRingArcAngles: Equatable, Sendable {
     let sweepAngleDegrees: Double
 }
 
+struct PetRingConnectorSegment: Equatable, Sendable {
+    let ringPoint: CGPoint
+    let capsulePoint: CGPoint
+}
+
 struct PetRingGeometry: Equatable, Sendable {
     let outerRadius: Double
     let ringSpacing: Double
     let lineWidth: Double
+    let panelWidth: Double
     let panelDiameter: Double
 
     var panelSize: CGSize {
-        CGSize(width: panelDiameter, height: panelDiameter)
+        CGSize(width: panelWidth, height: panelDiameter)
     }
 
     var transparentCenterDiameter: Double {
@@ -107,45 +113,41 @@ struct PetRingGeometry: Equatable, Sendable {
         for metric: PetRingMetricKind,
         orientation: PetRingOrientation
     ) -> CGPoint {
-        let angle = labelAngleDegrees(for: metric, orientation: orientation)
-            * .pi / 180
-        let distance = radius(for: metric) + 8
+        let size = labelSize(for: metric)
         let center = ringCenter(in: panelSize)
-        return CGPoint(
-            x: center.x + distance * cos(angle),
-            y: center.y + distance * sin(angle)
-        )
-    }
-
-    func labelAngleDegrees(
-        for metric: PetRingMetricKind,
-        orientation: PetRingOrientation
-    ) -> Double {
-        let openingTopAngle: Double
-        switch metric {
-        case .weekly:
-            openingTopAngle = 135
-        case .fiveHour:
-            openingTopAngle = 90
-        case .today:
-            openingTopAngle = 45
-        }
+        let connectorGap = 10.0
+        let rightStackLeadingEdge = center.x + outerRadius + connectorGap
+        let leftStackTrailingEdge = center.x - outerRadius - connectorGap
+        let x: Double
         switch orientation {
         case .openingTop:
-            return openingTopAngle
+            x = rightStackLeadingEdge + size.width / 2
         case .openingBottom:
-            return 360 - openingTopAngle
+            x = leftStackTrailingEdge - size.width / 2
         }
+        let y: Double
+        switch metric {
+        case .weekly:
+            y = 92
+        case .fiveHour:
+            y = 126
+        case .today:
+            y = 160
+        }
+        return CGPoint(
+            x: x,
+            y: y
+        )
     }
 
     func labelSize(for metric: PetRingMetricKind) -> CGSize {
         switch metric {
         case .weekly:
-            CGSize(width: 52, height: 16)
+            CGSize(width: 64, height: 22)
         case .fiveHour:
-            CGSize(width: 60, height: 16)
+            CGSize(width: 72, height: 22)
         case .today:
-            CGSize(width: 108, height: 16)
+            CGSize(width: 106, height: 22)
         }
     }
 
@@ -163,10 +165,37 @@ struct PetRingGeometry: Equatable, Sendable {
         )
     }
 
+    func connectorSegment(
+        for metric: PetRingMetricKind,
+        orientation: PetRingOrientation
+    ) -> PetRingConnectorSegment {
+        let frame = labelFrame(for: metric, orientation: orientation)
+        let center = ringCenter(in: panelSize)
+        let radius = radius(for: metric)
+        let ringY = frame.midY
+        let verticalDistance = ringY - center.y
+        let horizontalDistance = sqrt(max(radius * radius - verticalDistance * verticalDistance, 0))
+        let ringX: Double
+        let capsuleX: Double
+        switch orientation {
+        case .openingTop:
+            ringX = center.x + horizontalDistance
+            capsuleX = frame.minX
+        case .openingBottom:
+            ringX = center.x - horizontalDistance
+            capsuleX = frame.maxX
+        }
+        return PetRingConnectorSegment(
+            ringPoint: CGPoint(x: ringX, y: ringY),
+            capsulePoint: CGPoint(x: capsuleX, y: ringY)
+        )
+    }
+
     static let standard = PetRingGeometry(
         outerRadius: 104,
         ringSpacing: 10,
         lineWidth: 6,
+        panelWidth: 448,
         panelDiameter: 252
     )
 }
