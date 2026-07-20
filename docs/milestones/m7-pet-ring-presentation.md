@@ -2,7 +2,7 @@
 
 - Branch: `m7/pet-ring-presentation`
 - Scope: target-aware surface state, persistent visual-center alignment, concentric Usage rings, semantic thresholds, functional dialog-aware partial arcs, fallback preservation, tests, sanitized smoke tooling, and documentation
-- Gate: implementation and automated validation complete; final live interaction and current-patch CI validation pending
+- Gate: implementation, automated validation, and implementation-commit CI complete; final live interaction pending
 
 ## Outcome
 
@@ -43,7 +43,7 @@ M7 adds no OpenAI, ChatGPT, or Codex Pet artwork; no screenshots, OCR, Screen Re
 | M0-M6 regression and complete Swift suite | PASS — 92 Swift tests plus 14 M0 tests |
 | Debug and universal Release bundle | PASS — Debug plus arm64/x86_64 Release |
 | Source, privacy, generated-project, and bundle boundaries | PASS |
-| Draft PR CI | Prior PASS — Protocol evidence and macOS application jobs on pushed commit `9c7a4b9`; current patch pending push |
+| Draft PR CI | PASS — Protocol evidence and macOS application jobs on implementation commit `063a73a` |
 | M5-M7 smoke | RUN / PARTIAL — visible unique Pet, automatic Pet Ring, initial offset sample, and non-activation observed; Pet movement and Tuck Away/Wake/Quit did not occur, so each script failed closed |
 | Direct visible-Pet/no-rectangle confirmation | PARTIAL — current Pet Halo surface directly shows concentric partial arcs, transparent center, separated labels, optional 5h omission, and no rectangle; simultaneous underlying-Pet containment and dialog complement remain pending because the validation tool cannot operate or capture Codex itself |
 | Independent review | Pending publication review |

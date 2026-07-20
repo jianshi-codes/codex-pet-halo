@@ -18,7 +18,7 @@
 - Orientation: one fixed partial-arc policy; dialog above opens top, dialog below opens bottom, no dialog uses the fixed default, and ambiguous/transient geometry retains the prior debounced direction without moving the panel
 - Focused M7 validation: 89 application/presentation/following tests pass with fakes and synthetic geometry; no Codex process or Accessibility permission required
 - Full validation: generated-project/source/privacy scans, Debug build/bundle, universal arm64+x86_64 Release build/bundle, all 92 Swift tests, all 14 M0 protocol tests, and whitespace checks pass
-- Draft PR CI: Protocol evidence and macOS application jobs pass on pushed commit `9c7a4b9`; current patch CI is pending push
+- Draft PR CI: Protocol evidence and macOS application jobs pass on implementation commit `063a73a`
 - M2 timing validation: `testSparseNotificationBurstDebouncesToOneCompleteRefreshSeam` passes 30/30 fail-fast repetitions without retry
 - Live validation: the current tree sees Accessibility permission, exact Codex/Pet Halo processes, a visible unique Pet, automatic Pet Ring selection, initial visual-center attachment, and non-activation. `make m5-smoke`, `make m6-smoke`, and `make m7-smoke` were run, but fail closed because this validation session could not move Codex Pet or perform Tuck Away/Wake/Quit; post-movement, fallback, recovery, and simultaneous visible-Pet containment remain pending direct interaction
 - Retained protocol boundary: M0 remains PASS-CORE / PARTIAL-OPTIONALS; production remains fail-closed to CLI `0.145.0-alpha.18`; no Codex internal database dependency
