@@ -9,7 +9,7 @@ struct PetRingPresentationMapper {
     init(
         calendar: Calendar = .autoupdatingCurrent,
         locale: Locale = .autoupdatingCurrent,
-        timeZone: TimeZone = .autoupdatingCurrent
+        timeZone: TimeZone = TimeZone(secondsFromGMT: 0)!
     ) {
         var calendar = calendar
         calendar.timeZone = timeZone

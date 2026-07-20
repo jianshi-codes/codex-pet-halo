@@ -58,14 +58,33 @@ final class PetRingPresentationMapperTests: XCTestCase {
         XCTAssertNil(wrongDuration.fiveHour)
     }
 
-    func testTodayBucketMatchesInjectedCalendarDay() {
+    func testTodayUsesUTCAccountDayAcrossLocalMidnight() throws {
+        var localCalendar = Calendar(identifier: .gregorian)
+        localCalendar.timeZone = try XCTUnwrap(TimeZone(secondsFromGMT: 8 * 3_600))
+        let localAfterMidnight = try XCTUnwrap(localCalendar.date(from: DateComponents(
+            year: 2026,
+            month: 7,
+            day: 21,
+            hour: 0,
+            minute: 15
+        )))
+        var utcCalendar = Calendar(identifier: .gregorian)
+        utcCalendar.timeZone = timeZone
+        let accountDay = try XCTUnwrap(utcCalendar.date(from: DateComponents(
+            year: 2026,
+            month: 7,
+            day: 20
+        )))
         let usage = accountUsage(buckets: [
-            DailyAccountUsage(date: date.addingTimeInterval(-86_400), tokenCount: 1),
-            DailyAccountUsage(date: date.addingTimeInterval(60), tokenCount: 12_345),
+            DailyAccountUsage(date: accountDay.addingTimeInterval(-86_400), tokenCount: 1),
+            DailyAccountUsage(date: accountDay, tokenCount: 12_345),
         ])
-        let model = mapper().map(
+        let model = PetRingPresentationMapper(
+            calendar: Calendar(identifier: .gregorian),
+            locale: locale
+        ).map(
             state(accountUsage: .available(usage), usageFreshness: .current),
-            date: date
+            date: localAfterMidnight
         )
 
         XCTAssertEqual(model.todayTokens?.value.tokenCount, 12_345)
