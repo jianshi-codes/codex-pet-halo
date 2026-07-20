@@ -6,11 +6,13 @@ Pet Halo is an independent, unofficial macOS companion that aims to display a tr
 
 ## Status
 
-**M5 Pet Target Discovery & Pet-relative Following is implemented through `ROUTE_A — PET_ACCESSIBILITY_WINDOW`.** Pet Halo remains free-floating by default and requests Accessibility only after an explicit enable action. On the validated Codex build, it resolves the independently movable Pet as one logical near-square `AXWindow/AXDialog` frame without reading titles, labels, identifiers, or content.
+**M6 Automatic Center-Locked Pet Attachment is implemented on top of `ROUTE_A — PET_ACCESSIBILITY_WINDOW`.** Pet Halo still requests Accessibility only after an explicit enable action. Once enabled, a uniquely resolved Pet attaches immediately without a saved Pet anchor or first-use calibration.
 
-The product target hierarchy is: Pet target following is preferred; calibrated Codex standard-window following is the permanent fallback; and a free-floating Halo is the final fallback. M5 provides target discovery and optional manual Pet-relative calibration using separate versioned Pet and window anchors. Pet disappearance or ambiguity preserves Pet calibration and falls back safely; deterministic rediscovery resumes Pet-relative following without recalibration.
+The target hierarchy remains Pet first, calibrated Codex standard window second, and free-floating Halo last. Whenever Pet is selected, the Halo panel center exactly equals the Pet AX frame center. This invariant requires no screen lookup, activity-dialog geometry, side choice, or persisted Pet position. A one-time migration deletes the legacy Pet anchor key without changing the M4 window anchor. The fine-tune API remains available as a compatibility hook but cannot override center lock.
 
-The M3 non-activating panel behavior remains intact: compact is click-through outside calibration, expanded accepts scrolling, and neither mode can become key or main. Direct local validation passed permission, calibration, move/resize, focus, interaction, fallback, Codex and Pet Halo restart recovery, cleanup, and multi-display checks. The Codex launch-before-window-ready race found during validation was fixed and passed focused physical revalidation without recalibration.
+Until M7 introduces the Pet ring, Pet targeting forces the demo panel to Compact and rejects Expanded commands. Leaving Pet targeting restores normal Compact/Expanded controls and the previous fallback card mode.
+
+The M3 non-activating panel behavior remains intact: compact is click-through outside M4 window calibration, expanded accepts scrolling outside Pet targeting, and neither mode can become key or main. Direct M6 validation observed independent Pet movement, exact center alignment after movement, M4 fallback on Tuck Away, centered recovery on Wake, and clean Quit; the user also confirmed the visual relationship.
 
 M0 protocol feasibility remains complete with **PASS-CORE / PARTIAL-OPTIONALS**. The validated future MVP uses capability-driven data:
 
@@ -38,16 +40,18 @@ make m4-tests
 make m4-smoke
 make m5-tests
 make m5-smoke
+make m6-tests
+make m6-smoke
 make check
 ```
 
 XcodeGen 2.46.0 is required. `project.yml` is the editable project source of truth; the generated Xcode project is committed and must not be hand-edited.
 
-`make m2-tests`, `make m3-tests`, `make m4-tests`, and `make m5-tests` are deterministic and require neither Accessibility permission nor a running Codex application. `make m5-smoke` adds sanitized live Route A resolution and direct independent-Pet-movement observation.
+`make m2-tests` through `make m6-tests` are deterministic and require neither Accessibility permission nor a running Codex application. `make m6-smoke` is the sanitized local interaction gate for Pet/Halo center alignment, Pet movement, Tuck Away, and Wake.
 
-M6 owns automatic first-use Pet attachment and adaptive above/below placement. M7 replaces the demo card with the final original semicircular Halo, percentage label, semantic status treatment, themes, and motion. M8 owns compatibility hardening, packaging, privacy audits, and release readiness. M5 does not authorize any of these later milestones.
+M7 replaces the demo card with the functional Pet ring and basic Usage metrics. M8 owns advanced styling, arc orientation, themes, low-usage visuals, and motion. M9 owns compatibility hardening, packaging, privacy audits, and release readiness. M6 does not authorize any later milestone.
 
-See [the M5 report](docs/milestones/m5-pet-target-following.md), [discovery evidence](docs/milestones/m5-pet-target-discovery-report.md), [Pet-target ADR](docs/adr/0007-pet-target-discovery.md), [compatibility contract](docs/COMPATIBILITY.md), and [privacy policy](docs/PRIVACY.md).
+See [the M6 report](docs/milestones/m6-automatic-pet-attachment.md), [center-lock ADR](docs/adr/0008-center-locked-pet-attachment.md), [compatibility contract](docs/COMPATIBILITY.md), and [privacy policy](docs/PRIVACY.md).
 
 ## Branding
 

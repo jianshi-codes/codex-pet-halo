@@ -39,6 +39,6 @@ CI runs `make check` without Codex, authentication, Accessibility permission, Sc
 
 ## Boundary and gate
 
-Production source checks reject other-process Accessibility inspection, screen capture, CGWindow enumeration, `NSWorkspace` scanning, thread/turn methods, internal databases, and Usage persistence. Bundle checks reject fixtures, fake servers, schemas, smoke/report material, and debug harnesses. No M4 calibration/following or M5 artwork/motion/theme code exists.
+Production source checks reject other-process Accessibility inspection, screen capture, CGWindow enumeration, `NSWorkspace` scanning, thread/turn methods, internal databases, and Usage persistence. Bundle checks reject fixtures, fake servers, schemas, smoke/report material, and debug harnesses. No M4 following, M5 Pet targeting, M6 automatic placement, or M7 artwork/motion/theme code is part of M3.
 
 All M3 exit criteria pass. The next recommended milestone is separately authorized **M4 — Window following**. This result does not authorize or begin M4.

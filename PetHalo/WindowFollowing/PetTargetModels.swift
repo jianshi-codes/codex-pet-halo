@@ -23,6 +23,25 @@ struct PetTargetSnapshot: Equatable, Sendable {
     let frame: CGRect
 }
 
+struct PetAttachmentLayout: Equatable, Sendable {
+    let referencePoint: CGPoint
+    let panelFrame: CGRect
+}
+
+enum PetPlacementStatus: Equatable, Sendable {
+    case centered
+    case unavailable
+
+    var statusText: String {
+        switch self {
+        case .centered:
+            "Pet placement: Centered"
+        case .unavailable:
+            "Pet placement: Unavailable"
+        }
+    }
+}
+
 enum PetTargetDiscoveryState: Equatable, Sendable {
     case disabled
     case searching
@@ -113,62 +132,31 @@ enum PetWindowSelector {
     }
 }
 
-struct PetRelativeAnchor: Codable, Equatable, Sendable {
-    static let currentVersion = 1
+enum PetAttachmentLayoutPolicy {
+    static let petAttachmentSize = CGSize(width: 176, height: 176)
 
-    let version: Int
-    let normalizedPetPoint: UnitPointValue
-    let pointOffset: PointOffsetValue
-
-    var isValid: Bool {
-        version == Self.currentVersion
-            && normalizedPetPoint.isValid
-            && pointOffset.isValid
-    }
-}
-
-enum PetAnchorGeometry {
-    static func calibrate(referencePoint: CGPoint, petFrame: CGRect) -> PetRelativeAnchor? {
-        guard referencePoint.isFinite,
-              petFrame.isFinite,
+    static func centeredLayout(
+        petFrame: CGRect,
+        panelSize: CGSize
+    ) -> PetAttachmentLayout? {
+        guard petFrame.isFinite,
               petFrame.width > 0,
-              petFrame.height > 0
+              petFrame.height > 0,
+              panelSize.isFinite,
+              panelSize.width > 0,
+              panelSize.height > 0
         else {
             return nil
         }
-        let projected = CGPoint(
-            x: min(max(referencePoint.x, petFrame.minX), petFrame.maxX),
-            y: min(max(referencePoint.y, petFrame.minY), petFrame.maxY)
+        let panelFrame = CGRect(
+            x: petFrame.midX - panelSize.width / 2,
+            y: petFrame.midY - panelSize.height / 2,
+            width: panelSize.width,
+            height: panelSize.height
         )
-        let anchor = PetRelativeAnchor(
-            version: PetRelativeAnchor.currentVersion,
-            normalizedPetPoint: UnitPointValue(
-                x: (projected.x - petFrame.minX) / petFrame.width,
-                y: (projected.y - petFrame.minY) / petFrame.height
-            ),
-            pointOffset: PointOffsetValue(
-                width: referencePoint.x - projected.x,
-                height: referencePoint.y - projected.y
-            )
-        )
-        return anchor.isValid ? anchor : nil
-    }
-
-    static func referencePoint(anchor: PetRelativeAnchor, petFrame: CGRect) -> CGPoint? {
-        guard anchor.isValid,
-              petFrame.isFinite,
-              petFrame.width > 0,
-              petFrame.height > 0
-        else {
-            return nil
-        }
-        return CGPoint(
-            x: petFrame.minX
-                + petFrame.width * anchor.normalizedPetPoint.x
-                + anchor.pointOffset.width,
-            y: petFrame.minY
-                + petFrame.height * anchor.normalizedPetPoint.y
-                + anchor.pointOffset.height
+        return PetAttachmentLayout(
+            referencePoint: HaloPlacementGeometry.referencePoint(for: panelFrame),
+            panelFrame: panelFrame
         )
     }
 }

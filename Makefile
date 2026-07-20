@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: bootstrap generate build test m0-tests m2-tests m2-smoke m3-tests m3-smoke m4-tests m4-smoke m5-tests m5-smoke check validate-bundle validate-generated-project
+.PHONY: bootstrap generate build test m0-tests m2-tests m2-smoke m3-tests m3-smoke m4-tests m4-smoke m5-tests m5-smoke m6-tests m6-smoke check validate-bundle validate-generated-project
 
 bootstrap:
 	./Scripts/bootstrap.sh
@@ -40,6 +40,12 @@ m5-tests:
 
 m5-smoke:
 	./Scripts/m5-smoke.sh
+
+m6-tests:
+	./Scripts/m6-tests.sh
+
+m6-smoke:
+	./Scripts/m6-smoke.sh
 
 validate-bundle:
 	./Scripts/validate-bundle.sh

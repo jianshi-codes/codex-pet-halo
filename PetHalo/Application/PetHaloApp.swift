@@ -64,17 +64,13 @@ private struct ApplicationMenuContent: View {
         Divider()
         Text(coordinator.targetStatusText)
         Text(coordinator.petStatusText)
+        Text(coordinator.petPlacementStatusText)
         Text(coordinator.followingStatusText)
 
         Button("Enable Pet Following") {
             coordinator.enablePetFollowing()
         }
         .disabled(!coordinator.canEnablePetFollowing)
-
-        Button("Calibrate Pet Position") {
-            coordinator.beginPetFollowingCalibration()
-        }
-        .disabled(!coordinator.canCalibratePetFollowing)
 
         Button("Calibrate Codex Window Fallback") {
             coordinator.beginWindowFallbackCalibration()
@@ -101,10 +97,6 @@ private struct ApplicationMenuContent: View {
         }
         .disabled(!coordinator.canDisableWindowFollowing)
 
-        Button("Reset Pet Position") {
-            coordinator.resetPetPosition()
-        }
-        .disabled(!coordinator.canResetPetPosition)
         Divider()
         Text(menuModel.versionText)
         Divider()

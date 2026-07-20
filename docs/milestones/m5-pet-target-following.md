@@ -52,4 +52,4 @@ One complete gate run exposed a pre-existing timing-sensitive M2 refresh-coalesc
 
 ## Known fragility
 
-Codex does not document the observed AX surface composition as a compatibility API. Role/subrole or overlapping-layer behavior may change between Desktop builds. The selector deliberately fails closed; a future incompatible build will fall back to M4/M3 until a separately reviewed compatibility change is proven. Automatic attachment and adaptive above/below placement remain M6; the final semicircular visual design, percentage label, semantic status treatment, themes, and motion remain M7; hardening and release readiness remain M8.
+Codex does not document the observed AX surface composition as a compatibility API. Role/subrole or overlapping-layer behavior may change between Desktop builds. The selector deliberately fails closed; a future incompatible build will fall back to M4/M3 until a separately reviewed compatibility change is proven. Automatic center-locked attachment remains M6; the functional Pet ring and basic Usage presentation remain M7; advanced styling, themes, and motion remain M8; hardening and release readiness remain M9.

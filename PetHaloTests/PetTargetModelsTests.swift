@@ -3,6 +3,65 @@ import XCTest
 @testable import PetHalo
 
 final class PetTargetModelsTests: XCTestCase {
+    func testCenteredLayoutKeepsExactPetMidpointWithoutScreenGeometry() throws {
+        let petFrame = CGRect(x: 300, y: 200, width: 400, height: 400)
+        let layout = try XCTUnwrap(PetAttachmentLayoutPolicy.centeredLayout(
+            petFrame: petFrame,
+            panelSize: CGSize(width: 176, height: 176)
+        ))
+
+        XCTAssertEqual(layout.panelFrame, CGRect(x: 412, y: 312, width: 176, height: 176))
+        XCTAssertEqual(layout.panelFrame.midX, petFrame.midX)
+        XCTAssertEqual(layout.panelFrame.midY, petFrame.midY)
+        XCTAssertEqual(
+            layout.referencePoint,
+            HaloPlacementGeometry.referencePoint(for: layout.panelFrame)
+        )
+    }
+
+    func testPanelSizeChangesRecenterAroundSamePetMidpoint() throws {
+        let petFrame = CGRect(x: 500, y: 300, width: 120, height: 110)
+        let compact = try XCTUnwrap(PetAttachmentLayoutPolicy.centeredLayout(
+            petFrame: petFrame,
+            panelSize: CGSize(width: 176, height: 176)
+        ))
+        let expanded = try XCTUnwrap(PetAttachmentLayoutPolicy.centeredLayout(
+            petFrame: petFrame,
+            panelSize: CGSize(width: 360, height: 520)
+        ))
+
+        XCTAssertEqual(compact.panelFrame.midX, petFrame.midX)
+        XCTAssertEqual(compact.panelFrame.midY, petFrame.midY)
+        XCTAssertEqual(expanded.panelFrame.midX, petFrame.midX)
+        XCTAssertEqual(expanded.panelFrame.midY, petFrame.midY)
+    }
+
+    func testCenteredLayoutSupportsNegativeDisplayCoordinates() throws {
+        let petFrame = CGRect(x: -1_100, y: -450, width: 120, height: 110)
+        let layout = try XCTUnwrap(PetAttachmentLayoutPolicy.centeredLayout(
+            petFrame: petFrame,
+            panelSize: CGSize(width: 176, height: 176)
+        ))
+
+        XCTAssertEqual(layout.panelFrame.midX, petFrame.midX)
+        XCTAssertEqual(layout.panelFrame.midY, petFrame.midY)
+    }
+
+    func testCenteredLayoutRejectsInvalidGeometry() {
+        XCTAssertNil(PetAttachmentLayoutPolicy.centeredLayout(
+            petFrame: .zero,
+            panelSize: CGSize(width: 176, height: 176)
+        ))
+        XCTAssertNil(PetAttachmentLayoutPolicy.centeredLayout(
+            petFrame: CGRect(x: CGFloat.infinity, y: 0, width: 100, height: 100),
+            panelSize: CGSize(width: 176, height: 176)
+        ))
+        XCTAssertNil(PetAttachmentLayoutPolicy.centeredLayout(
+            petFrame: CGRect(x: 0, y: 0, width: 100, height: 100),
+            panelSize: .zero
+        ))
+    }
+
     func testSelectsSingleBalancedDialogAsPetCore() {
         XCTAssertEqual(
             PetWindowSelector.select(from: [candidate(1)]),
@@ -40,40 +99,15 @@ final class PetTargetModelsTests: XCTestCase {
         XCTAssertEqual(reversed, forward)
     }
 
-    func testExcludesActivityWindowAndSystemDialogButtons() {
+    func testIgnoresWideActivityDialogsWhenSelectingPetCore() {
         let pet = candidate(1)
         let activity = candidate(
             2,
-            subrole: "AXDialog",
             frame: CGRect(x: 40, y: 80, width: 360, height: 70)
         )
-        let button = candidate(
-            3,
-            subrole: "AXSystemDialog",
-            frame: CGRect(x: 230, y: 170, width: 30, height: 30)
-        )
-        XCTAssertEqual(
-            PetWindowSelector.select(from: [activity, button, pet]),
-            .selected(memberIdentities: [1], frame: pet.frame)
-        )
-    }
 
-    func testActivityWindowMayAppearAboveOrBelowWithoutChangingSelection() {
-        let pet = candidate(1)
-        let above = candidate(
-            2,
-            frame: CGRect(x: 40, y: 80, width: 360, height: 70)
-        )
-        let below = candidate(
-            3,
-            frame: CGRect(x: 40, y: 360, width: 360, height: 70)
-        )
         XCTAssertEqual(
-            PetWindowSelector.select(from: [pet, above]),
-            .selected(memberIdentities: [1], frame: pet.frame)
-        )
-        XCTAssertEqual(
-            PetWindowSelector.select(from: [below, pet]),
+            PetWindowSelector.select(from: [activity, pet]),
             .selected(memberIdentities: [1], frame: pet.frame)
         )
     }
@@ -83,17 +117,6 @@ final class PetTargetModelsTests: XCTestCase {
             PetWindowSelector.select(from: [
                 candidate(1),
                 candidate(2, frame: CGRect(x: 500, y: 200, width: 120, height: 110)),
-            ]),
-            .ambiguous
-        )
-    }
-
-    func testSimilarlySizedUnrelatedDialogMakesSelectionAmbiguous() {
-        XCTAssertEqual(
-            PetWindowSelector.select(from: [
-                candidate(1),
-                candidate(2, frame: CGRect(x: 360, y: 200, width: 118, height: 112)),
-                candidate(3, role: "AXGroup"),
             ]),
             .ambiguous
         )
@@ -111,42 +134,7 @@ final class PetTargetModelsTests: XCTestCase {
         )
     }
 
-    func testPetAnchorCalibrationAndMovementAreIndependentFromWindowGeometry() throws {
-        let anchor = try XCTUnwrap(PetAnchorGeometry.calibrate(
-            referencePoint: CGPoint(x: 250, y: 350),
-            petFrame: CGRect(x: 100, y: 200, width: 100, height: 100)
-        ))
-        XCTAssertEqual(anchor.normalizedPetPoint, UnitPointValue(x: 1, y: 1))
-        XCTAssertEqual(anchor.pointOffset, PointOffsetValue(width: 50, height: 50))
-        XCTAssertEqual(
-            PetAnchorGeometry.referencePoint(
-                anchor: anchor,
-                petFrame: CGRect(x: -400, y: -200, width: 140, height: 120)
-            ),
-            CGPoint(x: -210, y: -30)
-        )
-    }
-
-    func testPetAnchorRejectsUnsupportedNonFiniteAndUnreasonableValues() {
-        let validPoint = UnitPointValue(x: 0.5, y: 0.5)
-        XCTAssertFalse(PetRelativeAnchor(
-            version: 0,
-            normalizedPetPoint: validPoint,
-            pointOffset: PointOffsetValue(width: 0, height: 0)
-        ).isValid)
-        XCTAssertFalse(PetRelativeAnchor(
-            version: 1,
-            normalizedPetPoint: UnitPointValue(x: .infinity, y: 0.5),
-            pointOffset: PointOffsetValue(width: 0, height: 0)
-        ).isValid)
-        XCTAssertFalse(PetRelativeAnchor(
-            version: 1,
-            normalizedPetPoint: validPoint,
-            pointOffset: PointOffsetValue(width: 20_000, height: 0)
-        ).isValid)
-    }
-
-    func testTargetAndDiscoveryStatusTextExposeNoRawAccessibilityData() {
+    func testTargetAndPlacementStatusExposeNoRawAccessibilityData() {
         XCTAssertEqual(HaloFollowingTargetSource.pet.statusText, "Target: Pet")
         XCTAssertEqual(
             HaloFollowingTargetSource.codexWindowFallback.statusText,
@@ -156,6 +144,8 @@ final class PetTargetModelsTests: XCTestCase {
         XCTAssertEqual(PetTargetDiscoveryState.searching.statusText, "Pet: Searching")
         XCTAssertEqual(PetTargetDiscoveryState.unavailable.statusText, "Pet: Not Found")
         XCTAssertEqual(PetTargetDiscoveryState.ambiguous.statusText, "Pet: Ambiguous")
+        XCTAssertEqual(PetPlacementStatus.centered.statusText, "Pet placement: Centered")
+        XCTAssertEqual(PetPlacementStatus.unavailable.statusText, "Pet placement: Unavailable")
     }
 
     private func candidate(

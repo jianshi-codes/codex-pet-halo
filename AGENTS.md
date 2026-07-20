@@ -12,10 +12,11 @@ Pet Halo is an independent, unofficial macOS companion for Codex. The current ap
 - M3 contains the non-activating click-through Halo panel, compact/expanded Usage presentation, accessibility, tests, smoke tooling, CI, and documentation.
 - M4 — Codex Window Following & Fallback — is complete with PASS. It follows the Codex standard window, not the independently movable Pet, and remains the permanent window-level fallback above free-floating mode.
 - M5 — Pet Target Discovery & Pet-relative Following — is complete through Route A. It prefers the unique geometric Pet AX window target, preserves M4 and M3 fallbacks, and provides optional manual calibration with a separate Pet-relative anchor.
-- M6 — Automatic Pet Attachment & Adaptive Placement — makes first-use Pet attachment automatic and chooses an adaptive above/below position.
-- M7 — Original Halo Visual Design — replaces the demo card with the final semicircular Halo, percentage label, semantic status treatment, themes, and motion.
-- M8 — Hardening & Release Readiness — contains compatibility hardening, packaging, privacy audits, release documentation, and release readiness.
-- Do not begin Screen Recording, visual detection, screenshots/OCR, automatic attachment/adaptive placement, final artwork/motion/themes, or later milestone work without separate authorization.
+- M6 — Automatic Center-Locked Pet Attachment — makes first-use Pet attachment automatic, removes legacy positional overrides, locks the panel midpoint to the Pet midpoint, and preserves M4/M3 fallbacks and lifecycle behavior.
+- M7 — Pet Ring Surface & Target-aware Presentation — replaces the demo card with the functional Pet ring and basic Usage metrics.
+- M8 — Visual Polish, Themes & Motion — owns advanced styling, arc orientation, themes, low-usage visuals, and motion.
+- M9 — Hardening & Release Readiness — contains compatibility hardening, packaging, privacy audits, release documentation, and release readiness.
+- Do not begin Screen Recording, visual detection, screenshots/OCR, final artwork, motion, themes, release work, or later milestone work without separate authorization.
 
 ## Build and test
 
@@ -33,6 +34,8 @@ make m4-tests
 make m4-smoke
 make m5-tests
 make m5-smoke
+make m6-tests
+make m6-smoke
 make check
 ```
 
