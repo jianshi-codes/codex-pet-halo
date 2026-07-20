@@ -70,7 +70,7 @@ The panel does not discover or inspect Codex, enumerate product windows, request
 | Displays | anchor-point screen selection, complete visible-frame containment, nearest remaining display fallback, no persisted screen index |
 | Interaction | calibration temporarily accepts drag events; the panel remains `.nonactivatingPanel` and cannot become key or main |
 
-Synthetic tests cover a main display at `(0,0)`, a negative-X left display, a negative-Y lower display, mixed sizes, boundary-crossing windows, screen removal, and an oversized Halo. The implementation currently targets macOS 14 or later. Accessibility was unavailable during this session's sanitized live smoke, so real calibration and physical Codex move/resize behavior remain a required manual compatibility gate recorded in the M4 report.
+Synthetic tests cover a main display at `(0,0)`, a negative-X left display, a negative-Y lower display, mixed sizes, boundary-crossing windows, screen removal, and an oversized Halo. The implementation currently targets macOS 14 or later. Direct validation passed explicit Accessibility permission, calibration, physical move/resize, focus and interaction behavior, multi-display containment, permission fallback/recovery, Codex termination/relaunch recovery, Pet Halo restart, and clean shutdown as recorded in the M4 report.
 
 ## Protocol matrix for Codex CLI 0.145.0-alpha.18
 

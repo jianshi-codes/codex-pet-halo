@@ -1,7 +1,7 @@
 # Current State
 
 - Milestone: M4 — Window Following
-- Status: **PARTIAL — ACCESSIBILITY PERMISSION MANUAL VALIDATION REQUIRED**
+- Status: **PASS**
 - M0 status: **PASS-CORE / PARTIAL-OPTIONALS**
 - Core gate: owned stdio bridge ✅ / weekly quota ✅ / Account Usage ✅ / non-activating Halo ✅ / component freshness ✅ / clean shutdown ✅
 - Optional capabilities: five-hour window unavailable on the validation account and omitted / Context unsupported and omitted
@@ -28,6 +28,6 @@ The M3 presentation uses remaining percentages without a second inversion, whole
 
 M4 uses Accessibility only for exact Codex process/window geometry and observation. It does not read window titles, labels, document text, conversation content, prompts, responses, screenshots, or Pet pixels. Free-floating Usage remains available whenever permission or a deterministic target is unavailable.
 
-Direct M4 validation passed every manual item except automatic Codex relaunch recovery. The observed launch notification could precede the new standard window, leaving following suspended. The existing single five-second recovery task now retries exact Codex/window resolution only for permission-required, Codex-unavailable, and transient window-unavailable states while preserving the anchor. A deterministic launch-before-window-ready regression test passes; the physical relaunch scenario remains the only focused recheck before the gate may close.
+Direct M4 validation passed explicit permission, target resolution, calibration/Cancel, physical move/resize, compact/expanded stability, click-through, scrolling, focus retention, permission recovery, Codex termination fallback, Pet Halo restart, cleanup, and multi-display behavior. The observed Codex launch-before-window-ready race was fixed by extending the existing single five-second recovery task to retry exact Codex/window resolution only for permission-required, Codex-unavailable, and transient window-unavailable states while preserving the anchor. Its deterministic regression and focused physical relaunch recheck both passed without recalibration.
 
-Automated and sanitized live checks do not substitute for the remaining direct Codex relaunch recovery recheck. M5 must not start until M4 reaches PASS and receives separate authorization.
+M4 is closed at PASS. This does not authorize M5, Pet recognition, Screen Recording, artwork, motion, themes, or any later milestone.

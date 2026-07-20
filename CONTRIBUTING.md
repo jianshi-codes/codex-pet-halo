@@ -1,6 +1,6 @@
 # Contributing
 
-M0 through M3 are complete. M4 Window Following is implemented and awaits direct Accessibility/manual movement validation. Contributions must remain within the M4 boundary until a later milestone receives separate authorization.
+M0 through M4 are complete. Contributions must remain within the completed M4 boundary until a later milestone receives separate authorization.
 
 ## Development rules
 

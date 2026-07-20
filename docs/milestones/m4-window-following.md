@@ -1,6 +1,6 @@
 # M4 Window Following
 
-- Status: **PARTIAL — ACCESSIBILITY PERMISSION MANUAL VALIDATION REQUIRED**
+- Status: **PASS**
 - Date: 2026-07-20
 - Scope: explicit Accessibility workflow, exact Codex/window selection, calibrated relative anchoring, event-driven following, multi-display containment, safe preferences, fallback, lifecycle, tests, smoke, CI, and documentation
 - Stop condition: M4 Draft PR; do not merge and do not begin M5
@@ -37,8 +37,8 @@ M4 introduces no Screen Recording, screenshots, OCR, Pet recognition, Apple Even
 | Observation/lifecycle | PASS — burst coalescing, invalidation priority, stale generation, post-stop rejection, coordinator shutdown order |
 | Relaunch race regression | PASS — process launch may precede window availability; a later recovery tick reuses the saved anchor and returns to following without another system event or calibration write |
 
-Draft PR CI is recorded on the PR. The initial direct observations and remaining focused relaunch recheck are recorded below.
+Draft PR CI is recorded on the PR. Direct validation and the relaunch defect/recheck are recorded below.
 
-## Focused manual gate still required
+## Manual gate closure
 
-Direct validation on commit `60cc14b353f9e3d5ab1ca2ddcb5bec13951bc2f6` passed explicit permission, target resolution, calibration/Cancel, physical move/resize, compact/expanded stability, click-through, scrolling, focus retention, permission recovery, Codex termination fallback, Pet Halo restart, cleanup, and multi-display behavior. It exposed one defect: a Codex relaunch could remain suspended when the launch event arrived before the new standard window. The deterministic recovery fix and regression test pass, but that physical relaunch scenario must be rechecked on the new commit. Until then, M4 remains **PARTIAL — ACCESSIBILITY PERMISSION MANUAL VALIDATION REQUIRED** and M5 must not begin.
+Direct validation on commit `60cc14b353f9e3d5ab1ca2ddcb5bec13951bc2f6` passed explicit permission, target resolution, calibration/Cancel, physical move/resize, compact/expanded stability, click-through, scrolling, focus retention, permission recovery, Codex termination fallback, Pet Halo restart, cleanup, and multi-display behavior. It exposed one defect: a Codex relaunch could remain suspended when the launch event arrived before the new standard window. Commit `a79e0ac779d520e8e0c969ddf210157fb1b224c5` fixed that race; deterministic testing and focused physical Codex relaunch recovery both passed without recalibration. All M4 automated, CI, smoke, privacy, lifecycle, and direct interaction gates are satisfied, so M4 is **PASS**. M5 and Pet recognition remain separately gated and are not authorized by this closure.
