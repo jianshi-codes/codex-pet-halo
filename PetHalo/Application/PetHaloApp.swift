@@ -62,17 +62,24 @@ private struct ApplicationMenuContent: View {
         }
         .disabled(!coordinator.canRefreshUsage)
         Divider()
+        Text(coordinator.targetStatusText)
+        Text(coordinator.petStatusText)
         Text(coordinator.followingStatusText)
 
-        Button("Enable Window Following") {
-            coordinator.enableWindowFollowing()
+        Button("Enable Pet Following") {
+            coordinator.enablePetFollowing()
         }
-        .disabled(!coordinator.canEnableWindowFollowing)
+        .disabled(!coordinator.canEnablePetFollowing)
 
-        Button("Calibrate Position") {
-            coordinator.beginWindowFollowingCalibration()
+        Button("Calibrate Pet Position") {
+            coordinator.beginPetFollowingCalibration()
         }
-        .disabled(!coordinator.canCalibrateWindowFollowing)
+        .disabled(!coordinator.canCalibratePetFollowing)
+
+        Button("Calibrate Codex Window Fallback") {
+            coordinator.beginWindowFallbackCalibration()
+        }
+        .disabled(!coordinator.canCalibrateWindowFallback)
 
         Button("Finish Calibration") {
             coordinator.finishWindowFollowingCalibration()
@@ -84,15 +91,20 @@ private struct ApplicationMenuContent: View {
         }
         .disabled(!coordinator.canFinishCalibration)
 
-        Button("Disable Window Following") {
+        Button("Use Codex Window Fallback") {
+            coordinator.useWindowFallback()
+        }
+        .disabled(!coordinator.canUseWindowFallback)
+
+        Button("Disable Following") {
             coordinator.disableWindowFollowing()
         }
         .disabled(!coordinator.canDisableWindowFollowing)
 
-        Button("Reset Halo Position") {
-            coordinator.resetHaloPosition()
+        Button("Reset Pet Position") {
+            coordinator.resetPetPosition()
         }
-        .disabled(!coordinator.acceptsUICommands)
+        .disabled(!coordinator.canResetPetPosition)
         Divider()
         Text(menuModel.versionText)
         Divider()

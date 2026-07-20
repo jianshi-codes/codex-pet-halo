@@ -11,10 +11,11 @@ Pet Halo is an independent, unofficial macOS companion for Codex. The current ap
 - M2 contains the stable Usage domain, read-only owned CodexBridge, JSON-RPC/process lifecycle, refresh/reconnect policy, tests, build tooling, CI, and documentation.
 - M3 contains the non-activating click-through Halo panel, compact/expanded Usage presentation, accessibility, tests, smoke tooling, CI, and documentation.
 - M4 — Codex Window Following & Fallback — is complete with PASS. It follows the Codex standard window, not the independently movable Pet, and remains the permanent window-level fallback above free-floating mode.
-- M5 contains discovery-first Pet Target Discovery & Pet-relative Following. Investigate, in order, a separate Codex-owned Accessibility window or panel, a stable Accessibility child element, and only if Accessibility discovery is impossible a separately authorized visual-detection route that may require Screen Recording.
-- M6 contains final branding, motion, themes, low-usage states, and game-like visual design.
-- M7 contains compatibility hardening, packaging, privacy audits, release documentation, and release readiness.
-- Do not begin M5, Screen Recording, visual detection, screenshots/OCR, final artwork, motion/themes, or later milestone work without separate authorization.
+- M5 — Pet Target Discovery & Pet-relative Following — is complete through Route A. It prefers the unique geometric Pet AX window target, preserves M4 and M3 fallbacks, and provides optional manual calibration with a separate Pet-relative anchor.
+- M6 — Automatic Pet Attachment & Adaptive Placement — makes first-use Pet attachment automatic and chooses an adaptive above/below position.
+- M7 — Original Halo Visual Design — replaces the demo card with the final semicircular Halo, percentage label, semantic status treatment, themes, and motion.
+- M8 — Hardening & Release Readiness — contains compatibility hardening, packaging, privacy audits, release documentation, and release readiness.
+- Do not begin Screen Recording, visual detection, screenshots/OCR, automatic attachment/adaptive placement, final artwork/motion/themes, or later milestone work without separate authorization.
 
 ## Build and test
 
@@ -30,6 +31,8 @@ make m3-tests
 make m3-smoke
 make m4-tests
 make m4-smoke
+make m5-tests
+make m5-smoke
 make check
 ```
 

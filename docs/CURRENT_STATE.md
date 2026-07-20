@@ -1,34 +1,38 @@
 # Current State
 
-- Milestone: M4 — Codex Window Following & Fallback
-- Status: **PASS**
+- Milestone: M5 — Pet Target Discovery & Pet-relative Following
+- Route: `ROUTE_A — PET_ACCESSIBILITY_WINDOW`
+- Status: **PASS locally**; Draft PR remains unmerged and each pushed Head requires green CI
 - M0 status: **PASS-CORE / PARTIAL-OPTIONALS**
 - Core gate: owned stdio bridge ✅ / weekly quota ✅ / Account Usage ✅ / non-activating Halo ✅ / component freshness ✅ / clean shutdown ✅
 - Optional capabilities: five-hour window unavailable on the validation account and omitted / Context unsupported and omitted
 - Native application: Swift 6 / SwiftUI menu-bar and Halo content / AppKit lifecycle and `NSPanel` / `PetHaloCore` framework
 - Halo: one transparent borderless floating panel / compact click-through / expanded scrollable without activation or key/main eligibility / menu controlled
-- Target hierarchy: future Pet target following preferred / calibrated Codex standard-window following is the permanent implemented fallback / free-floating Halo is the final fallback
-- Placement: fixed upper-right free-floating default / exact `com.openai.codex` lookup only after following is enabled / explicit calibration / versioned relative window anchor / no Pet detection
-- Persisted UI preferences only: following enabled and version-1 normalized point plus point offset; no PID, window identity, screen index, Usage, account, title, path, or AX element
-- Local automated validation: 100 Swift tests ✅ (51 Core + 49 application; 1 local-only bridge smoke skipped in deterministic runs) / 14 retained M0 tests ✅
-- Focused M3 validation: 21 presentation/accessibility/panel/coordinator tests ✅
-- Deterministic CI path: fake app-server only; no Codex installation, authentication, Accessibility permission, Screen Recording, or network required after dependency bootstrap
-- Focused M4 validation: 36 process/window/geometry/anchor/persistence/service/panel/coordinator tests ✅
+- Target hierarchy: independently movable Pet preferred / calibrated Codex standard-window anchor permanent fallback / free-floating Halo final fallback
+- Pet discovery: exact `com.openai.codex` only / unique near-square `AXWindow/AXDialog` logical frame / no title, identifier, content, array-order, activity-position, or button-count logic
+- Placement: separate version-1 Pet and window anchors / one logical Halo reference point / visible-display containment / no animation
+- Persisted UI preferences only: following enabled, versioned Pet anchor, and versioned M4 window anchor; no PID, AX identity, frame snapshot, screen index, Usage, account, title, identifier, or path
+- Local automated validation: 126 Swift tests ✅ (51 Core + 75 application; 1 local-only bridge smoke skipped in deterministic runs) / 14 retained M0 tests ✅
+- Focused M5 validation: 62 Pet/window selection, geometry, anchor, hierarchy, fallback/recovery, persistence, calibration lifecycle, observer, panel, and coordinator tests ✅
+- M5 live smoke: exact process ✅ / Route A unique target ✅ / independent Pet movement ✅ / standard Codex window stationary ✅ / sanitized output ✅
+- Deterministic CI path: fake app-server and synthetic target accessors only; no Codex installation, authentication, Accessibility permission, Screen Recording, or network required after dependency bootstrap
 - Local real bridge smoke: executable discovery ✅ / exact version ✅ / handshake ✅ / weekly available ✅ / optional five-hour unavailable ✅ / Account Usage available ✅ / clean child shutdown ✅
 - Application smoke: accessory policy ✅ / exactly one compact Halo ✅ / real weekly content ✅ / optional five-hour omission ✅ / click-through and inactive application ✅ / no regular window beyond Halo ✅ / no Dock icon ✅ / panel and owned child exit ✅
-- Build and static gates: Debug ✅ / universal Release (`arm64` + `x86_64`) ✅ / generated-project drift ✅ / source boundary ✅ / privacy and absolute-path scans ✅
-- M4 sanitized live smoke: Accessibility unavailable on this host session / no prompt issued / real Codex discovery and target observation intentionally not attempted / deterministic following checks ✅ / M2 live bridge regression ✅
-- Manual interaction: menu-selected expanded scrolling with another application frontmost ✅ / maximum-content bidirectional movement ✅ / inactive 360×520 panel ✅ / restored compact click-through and inactive 176×176 panel ✅
-- Production UI: weekly remaining primary gauge; optional five-hour capability-gated; expanded present-only Account Usage; textual current/stale/unavailable states
+- Build and static gates: Debug ✅ / universal Release (`arm64` + `x86_64`) ✅ / generated-project drift ✅ / source boundary ✅ / privacy and absolute-path scans ✅ / Debug and Release bundle validation ✅
+- Regression smoke: M2 ✅ / M3 ✅ / M4 ✅ / M5 ✅
+- Direct M5 interaction: Pet-relative following ✅ / Tuck Away activates M4 fallback ✅ / Wake restores Pet without recalibration ✅ / calibration remains stable beyond the five-second recovery tick ✅
+- Production UI: safe Target/Pet/Following statuses plus separate Pet and window calibration actions; no raw AX details
 - Protocol source of truth: schemas generated by Codex CLI `0.145.0-alpha.18`; production remains fail-closed to that exact version
 - Internal Codex database dependency: prohibited
 
 `ApplicationCoordinator` remains the only consumer of `CodexUsageServing.states()`. It publishes the full state, maps it into UI-facing values on the main actor, and updates the owned panel. Weekly and five-hour use `componentFreshness.rateLimits`; Account Usage uses `componentFreshness.accountUsage`. A newer aggregate timestamp cannot make retained stale Account Usage appear current.
 
-The M3 presentation uses remaining percentages without a second inversion, whole-percent deterministic rounding, localized reset formatting with an absolute accessibility value, and present-only Account Usage fields. Missing data is omitted or explicitly unavailable and never estimated. Account identity, Context, raw failures, protocol data, and Usage values never enter logs or persistence.
+M5 adds a separate `PetTargetSnapshot` abstraction and never exposes AX objects, PIDs, titles, identifiers, raw errors, or coordinates to presentation. Direct discovery showed that the Pet core is one logical near-square dialog frame, sometimes represented by two overlapping AX surfaces. The activity dialog can appear above or below Pet and may expose separate controls, so these are explicitly excluded from selection logic.
 
-M4 uses Accessibility only for exact Codex process/standard-window geometry and observation. It follows a calibrated point relative to that window, not the independently movable Codex Pet, and does not claim Pet following or automatic Pet detection. It does not read window titles, labels, document text, conversation content, prompts, responses, screenshots, or Pet pixels. This window-level capability remains the permanent fallback when future Pet-target following is unavailable; free-floating Usage remains the final fallback whenever permission or a deterministic window target is unavailable.
+The direct discovery run observed independent Pet movement while the standard Codex window remained stationary. Pet Tuck Away removed the Route A target; Wake recreated the surface set. A selected-target run recorded 175 unique samples, zero unavailable samples, and two transient ambiguous samples caused by non-atomic movement of overlapping layers. Production coalesces geometry events for 80 ms and rechecks at 160 ms; persistent ambiguity is never guessed and activates M4/M3 fallback.
 
-Direct M4 validation passed explicit permission, target resolution, calibration/Cancel, physical move/resize, compact/expanded stability, click-through, scrolling, focus retention, permission recovery, Codex termination fallback, Pet Halo restart, cleanup, and multi-display behavior. The observed Codex launch-before-window-ready race was fixed by extending the existing single five-second recovery task to retry exact Codex/window resolution only for permission-required, Codex-unavailable, and transient window-unavailable states while preserving the anchor. Its deterministic regression and focused physical relaunch recheck both passed without recalibration.
+The Pet-relative anchor is persisted only after Finish Calibration. Cancel exits calibration exactly once, restores the previous Halo reference and target preference, writes no anchor, and restores compact click-through. Enable Pet Following, Use Codex Window Fallback, Reset Pet Position, and both begin-calibration commands are no-ops while calibration is active; Finish, Cancel, Disable Following, and Quit remain the intentional exit paths. Reset Pet Position otherwise clears only the Pet anchor. Pet loss retains calibration, uses the M4 window anchor when valid, and otherwise leaves the Halo free-floating. A five-second recovery loop resumes Pet following without recalibration after deterministic rediscovery and ignores stale generations.
 
-M4 is closed at PASS. M5 owns discovery-first Pet targeting and Pet-relative geometry; M6 owns final branding, motion, themes, and game-like visual design; M7 owns compatibility hardening, packaging, privacy audits, and release readiness. This roadmap correction does not authorize M5, Screen Recording, visual detection, or any later milestone implementation.
+M5 uses the existing explicit Accessibility permission and does not add an automatic prompt. Production reads only the exact process window list, role, subrole, minimized, hidden, position, and size and observes created/moved/resized/destroyed notifications. It does not read title, label, description, identifier, value, document text, conversation content, prompt, response, screenshot, or Pet pixels. Screen Recording, ScreenCaptureKit, OCR, visual detection, analytics, telemetry, private IPC, and Codex database access remain absent.
+
+The Route A AX composition is not an official compatibility API. If a future Codex build changes the roles, geometry layering, or notification behavior, Pet Halo fails closed to M4 and M3. M6 owns automatic first-use Pet attachment and adaptive above/below placement; M7 owns the final semicircular Halo, percentage label, semantic status treatment, themes, and motion; M8 owns compatibility, packaging, privacy audit, and release readiness. None is authorized by M5.

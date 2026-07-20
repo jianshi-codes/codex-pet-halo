@@ -20,14 +20,14 @@ if grep -EnR 'thread/|turn/|account/(login|logout|rateLimitResetCredit|workspace
 fi
 
 if grep -EnR 'AXUIElement|AXObserver|AXIsProcessTrusted|NSWorkspace|NSRunningApplication\.runningApplications' PetHalo PetHaloCore \
-    | grep -Ev '^PetHalo/WindowFollowing/SystemWindowFollowing\.swift:'; then
-    echo "error: Accessibility or exact application discovery escaped the reviewed M4 boundary" >&2
+    | grep -Ev '^PetHalo/WindowFollowing/(SystemWindowFollowing|SystemPetTargetDiscovery)\.swift:'; then
+    echo "error: Accessibility or exact application discovery escaped the reviewed boundaries" >&2
     exit 1
 fi
 
 if grep -EnR 'UserDefaults([.(]|[[:space:]])' PetHalo PetHaloCore \
     | grep -Ev '^PetHalo/WindowFollowing/WindowFollowingPreferences\.swift:'; then
-    echo "error: preferences escaped the reviewed M4 boundary" >&2
+    echo "error: preferences escaped the reviewed M5 boundary" >&2
     exit 1
 fi
 
@@ -37,8 +37,9 @@ if grep -EnR 'CGWindowListCopyWindowInfo|ScreenCaptureKit|SCShareableContent|CGD
 fi
 
 if grep -En 'kAX(Title|Description|Value|Help|Identifier|SelectedText|VisibleCharacterRange|Children)Attribute' \
-    PetHalo/WindowFollowing/SystemWindowFollowing.swift; then
-    echo "error: M4 Accessibility boundary contains text or content inspection" >&2
+    PetHalo/WindowFollowing/SystemWindowFollowing.swift \
+    PetHalo/WindowFollowing/SystemPetTargetDiscovery.swift; then
+    echo "error: Accessibility boundaries contain text or content inspection" >&2
     exit 1
 fi
 
@@ -56,7 +57,7 @@ if find PetHalo -type f \( \
     -iname '*.svg' -o \
     -iname '*.pdf' \
 \) | grep -q .; then
-    echo "error: M3 production source must not contain final artwork assets" >&2
+    echo "error: M5 production source must not contain final artwork assets" >&2
     exit 1
 fi
 
@@ -77,7 +78,7 @@ if grep -EnR 'Logger.*(stdout|stderr|payload|JSON)|logger\.(debug|info|notice|wa
 fi
 
 if grep -EnR 'com\.apple\.security\.|NSAppleEventsUsageDescription|NSScreenCaptureUsageDescription' Config project.yml; then
-    echo "error: M4 must not enable unrelated sensitive entitlements or permissions" >&2
+    echo "error: production must not enable unrelated sensitive entitlements or permissions" >&2
     exit 1
 fi
 

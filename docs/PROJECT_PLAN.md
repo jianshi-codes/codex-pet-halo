@@ -33,12 +33,16 @@ Generate schemas from the installed Codex CLI, build a read-only protocol probe,
 
 ### M5 — Pet Target Discovery & Pet-relative Following
 
-Discovery comes first because the Codex Pet implementation is not yet known. Investigate, in order: a separate Codex-owned Accessibility window or panel; a stable Accessibility child element; and only if Accessibility discovery is impossible, a separately authorized visual-detection route that may require Screen Recording. M5 owns Pet-relative geometry and must preserve calibrated Codex-window following and free-floating mode as fallbacks. This roadmap entry does not authorize M5 implementation, Screen Recording, screenshots, OCR, or visual detection.
+**Complete — Route A implemented.** Local discovery proved one logical near-square `AXWindow/AXDialog` frame that follows independent Pet movement while the standard Codex window remains stationary. M5 adds deterministic Pet selection, optional manual Pet-relative calibration with a separate versioned anchor, event coalescing, loss fallback, recreation recovery, safe status/menu controls, tests, smoke tooling, and privacy boundaries. Calibrated M4 window following and M3 free-floating placement remain permanent fallbacks. No Screen Recording, screenshots, OCR, or visual detection was added. See [the M5 report](milestones/m5-pet-target-following.md) and [discovery evidence](milestones/m5-pet-target-discovery-report.md).
 
-### M6 — Original Visual Design
+### M6 — Automatic Pet Attachment & Adaptive Placement
 
-Add original branding, motion preferences, themes, low-usage states, and game-like visual design without using official OpenAI or Codex Pet artwork.
+Make first-use Pet attachment automatic and choose an adaptive above/below position from available space while retaining the M5 target hierarchy and fallbacks.
 
-### M7 — Hardening & Release Readiness
+### M7 — Original Halo Visual Design
+
+Replace the demo card with the final original semicircular Halo, percentage label, semantic status treatment, themes, and motion without using official OpenAI or Codex Pet artwork.
+
+### M8 — Hardening & Release Readiness
 
 Expand compatibility fixtures, transport/reconnect tests, UI/window tests, privacy audits, packaging, and release documentation and readiness.

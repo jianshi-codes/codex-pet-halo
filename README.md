@@ -6,9 +6,9 @@ Pet Halo is an independent, unofficial macOS companion that aims to display a tr
 
 ## Status
 
-**M4 Codex Window Following & Fallback is complete with `PASS`.** Pet Halo remains free-floating by default, requests Accessibility only after `Enable Window Following`, discovers only the exact `com.openai.codex` application, selects a standard window deterministically, and supports explicit drag calibration. A versioned normalized-window-point plus point-offset anchor follows move/resize events and remains contained in multi-display visible frames. Missing permission, Codex, an unambiguous window, or a valid observer leaves Usage visible in safe free-floating fallback.
+**M5 Pet Target Discovery & Pet-relative Following is implemented through `ROUTE_A — PET_ACCESSIBILITY_WINDOW`.** Pet Halo remains free-floating by default and requests Accessibility only after an explicit enable action. On the validated Codex build, it resolves the independently movable Pet as one logical near-square `AXWindow/AXDialog` frame without reading titles, labels, identifiers, or content.
 
-The product target hierarchy is: Pet target following is preferred; calibrated Codex standard-window following is the permanent fallback; and a free-floating Halo is the final fallback. M4 implements the latter two levels. It follows the Codex standard window, not the independently movable Codex Pet, and does not claim Pet following or automatic Pet detection.
+The product target hierarchy is: Pet target following is preferred; calibrated Codex standard-window following is the permanent fallback; and a free-floating Halo is the final fallback. M5 provides target discovery and optional manual Pet-relative calibration using separate versioned Pet and window anchors. Pet disappearance or ambiguity preserves Pet calibration and falls back safely; deterministic rediscovery resumes Pet-relative following without recalibration.
 
 The M3 non-activating panel behavior remains intact: compact is click-through outside calibration, expanded accepts scrolling, and neither mode can become key or main. Direct local validation passed permission, calibration, move/resize, focus, interaction, fallback, Codex and Pet Halo restart recovery, cleanup, and multi-display checks. The Codex launch-before-window-ready race found during validation was fixed and passed focused physical revalidation without recalibration.
 
@@ -36,16 +36,18 @@ make m3-tests
 make m3-smoke
 make m4-tests
 make m4-smoke
+make m5-tests
+make m5-smoke
 make check
 ```
 
 XcodeGen 2.46.0 is required. `project.yml` is the editable project source of truth; the generated Xcode project is committed and must not be hand-edited.
 
-`make m2-tests`, `make m3-tests`, and `make m4-tests` are deterministic and require neither Accessibility permission nor a running Codex application. `make m4-smoke` adds a sanitized live permission/exact-application/window check and clearly labels interactive observations that remain manual.
+`make m2-tests`, `make m3-tests`, `make m4-tests`, and `make m5-tests` are deterministic and require neither Accessibility permission nor a running Codex application. `make m5-smoke` adds sanitized live Route A resolution and direct independent-Pet-movement observation.
 
-M5 owns discovery-first Pet target discovery and Pet-relative following: first a separate Codex-owned Accessibility window or panel, then a stable Accessibility child element, and only if Accessibility is impossible a separately authorized visual-detection route that may require Screen Recording. This roadmap entry does not authorize M5, Screen Recording, or visual detection. M6 owns final branding, motion, themes, and game-like visual design; M7 owns compatibility hardening, packaging, privacy audits, and release readiness.
+M6 owns automatic first-use Pet attachment and adaptive above/below placement. M7 replaces the demo card with the final original semicircular Halo, percentage label, semantic status treatment, themes, and motion. M8 owns compatibility hardening, packaging, privacy audits, and release readiness. M5 does not authorize any of these later milestones.
 
-See [the M4 report](docs/milestones/m4-window-following.md), [window-following ADR](docs/adr/0006-window-following-calibration.md), [compatibility contract](docs/COMPATIBILITY.md), and [privacy policy](docs/PRIVACY.md).
+See [the M5 report](docs/milestones/m5-pet-target-following.md), [discovery evidence](docs/milestones/m5-pet-target-discovery-report.md), [Pet-target ADR](docs/adr/0007-pet-target-discovery.md), [compatibility contract](docs/COMPATIBILITY.md), and [privacy policy](docs/PRIVACY.md).
 
 ## Branding
 

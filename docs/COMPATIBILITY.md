@@ -54,7 +54,7 @@ The public M2 domain exposes rate-limit and Account Usage freshness separately. 
 
 The M3 mapper consumes only the stable M2 domain. Weekly/five-hour presentation follows rate-limit component freshness, while Account Usage follows its independent component freshness. Remaining percentage is not inverted again. Five-hour appears only for an available exact 300-minute capability. Context and account identity are omitted.
 
-The panel does not discover or inspect Codex, enumerate product windows, request Accessibility or Screen Recording permission, or use saved placement. M4 owns any future calibration/window-following compatibility work; M5 owns final artwork and visual themes.
+The M3 panel itself does not discover or inspect Codex. M4 and M5 own the separately gated target-following compatibility layers. M6 owns final artwork and visual themes.
 
 ## M4 window-following contract
 
@@ -71,6 +71,25 @@ The panel does not discover or inspect Codex, enumerate product windows, request
 | Interaction | calibration temporarily accepts drag events; the panel remains `.nonactivatingPanel` and cannot become key or main |
 
 Synthetic tests cover a main display at `(0,0)`, a negative-X left display, a negative-Y lower display, mixed sizes, boundary-crossing windows, screen removal, and an oversized Halo. The implementation currently targets macOS 14 or later. Direct validation passed explicit Accessibility permission, calibration, physical move/resize, focus and interaction behavior, multi-display containment, permission fallback/recovery, Codex termination/relaunch recovery, Pet Halo restart, and clean shutdown as recorded in the M4 report.
+
+## M5 Pet-target contract
+
+| Component | M5 contract |
+| --- | --- |
+| Route | `ROUTE_A — PET_ACCESSIBILITY_WINDOW` on the validated Codex Desktop build |
+| Process boundary | Reuse exact `com.openai.codex` selection; no generic process or window-server scan |
+| Pet selection | visible, non-minimized, finite positive near-square `AXWindow/AXDialog`; half-point overlap collapse; exactly one logical frame or fail closed |
+| AX data | application window list, role, subrole, minimized, hidden, position, and size only |
+| AX events | Pet moved, resized, destroyed, and application window created |
+| Burst handling | 80 ms callback coalescing; 160 ms stability recheck for non-atomic overlapping layers |
+| Placement | separate version-1 normalized Pet point plus fixed point offset to the Halo logical reference |
+| Hierarchy | Pet target, then calibrated M4 Codex window, then M3 free-floating |
+| Recovery | preserve Pet anchor; retry Pet discovery every five seconds while fallback is active; stale generations ignored |
+| Interaction | existing non-activating panel, compact click-through, expanded scrolling, and display containment remain unchanged |
+
+Direct discovery observed the Pet core move independently while the standard Codex window stayed stationary, disappear on Tuck Away, and return on Wake. Activity UI could move above or below Pet and expose separate controls, so neither relative position nor button count is used. Two overlapping core surfaces can update non-atomically; persistent ambiguity activates fallback rather than guessing.
+
+The official [Codex Pets documentation](https://learn.chatgpt.com/docs/pets.md) does not define an Accessibility compatibility contract. M5 is consequently validated against the recorded Codex Desktop build and must fail closed when future builds change the observed role/subrole, geometry layering, or notification behavior.
 
 ## Protocol matrix for Codex CLI 0.145.0-alpha.18
 

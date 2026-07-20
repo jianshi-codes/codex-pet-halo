@@ -18,11 +18,13 @@ private final class XCTestDisabledWindowFollowingService: HaloWindowFollowing {
     func start() {}
     func stop() async {}
     func enable() {}
+    func useWindowFallback() {}
     func disable() {}
-    func beginCalibration(currentReferencePoint: CGPoint) {}
+    func beginPetCalibration(currentReferencePoint: CGPoint) {}
+    func beginWindowCalibration(currentReferencePoint: CGPoint) {}
     func finishCalibration(currentReferencePoint: CGPoint) {}
     func cancelCalibration() {}
-    func resetPosition() {}
+    func resetPetPosition() {}
 }
 #endif
 
@@ -43,6 +45,10 @@ final class ApplicationCoordinator: ObservableObject {
     @Published private(set) var haloIsVisible = false
     @Published private(set) var windowFollowingState: WindowFollowingState = .disabled
     @Published private(set) var followingStatusText = WindowFollowingState.disabled.statusText
+    @Published private(set) var petDiscoveryState: PetTargetDiscoveryState = .disabled
+    @Published private(set) var petStatusText = PetTargetDiscoveryState.disabled.statusText
+    @Published private(set) var targetSource: HaloFollowingTargetSource = .freeFloating
+    @Published private(set) var targetStatusText = HaloFollowingTargetSource.freeFloating.statusText
 
     private let logger = Logger(subsystem: "io.github.jianshicodes.PetHalo", category: "lifecycle")
     private let usageService: any CodexUsageServing
@@ -158,19 +164,21 @@ final class ApplicationCoordinator: ObservableObject {
         state == .running && windowFollowingState != .calibrating
     }
 
-    var canEnableWindowFollowing: Bool {
-        state == .running
-            && (windowFollowingState == .disabled || windowFollowingState == .permissionRequired)
+    var canEnablePetFollowing: Bool {
+        state == .running && targetSource != .pet && windowFollowingState != .calibrating
     }
 
-    var canCalibrateWindowFollowing: Bool {
-        guard state == .running else { return false }
-        return switch windowFollowingState {
-        case .calibrationRequired, .following, .suspended:
-            true
-        default:
-            false
-        }
+    var canCalibratePetFollowing: Bool {
+        state == .running
+            && petDiscoveryState == .found
+            && windowFollowingState != .calibrating
+    }
+
+    var canCalibrateWindowFallback: Bool {
+        state == .running
+            && windowFollowingState != .disabled
+            && windowFollowingState != .permissionRequired
+            && windowFollowingState != .calibrating
     }
 
     var canFinishCalibration: Bool {
@@ -181,9 +189,24 @@ final class ApplicationCoordinator: ObservableObject {
         state == .running && windowFollowingState != .disabled
     }
 
-    func enableWindowFollowing() {
-        guard state == .running else { return }
+    var canUseWindowFallback: Bool {
+        state == .running
+            && targetSource == .pet
+            && windowFollowingState != .calibrating
+    }
+
+    var canResetPetPosition: Bool {
+        state == .running && windowFollowingState != .calibrating
+    }
+
+    func enablePetFollowing() {
+        guard canEnablePetFollowing else { return }
         windowFollowingService.enable()
+    }
+
+    func useWindowFallback() {
+        guard canUseWindowFallback else { return }
+        windowFollowingService.useWindowFallback()
     }
 
     func disableWindowFollowing() {
@@ -191,9 +214,16 @@ final class ApplicationCoordinator: ObservableObject {
         windowFollowingService.disable()
     }
 
-    func beginWindowFollowingCalibration() {
-        guard state == .running, let haloPanelController else { return }
-        windowFollowingService.beginCalibration(
+    func beginPetFollowingCalibration() {
+        guard canCalibratePetFollowing, let haloPanelController else { return }
+        windowFollowingService.beginPetCalibration(
+            currentReferencePoint: haloPanelController.referencePoint
+        )
+    }
+
+    func beginWindowFallbackCalibration() {
+        guard canCalibrateWindowFallback, let haloPanelController else { return }
+        windowFollowingService.beginWindowCalibration(
             currentReferencePoint: haloPanelController.referencePoint
         )
     }
@@ -210,9 +240,9 @@ final class ApplicationCoordinator: ObservableObject {
         windowFollowingService.cancelCalibration()
     }
 
-    func resetHaloPosition() {
-        guard state == .running else { return }
-        windowFollowingService.resetPosition()
+    func resetPetPosition() {
+        guard canResetPetPosition else { return }
+        windowFollowingService.resetPetPosition()
     }
 
     var canRefreshUsage: Bool {
@@ -296,6 +326,12 @@ final class ApplicationCoordinator: ObservableObject {
         case let .stateChanged(newState):
             windowFollowingState = newState
             followingStatusText = newState.statusText
+        case let .petDiscoveryStateChanged(newState):
+            petDiscoveryState = newState
+            petStatusText = newState.statusText
+        case let .targetSourceChanged(newSource):
+            targetSource = newSource
+            targetStatusText = newSource.statusText
         case let .setCalibrationEnabled(enabled):
             haloPanelController?.setCalibrationEnabled(enabled)
         case let .placeReferencePoint(referencePoint):
