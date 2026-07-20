@@ -2,6 +2,11 @@ import XCTest
 import PetHaloCore
 @testable import PetHalo
 
+private enum FakePanelOperation: Equatable {
+    case setMode(HaloPresentationMode)
+    case setAttachment(PetAttachmentLayout, mode: HaloPresentationMode)
+}
+
 @MainActor
 private final class FakeHaloPanelController: HaloPanelControlling {
     private(set) var isVisible = false
@@ -14,6 +19,8 @@ private final class FakeHaloPanelController: HaloPanelControlling {
     private(set) var hideCount = 0
     private(set) var stopCount = 0
     private(set) var models: [HaloPresentationModel] = []
+    private(set) var operations: [FakePanelOperation] = []
+    var onSetAttachment: (@MainActor (PetAttachmentLayout) -> Void)?
     private var stopped = false
 
     var referencePoint: CGPoint {
@@ -37,6 +44,7 @@ private final class FakeHaloPanelController: HaloPanelControlling {
         self.mode = mode
         frame.size = HaloPanelController.size(for: mode)
         ignoresMouseEvents = !isCalibrationEnabled && mode == .compact
+        operations.append(.setMode(mode))
     }
 
     func setReferencePoint(_ referencePoint: CGPoint) {
@@ -49,6 +57,8 @@ private final class FakeHaloPanelController: HaloPanelControlling {
         guard !stopped else { return }
         attachmentLayout = layout
         frame = layout.panelFrame
+        operations.append(.setAttachment(layout, mode: mode))
+        onSetAttachment?(layout)
     }
 
     func setCalibrationEnabled(_ enabled: Bool) {
@@ -65,6 +75,10 @@ private final class FakeHaloPanelController: HaloPanelControlling {
     func update(model: HaloPresentationModel) {
         guard !stopped else { return }
         models.append(model)
+    }
+
+    func resetOperations() {
+        operations = []
     }
 
     func stop() {
@@ -535,7 +549,7 @@ final class ApplicationCoordinatorTests: XCTestCase {
     }
 
     @MainActor
-    func testPetTargetForcesCompactRejectsExpandedAndRestoresFallbackMode() async {
+    func testExpandedFallbackRecoversToAtomicCompactPetAttachmentAndRestoresMode() async throws {
         let panel = FakeHaloPanelController()
         let following = FakeWindowFollowingService()
         let coordinator = ApplicationCoordinator(
@@ -545,21 +559,53 @@ final class ApplicationCoordinatorTests: XCTestCase {
             terminateApplication: {}
         )
         coordinator.start()
-        coordinator.setHaloMode(.expanded)
-        XCTAssertEqual(panel.mode, .expanded)
-
-        let compactLayout = PetAttachmentLayout(
-            referencePoint: CGPoint(x: 648, y: 794),
-            panelFrame: CGRect(x: 472, y: 618, width: 176, height: 176)
-        )
-        following.emit(.targetSourceChanged(.pet))
-        following.emit(.petPlacementStatusChanged(.centered))
-        following.emit(.placePetAttachment(compactLayout))
-        for _ in 0 ..< 100 where panel.attachmentLayout != compactLayout || panel.mode != .compact {
+        following.emit(.targetSourceChanged(.codexWindowFallback))
+        for _ in 0 ..< 100 where coordinator.targetSource != .codexWindowFallback {
             await Task.yield()
         }
+        coordinator.setHaloMode(.expanded)
+        XCTAssertEqual(panel.mode, .expanded)
+        XCTAssertEqual(panel.frame.size, CGSize(width: 360, height: 520))
+
+        let petFrame = CGRect(x: 500, y: 600, width: 120, height: 110)
+        let compactLayout = try XCTUnwrap(PetAttachmentLayoutPolicy.centeredLayout(
+            petFrame: petFrame,
+            panelSize: PetAttachmentLayoutPolicy.petAttachmentSize
+        ))
+        panel.resetOperations()
+        panel.onSetAttachment = { _ in
+            XCTAssertEqual(coordinator.targetSource, .pet)
+            XCTAssertEqual(coordinator.haloMode, .compact)
+        }
+        following.emit(.activatePetAttachment(compactLayout))
+        following.emit(.petPlacementStatusChanged(.centered))
+        for _ in 0 ..< 100
+            where panel.attachmentLayout != compactLayout
+                || panel.mode != .compact
+                || coordinator.petPlacementStatus != .centered
+        {
+            await Task.yield()
+        }
+        XCTAssertEqual(
+            panel.operations,
+            [
+                .setMode(.compact),
+                .setAttachment(compactLayout, mode: .compact),
+            ]
+        )
+        XCTAssertFalse(panel.operations.contains { operation in
+            if case let .setAttachment(layout, mode) = operation {
+                return mode == .expanded || layout.panelFrame.size == CGSize(width: 360, height: 520)
+            }
+            return false
+        })
         XCTAssertEqual(coordinator.petPlacementStatusText, "Pet placement: Centered")
+        XCTAssertEqual(coordinator.targetSource, .pet)
         XCTAssertEqual(panel.mode, .compact)
+        XCTAssertEqual(panel.frame.size, PetAttachmentLayoutPolicy.petAttachmentSize)
+        XCTAssertEqual(panel.frame.midX, petFrame.midX)
+        XCTAssertEqual(panel.frame.midY, petFrame.midY)
+        XCTAssertTrue(panel.ignoresMouseEvents)
         XCTAssertFalse(coordinator.canChangeHaloMode)
 
         coordinator.setHaloMode(.expanded)

@@ -9,6 +9,7 @@ enum HaloWindowFollowingEvent: Equatable, Sendable {
     case petPlacementStatusChanged(PetPlacementStatus)
     case setCalibrationEnabled(Bool)
     case placeReferencePoint(CGPoint)
+    case activatePetAttachment(PetAttachmentLayout)
     case placePetAttachment(PetAttachmentLayout)
     case resetToDefaultPosition
 }
@@ -57,7 +58,6 @@ final class WindowFollowingService: HaloWindowFollowing {
     private var systemEventTask: Task<Void, Never>?
     private var recoveryTask: Task<Void, Never>?
     private var petStabilityTask: Task<Void, Never>?
-    private var panelSize = CGSize(width: 176, height: 176)
     private var started = false
     private var stopping = false
 
@@ -186,7 +186,8 @@ final class WindowFollowingService: HaloWindowFollowing {
         transition(to: .disabled)
     }
 
-    // Retained as an API compatibility hook. Pet panel positioning is unconditionally centered.
+    // Retained as an inert compatibility hook. Future fine-tuning belongs to a new
+    // visual-orientation API and must not restore Pet positional offsets.
     func beginPetCalibration(currentReferencePoint: CGPoint) {}
 
     func beginWindowCalibration(currentReferencePoint: CGPoint) {
@@ -241,19 +242,8 @@ final class WindowFollowingService: HaloWindowFollowing {
 
     func beginPresentationTransition() {}
 
-    func finishPresentationTransition(panelSize: CGSize) {
+    func finishPresentationTransition(panelSize _: CGSize) {
         guard acceptsCommands else { return }
-        guard panelSize.width.isFinite,
-              panelSize.height.isFinite,
-              panelSize.width > 0,
-              panelSize.height > 0
-        else {
-            if targetSource == .pet {
-                applyPetPlacement()
-            }
-            return
-        }
-        self.panelSize = panelSize
         if targetSource == .pet {
             applyPetPlacement()
         }
@@ -518,18 +508,21 @@ final class WindowFollowingService: HaloWindowFollowing {
         }
         guard let layout = PetAttachmentLayoutPolicy.centeredLayout(
             petFrame: petSnapshot.frame,
-            panelSize: panelSize
+            panelSize: PetAttachmentLayoutPolicy.petAttachmentSize
         ) else {
             transitionTarget(to: .freeFloating)
             transition(to: .suspended(.invalidPlacement))
             return
         }
-        if lastPetLayout != layout {
+        if targetSource != .pet {
+            targetSource = .pet
+            lastPetLayout = layout
+            eventContinuation.yield(.activatePetAttachment(layout))
+        } else if lastPetLayout != layout {
             lastPetLayout = layout
             eventContinuation.yield(.placePetAttachment(layout))
         }
         transitionPlacementStatus(.centered)
-        transitionTarget(to: .pet)
         transition(to: .following)
     }
 

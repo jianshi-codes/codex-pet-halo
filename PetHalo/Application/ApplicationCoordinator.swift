@@ -329,24 +329,7 @@ final class ApplicationCoordinator: ObservableObject {
             petDiscoveryState = newState
             petStatusText = newState.statusText
         case let .targetSourceChanged(newSource):
-            let previousSource = targetSource
-            targetSource = newSource
-            targetStatusText = newSource.statusText
-            if newSource == .pet {
-                if previousSource != .pet {
-                    previousNonPetHaloMode = haloMode
-                }
-                if haloMode != .compact {
-                    applyHaloMode(.compact)
-                }
-            } else if previousSource == .pet,
-                      let mode = previousNonPetHaloMode
-            {
-                previousNonPetHaloMode = nil
-                if haloMode != mode {
-                    applyHaloMode(mode)
-                }
-            }
+            applyTargetSource(newSource)
         case let .petPlacementStatusChanged(newStatus):
             petPlacementStatus = newStatus
             petPlacementStatusText = newStatus.statusText
@@ -354,10 +337,34 @@ final class ApplicationCoordinator: ObservableObject {
             haloPanelController?.setCalibrationEnabled(enabled)
         case let .placeReferencePoint(referencePoint):
             haloPanelController?.setReferencePoint(referencePoint)
+        case let .activatePetAttachment(layout):
+            applyTargetSource(.pet)
+            haloPanelController?.setAttachmentLayout(layout)
         case let .placePetAttachment(layout):
             haloPanelController?.setAttachmentLayout(layout)
         case .resetToDefaultPosition:
             haloPanelController?.resetToDefaultPosition()
+        }
+    }
+
+    private func applyTargetSource(_ newSource: HaloFollowingTargetSource) {
+        let previousSource = targetSource
+        targetSource = newSource
+        targetStatusText = newSource.statusText
+        if newSource == .pet {
+            if previousSource != .pet {
+                previousNonPetHaloMode = haloMode
+            }
+            if haloMode != .compact {
+                applyHaloMode(.compact)
+            }
+        } else if previousSource == .pet,
+                  let mode = previousNonPetHaloMode
+        {
+            previousNonPetHaloMode = nil
+            if haloMode != mode {
+                applyHaloMode(mode)
+            }
         }
     }
 

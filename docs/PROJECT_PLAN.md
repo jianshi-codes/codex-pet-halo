@@ -37,7 +37,7 @@ Generate schemas from the installed Codex CLI, build a read-only protocol probe,
 
 ### M6 — Automatic Center-Locked Pet Attachment
 
-**Implemented; final PASS still requires the current Draft PR CI and direct M6 interaction gate.** A unique Pet attaches immediately and unconditionally keeps the Halo panel midpoint equal to the Pet midpoint. Legacy Pet positional anchors are deleted by a safe migration; the M4 window anchor, fallback/recovery, lifecycle, safe status, tests, and sanitized center-alignment smoke tooling remain intact. See [the M6 report](milestones/m6-automatic-pet-attachment.md).
+**Complete — PASS.** A unique Pet attaches immediately through an atomic Target Pet → Compact → fixed `176×176` centered layout transition and unconditionally keeps the Halo panel midpoint equal to the Pet midpoint. Fallback Compact/Expanded sizing is independent from Pet attachment. Legacy Pet positional anchors are deleted by a safe migration; the M4 window anchor, fallback/recovery, lifecycle, safe status, tests, and sanitized center-alignment smoke tooling remain intact. The corrected complete live harness passed initial, post-movement, and post-Wake midpoint equality plus Tuck Away fallback, Quit, observer exit, and owned child cleanup. See [the M6 report](milestones/m6-automatic-pet-attachment.md).
 
 ### M7 — Pet Ring Surface & Target-aware Presentation
 

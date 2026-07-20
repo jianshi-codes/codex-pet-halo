@@ -190,8 +190,12 @@ private final class FollowingEventRecorder {
 
     var layouts: [PetAttachmentLayout] {
         events.compactMap { event in
-            if case let .placePetAttachment(layout) = event { return layout }
-            return nil
+            switch event {
+            case let .activatePetAttachment(layout), let .placePetAttachment(layout):
+                layout
+            default:
+                nil
+            }
         }
     }
 
@@ -284,6 +288,8 @@ final class WindowFollowingServiceTests: XCTestCase {
         XCTAssertEqual(context.service.petPlacementStatus, .centered)
         XCTAssertEqual(layout.panelFrame.midX, petFrame.midX)
         XCTAssertEqual(layout.panelFrame.midY, petFrame.midY)
+        XCTAssertTrue(recorder.events.contains(.activatePetAttachment(layout)))
+        XCTAssertFalse(recorder.events.contains(.targetSourceChanged(.pet)))
         XCTAssertFalse(recorder.events.contains(.stateChanged(.calibrationRequired)))
         recorder.stop()
         await context.service.stop()
@@ -318,7 +324,7 @@ final class WindowFollowingServiceTests: XCTestCase {
     }
 
     @MainActor
-    func testPanelSizeChangeRecentersWithoutScreenLookup() async throws {
+    func testPresentationSizeUpdatesCannotEnlargePetAttachment() async throws {
         let petFrame = CGRect(x: -900, y: 100, width: 120, height: 110)
         let context = makeContext(
             petAccessResult: .selected(PetTargetSnapshot(generation: 0, frame: petFrame)),
@@ -331,14 +337,15 @@ final class WindowFollowingServiceTests: XCTestCase {
 
         context.service.beginPresentationTransition()
         context.service.finishPresentationTransition(panelSize: CGSize(width: 360, height: 520))
-        for _ in 0 ..< 100 where recorder.layouts.last?.panelFrame.size != CGSize(width: 360, height: 520) {
-            await Task.yield()
-        }
+        context.service.finishPresentationTransition(panelSize: CGSize(width: 9_000, height: 4_000))
+        context.service.finishPresentationTransition(panelSize: .zero)
+        for _ in 0 ..< 20 { await Task.yield() }
 
         let layout = try XCTUnwrap(recorder.layouts.last)
-        XCTAssertEqual(layout.panelFrame.size, CGSize(width: 360, height: 520))
+        XCTAssertEqual(layout.panelFrame.size, PetAttachmentLayoutPolicy.petAttachmentSize)
         XCTAssertEqual(layout.panelFrame.midX, petFrame.midX)
         XCTAssertEqual(layout.panelFrame.midY, petFrame.midY)
+        XCTAssertFalse(recorder.layouts.contains { $0.panelFrame.size == CGSize(width: 360, height: 520) })
         recorder.stop()
         await context.service.stop()
     }
@@ -377,14 +384,22 @@ final class WindowFollowingServiceTests: XCTestCase {
         recorder.start(context.service.events())
         context.service.start()
         await waitForLayout(recorder)
+        for _ in 0 ..< 20 { await Task.yield() }
+        let eventCount = recorder.events.count
+        let enabledWrites = context.preferences.enabledWrites
+        let windowAnchorWrites = context.preferences.windowAnchorWrites
 
         context.service.beginPetCalibration(currentReferencePoint: CGPoint(x: 9_000, y: -9_000))
+        for _ in 0 ..< 20 { await Task.yield() }
 
         let layout = try XCTUnwrap(recorder.layouts.last)
         XCTAssertEqual(context.service.state, .following)
         XCTAssertEqual(context.service.targetSource, .pet)
         XCTAssertEqual(layout.panelFrame.midX, petFrame.midX)
         XCTAssertEqual(layout.panelFrame.midY, petFrame.midY)
+        XCTAssertEqual(recorder.events.count, eventCount)
+        XCTAssertEqual(context.preferences.enabledWrites, enabledWrites)
+        XCTAssertEqual(context.preferences.windowAnchorWrites, windowAnchorWrites)
         recorder.stop()
         await context.service.stop()
     }
