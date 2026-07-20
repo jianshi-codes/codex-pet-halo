@@ -9,7 +9,7 @@ enum PetTargetObservationEvent: Equatable, Sendable {
 }
 
 enum PetTargetAccessResult: Equatable, Sendable {
-    case selected(PetTargetSnapshot)
+    case selected(PetEnvironmentSnapshot)
     case unavailable
     case ambiguous
     case observerFailed
@@ -22,7 +22,7 @@ protocol PetTargetAccessing: AnyObject {
         generation: Int,
         onEvent: @escaping @MainActor (PetTargetObservationEvent, Int) -> Void
     ) -> PetTargetAccessResult
-    func currentSnapshot() -> PetTargetSnapshot?
+    func currentSnapshot() -> PetEnvironmentSnapshot?
     func stop()
 }
 
@@ -95,6 +95,12 @@ final class PetAXCallbackBox: @unchecked Sendable {
 
 @MainActor
 final class AccessibilityPetTargetAccessor: PetTargetAccessing {
+    private struct Selection {
+        let observedIdentities: Set<Int>
+        let petFrame: CGRect
+        let activityFrame: CGRect?
+    }
+
     private var applicationElement: AXUIElement?
     private var targetElements: [AXUIElement] = []
     private var observer: AXObserver?
@@ -109,25 +115,26 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
         stop()
         let application = AXUIElementCreateApplication(processIdentifier)
         let windows = elementArray(attribute: kAXWindowsAttribute, from: application)
-        let selection = select(from: windows)
-        let memberIdentities: Set<Int>
-        let frame: CGRect
-        switch selection {
+        let selectionResult = select(from: windows)
+        let selection: Selection
+        switch selectionResult {
         case .unavailable:
             return .unavailable
         case .ambiguous:
             return .ambiguous
-        case let .selected(identities, selectedFrame):
-            memberIdentities = identities
-            frame = selectedFrame
+        case let .selected(selected):
+            selection = selected
         }
         let selectedElements = windows.enumerated().compactMap { index, element in
-            memberIdentities.contains(index) ? element : nil
+            selection.observedIdentities.contains(index) ? element : nil
         }
         guard !selectedElements.isEmpty,
-              let appKitFrame = appKitFrame(fromAccessibilityFrame: frame)
+              let petFrame = appKitFrame(fromAccessibilityFrame: selection.petFrame)
         else {
             return .unavailable
+        }
+        let activityFrame = selection.activityFrame.flatMap {
+            appKitFrame(fromAccessibilityFrame: $0)
         }
 
         var newObserver: AXObserver?
@@ -192,18 +199,28 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
         observer = newObserver
         callbackBox = box
         self.generation = generation
-        return .selected(PetTargetSnapshot(generation: generation, frame: appKitFrame))
+        return .selected(PetEnvironmentSnapshot(
+            generation: generation,
+            petFrame: petFrame,
+            activityFrame: activityFrame
+        ))
     }
 
-    func currentSnapshot() -> PetTargetSnapshot? {
+    func currentSnapshot() -> PetEnvironmentSnapshot? {
         guard let applicationElement else { return nil }
         let windows = elementArray(attribute: kAXWindowsAttribute, from: applicationElement)
-        guard case let .selected(_, frame) = select(from: windows),
-              let appKitFrame = appKitFrame(fromAccessibilityFrame: frame)
+        guard case let .selected(selection) = select(from: windows),
+              let petFrame = appKitFrame(fromAccessibilityFrame: selection.petFrame)
         else {
             return nil
         }
-        return PetTargetSnapshot(generation: generation, frame: appKitFrame)
+        return PetEnvironmentSnapshot(
+            generation: generation,
+            petFrame: petFrame,
+            activityFrame: selection.activityFrame.flatMap {
+                appKitFrame(fromAccessibilityFrame: $0)
+            }
+        )
     }
 
     func stop() {
@@ -241,8 +258,14 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
         applicationElement = nil
     }
 
-    private func select(from windows: [AXUIElement]) -> PetWindowSelection {
-        PetWindowSelector.select(from: windows.enumerated().map { index, window in
+    private enum SelectionResult {
+        case unavailable
+        case selected(Selection)
+        case ambiguous
+    }
+
+    private func select(from windows: [AXUIElement]) -> SelectionResult {
+        let candidates = windows.enumerated().map { index, window in
             PetWindowCandidate(
                 identity: index,
                 frame: accessibilityFrame(of: window) ?? .zero,
@@ -251,7 +274,28 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
                 role: string(attribute: kAXRoleAttribute, from: window),
                 subrole: string(attribute: kAXSubroleAttribute, from: window)
             )
-        })
+        }
+        switch PetWindowSelector.select(from: candidates) {
+        case .unavailable:
+            return .unavailable
+        case .ambiguous:
+            return .ambiguous
+        case let .selected(memberIdentities, petFrame):
+            let activity = PetActivityWindowSelector.select(
+                from: candidates,
+                excluding: memberIdentities,
+                near: petFrame
+            )
+            var observedIdentities = memberIdentities
+            if let activity {
+                observedIdentities.insert(activity.identity)
+            }
+            return .selected(Selection(
+                observedIdentities: observedIdentities,
+                petFrame: petFrame,
+                activityFrame: activity?.frame
+            ))
+        }
     }
 
     private func appKitFrame(fromAccessibilityFrame frame: CGRect) -> CGRect? {

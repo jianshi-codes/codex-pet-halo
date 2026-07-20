@@ -8,11 +8,13 @@ protocol HaloPanelControlling: AnyObject {
     var referencePoint: CGPoint { get }
     var frame: CGRect { get }
     var isCalibrationEnabled: Bool { get }
+    var attachmentLayout: PetAttachmentLayout? { get }
 
     func show()
     func hide()
     func setMode(_ mode: HaloPresentationMode)
     func setReferencePoint(_ referencePoint: CGPoint)
+    func setAttachmentLayout(_ layout: PetAttachmentLayout)
     func setCalibrationEnabled(_ enabled: Bool)
     func resetToDefaultPosition()
     func update(model: HaloPresentationModel)
@@ -31,6 +33,7 @@ final class HaloPanelController: HaloPanelControlling {
     private let visibleFrameProvider: () -> NSRect
     private let screenGeometryProvider: () -> [ScreenGeometry]
     private var desiredReferencePoint = CGPoint.zero
+    private(set) var attachmentLayout: PetAttachmentLayout?
     private var stopped = false
 
     var isVisible: Bool {
@@ -121,8 +124,28 @@ final class HaloPanelController: HaloPanelControlling {
 
     func setReferencePoint(_ referencePoint: CGPoint) {
         guard !stopped, panel != nil else { return }
+        attachmentLayout = nil
         desiredReferencePoint = referencePoint
         setFrame(referencePoint: referencePoint, size: Self.size(for: mode))
+    }
+
+    func setAttachmentLayout(_ layout: PetAttachmentLayout) {
+        guard !stopped,
+              let panel,
+              layout.referencePoint.x.isFinite,
+              layout.referencePoint.y.isFinite,
+              layout.panelFrame.origin.x.isFinite,
+              layout.panelFrame.origin.y.isFinite,
+              layout.panelFrame.width.isFinite,
+              layout.panelFrame.height.isFinite,
+              layout.panelFrame.width > 0,
+              layout.panelFrame.height > 0
+        else {
+            return
+        }
+        attachmentLayout = layout
+        desiredReferencePoint = layout.referencePoint
+        panel.setFrame(layout.panelFrame, display: true)
     }
 
     func setCalibrationEnabled(_ enabled: Bool) {
@@ -135,6 +158,7 @@ final class HaloPanelController: HaloPanelControlling {
 
     func resetToDefaultPosition() {
         guard !stopped, let panel else { return }
+        attachmentLayout = nil
         panel.setFrame(
             Self.defaultFrame(size: Self.size(for: mode), visibleFrame: visibleFrameProvider()),
             display: true
@@ -193,6 +217,7 @@ final class HaloPanelController: HaloPanelControlling {
 
     private func moveCalibration(to proposedOrigin: NSPoint) {
         guard isCalibrationEnabled, let panel else { return }
+        attachmentLayout = nil
         let referencePoint = CGPoint(
             x: proposedOrigin.x + panel.frame.width,
             y: proposedOrigin.y + panel.frame.height

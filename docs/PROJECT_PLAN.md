@@ -37,7 +37,7 @@ Generate schemas from the installed Codex CLI, build a read-only protocol probe,
 
 ### M6 — Automatic Pet Attachment & Adaptive Placement
 
-Make first-use Pet attachment automatic and choose an adaptive above/below position from available space while retaining the M5 target hierarchy and fallbacks.
+**Implemented; final PASS still requires the current Draft PR CI and direct M6 interaction gate.** A unique Pet attaches immediately without a saved anchor and keeps the Halo panel midpoint equal to the Pet midpoint. Optional non-positional orientation metadata, fine-tuning, fallback/recovery, safe status, tests, and sanitized center-alignment smoke tooling preserve the M5 target hierarchy. See [the M6 report](milestones/m6-automatic-pet-attachment.md).
 
 ### M7 — Original Halo Visual Design
 

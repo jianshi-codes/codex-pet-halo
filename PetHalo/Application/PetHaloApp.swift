@@ -64,6 +64,7 @@ private struct ApplicationMenuContent: View {
         Divider()
         Text(coordinator.targetStatusText)
         Text(coordinator.petStatusText)
+        Text(coordinator.petPlacementStatusText)
         Text(coordinator.followingStatusText)
 
         Button("Enable Pet Following") {
@@ -71,7 +72,7 @@ private struct ApplicationMenuContent: View {
         }
         .disabled(!coordinator.canEnablePetFollowing)
 
-        Button("Calibrate Pet Position") {
+        Button("Fine-tune Pet Position") {
             coordinator.beginPetFollowingCalibration()
         }
         .disabled(!coordinator.canCalibratePetFollowing)
@@ -101,7 +102,7 @@ private struct ApplicationMenuContent: View {
         }
         .disabled(!coordinator.canDisableWindowFollowing)
 
-        Button("Reset Pet Position") {
+        Button("Use Automatic Pet Placement") {
             coordinator.resetPetPosition()
         }
         .disabled(!coordinator.canResetPetPosition)

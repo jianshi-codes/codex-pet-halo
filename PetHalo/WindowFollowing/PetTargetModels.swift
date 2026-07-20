@@ -18,9 +18,49 @@ enum HaloFollowingTargetSource: Equatable, Sendable {
     }
 }
 
-struct PetTargetSnapshot: Equatable, Sendable {
+struct PetEnvironmentSnapshot: Equatable, Sendable {
     let generation: Int
-    let frame: CGRect
+    let petFrame: CGRect
+    let activityFrame: CGRect?
+
+    init(generation: Int, petFrame: CGRect, activityFrame: CGRect? = nil) {
+        self.generation = generation
+        self.petFrame = petFrame
+        self.activityFrame = activityFrame
+    }
+}
+
+enum PetPlacementMode: Equatable, Sendable {
+    case automatic
+    case manual
+}
+
+enum PetAttachmentSide: Equatable, Sendable {
+    case above
+    case below
+}
+
+struct PetAttachmentLayout: Equatable, Sendable {
+    let side: PetAttachmentSide
+    let referencePoint: CGPoint
+    let panelFrame: CGRect
+}
+
+enum PetPlacementStatus: Equatable, Sendable {
+    case automatic(PetAttachmentSide)
+    case manual
+    case unavailable
+
+    var statusText: String {
+        switch self {
+        case .automatic:
+            "Pet placement: Automatic Centered"
+        case .manual:
+            "Pet placement: Fine-tuned"
+        case .unavailable:
+            "Pet placement: Unavailable"
+        }
+    }
 }
 
 enum PetTargetDiscoveryState: Equatable, Sendable {
@@ -110,6 +150,98 @@ enum PetWindowSelector {
             width = Int((frame.width * 2).rounded())
             height = Int((frame.height * 2).rounded())
         }
+    }
+}
+
+enum PetActivityWindowSelector {
+    static func select(
+        from candidates: [PetWindowCandidate],
+        excluding memberIdentities: Set<Int>,
+        near petFrame: CGRect
+    ) -> PetWindowCandidate? {
+        guard petFrame.isFinite, petFrame.width > 0, petFrame.height > 0 else { return nil }
+        let proximity = max(max(petFrame.width, petFrame.height) * 2, 240)
+        let nearbyFrame = petFrame.insetBy(dx: -proximity, dy: -proximity)
+        let eligible = candidates.filter { candidate in
+            guard !memberIdentities.contains(candidate.identity),
+                  !candidate.isMinimized,
+                  !candidate.isHidden,
+                  candidate.role == "AXWindow",
+                  candidate.subrole == "AXDialog",
+                  candidate.frame.isFinite,
+                  candidate.frame.width >= max(160, petFrame.width * 0.45),
+                  candidate.frame.height > 0,
+                  candidate.frame.width / candidate.frame.height >= 1.8,
+                  nearbyFrame.intersects(candidate.frame)
+            else {
+                return false
+            }
+            return true
+        }
+        return eligible.count == 1 ? eligible[0] : nil
+    }
+}
+
+enum PetAttachmentLayoutPolicy {
+    static func preferredSide(
+        petFrame: CGRect,
+        activityFrame: CGRect?,
+        visibleFrame: CGRect,
+        currentSide: PetAttachmentSide?
+    ) -> PetAttachmentSide? {
+        guard petFrame.isFinite,
+              petFrame.width > 0,
+              petFrame.height > 0,
+              visibleFrame.isFinite,
+              visibleFrame.width > 0,
+              visibleFrame.height > 0
+        else {
+            return nil
+        }
+        if let activityFrame,
+           activityFrame.isFinite,
+           activityFrame.width > 0,
+           activityFrame.height > 0
+        {
+            return activityFrame.midY < petFrame.midY ? .above : .below
+        }
+
+        let relativeCenter = (petFrame.midY - visibleFrame.minY) / visibleFrame.height
+        switch currentSide {
+        case .above where relativeCenter > 0.4:
+            return .above
+        case .below where relativeCenter < 0.6:
+            return .below
+        default:
+            return relativeCenter >= 0.5 ? .above : .below
+        }
+    }
+
+    static func centeredLayout(
+        petFrame: CGRect,
+        panelSize: CGSize,
+        side: PetAttachmentSide
+    ) -> PetAttachmentLayout? {
+        guard petFrame.isFinite,
+              petFrame.width > 0,
+              petFrame.height > 0,
+              panelSize.isFinite,
+              panelSize.width > 0,
+              panelSize.height > 0
+        else {
+            return nil
+        }
+        let panelFrame = CGRect(
+            x: petFrame.midX - panelSize.width / 2,
+            y: petFrame.midY - panelSize.height / 2,
+            width: panelSize.width,
+            height: panelSize.height
+        )
+        return PetAttachmentLayout(
+            side: side,
+            referencePoint: HaloPlacementGeometry.referencePoint(for: panelFrame),
+            panelFrame: panelFrame
+        )
     }
 }
 

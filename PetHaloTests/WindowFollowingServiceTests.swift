@@ -80,7 +80,7 @@ private final class FakeWindowAccessor: CodexWindowAccessing {
 @MainActor
 private final class FakePetAccessor: PetTargetAccessing {
     var result: PetTargetAccessResult
-    var snapshot: PetTargetSnapshot?
+    var snapshot: PetEnvironmentSnapshot?
     private(set) var resolveCount = 0
     private(set) var stopCount = 0
     private var generation = 0
@@ -102,13 +102,17 @@ private final class FakePetAccessor: PetTargetAccessing {
         self.generation = generation
         handler = onEvent
         if case let .selected(snapshot) = result {
-            self.snapshot = PetTargetSnapshot(generation: generation, frame: snapshot.frame)
+            self.snapshot = PetEnvironmentSnapshot(
+                generation: generation,
+                petFrame: snapshot.petFrame,
+                activityFrame: snapshot.activityFrame
+            )
             return .selected(self.snapshot!)
         }
         return result
     }
 
-    func currentSnapshot() -> PetTargetSnapshot? { snapshot }
+    func currentSnapshot() -> PetEnvironmentSnapshot? { snapshot }
     func stop() { stopCount += 1 }
 
     func emit(_ event: PetTargetObservationEvent, generation: Int? = nil) {
@@ -267,9 +271,9 @@ final class WindowFollowingServiceTests: XCTestCase {
             pointOffset: PointOffsetValue(width: 10, height: 10)
         )
         let context = makeContext(
-            petAccessResult: .selected(PetTargetSnapshot(
+            petAccessResult: .selected(PetEnvironmentSnapshot(
                 generation: 0,
-                frame: CGRect(x: 500, y: 300, width: 120, height: 110)
+                petFrame: CGRect(x: 500, y: 300, width: 120, height: 110)
             )),
             enabled: true,
             anchor: windowAnchor,
@@ -335,9 +339,9 @@ final class WindowFollowingServiceTests: XCTestCase {
             normalizedPetPoint: UnitPointValue(x: 0.5, y: 0.5),
             pointOffset: PointOffsetValue(width: 10, height: 10)
         )
-        let petSnapshot = PetTargetSnapshot(
+        let petSnapshot = PetEnvironmentSnapshot(
             generation: 0,
-            frame: CGRect(x: 500, y: 300, width: 120, height: 110)
+            petFrame: CGRect(x: 500, y: 300, width: 120, height: 110)
         )
         let petContext = makeContext(
             petAccessResult: .selected(petSnapshot),
@@ -528,7 +532,10 @@ final class WindowFollowingServiceTests: XCTestCase {
             pointOffset: PointOffsetValue(width: 20, height: 20)
         )
         let context = makeContext(
-            petAccessResult: .selected(PetTargetSnapshot(generation: 0, frame: petFrame)),
+            petAccessResult: .selected(PetEnvironmentSnapshot(
+                generation: 0,
+                petFrame: petFrame
+            )),
             enabled: true,
             anchor: HaloWindowAnchor(
                 version: 1,
@@ -543,6 +550,7 @@ final class WindowFollowingServiceTests: XCTestCase {
         XCTAssertEqual(context.service.petDiscoveryState, .found)
         XCTAssertEqual(context.service.targetSource, .pet)
         XCTAssertEqual(context.service.state, .following)
+        XCTAssertEqual(context.service.petPlacementMode, .manual)
         XCTAssertEqual(context.accessor.resolveCount, 0)
         await context.service.stop()
     }
@@ -561,7 +569,10 @@ final class WindowFollowingServiceTests: XCTestCase {
             pointOffset: PointOffsetValue(width: 10, height: 10)
         )
         let context = makeContext(
-            petAccessResult: .selected(PetTargetSnapshot(generation: 0, frame: petFrame)),
+            petAccessResult: .selected(PetEnvironmentSnapshot(
+                generation: 0,
+                petFrame: petFrame
+            )),
             enabled: true,
             anchor: windowAnchor,
             petAnchor: petAnchor
@@ -575,7 +586,10 @@ final class WindowFollowingServiceTests: XCTestCase {
         XCTAssertEqual(context.service.targetSource, .codexWindowFallback)
         XCTAssertEqual(context.service.petDiscoveryState, .unavailable)
 
-        context.petAccessor.result = .selected(PetTargetSnapshot(generation: 0, frame: petFrame))
+        context.petAccessor.result = .selected(PetEnvironmentSnapshot(
+            generation: 0,
+            petFrame: petFrame
+        ))
         context.accessor.emit(.selectionChanged)
         XCTAssertEqual(context.service.targetSource, .pet)
         XCTAssertEqual(context.preferences.snapshot.petAnchor, petAnchor)
@@ -628,9 +642,9 @@ final class WindowFollowingServiceTests: XCTestCase {
             pointOffset: PointOffsetValue(width: 20, height: 20)
         )
         let context = makeContext(
-            petAccessResult: .selected(PetTargetSnapshot(
+            petAccessResult: .selected(PetEnvironmentSnapshot(
                 generation: 0,
-                frame: CGRect(x: 500, y: 300, width: 120, height: 110)
+                petFrame: CGRect(x: 500, y: 300, width: 120, height: 110)
             )),
             enabled: true,
             petAnchor: petAnchor
@@ -638,9 +652,9 @@ final class WindowFollowingServiceTests: XCTestCase {
         context.service.start()
         let petResolveCount = context.petAccessor.resolveCount
 
-        context.petAccessor.snapshot = PetTargetSnapshot(
+        context.petAccessor.snapshot = PetEnvironmentSnapshot(
             generation: 1,
-            frame: CGRect(x: -420, y: -180, width: 150, height: 130)
+            petFrame: CGRect(x: -420, y: -180, width: 150, height: 130)
         )
         context.petAccessor.emit(.geometryChanged)
         XCTAssertEqual(context.service.targetSource, .pet)
@@ -654,7 +668,7 @@ final class WindowFollowingServiceTests: XCTestCase {
     }
 
     @MainActor
-    func testPetCalibrationPersistsSeparatelyAndResetPreservesWindowAnchor() async {
+    func testAutomaticPetPlacementFineTuneAndResetPreserveWindowAnchor() async {
         let petFrame = CGRect(x: 500, y: 300, width: 120, height: 110)
         let windowAnchor = HaloWindowAnchor(
             version: 1,
@@ -662,24 +676,32 @@ final class WindowFollowingServiceTests: XCTestCase {
             pointOffset: PointOffsetValue(width: 0, height: 0)
         )
         let context = makeContext(
-            petAccessResult: .selected(PetTargetSnapshot(generation: 0, frame: petFrame)),
+            petAccessResult: .selected(PetEnvironmentSnapshot(
+                generation: 0,
+                petFrame: petFrame
+            )),
             enabled: true,
             anchor: windowAnchor
         )
         context.service.start()
-        XCTAssertEqual(context.service.state, .calibrationRequired)
-        XCTAssertEqual(context.service.targetSource, .codexWindowFallback)
+        XCTAssertEqual(context.service.state, .following)
+        XCTAssertEqual(context.service.targetSource, .pet)
+        XCTAssertEqual(context.service.petPlacementStatus, .automatic(.below))
 
         context.service.beginPetCalibration(currentReferencePoint: CGPoint(x: 600, y: 400))
         context.service.finishCalibration(currentReferencePoint: CGPoint(x: 650, y: 430))
         XCTAssertEqual(context.service.targetSource, .pet)
+        XCTAssertEqual(context.service.petPlacementStatus, .manual)
+        XCTAssertEqual(context.service.petPlacementMode, .manual)
         XCTAssertTrue(context.preferences.snapshot.petAnchor?.isValid == true)
         XCTAssertEqual(context.preferences.snapshot.windowAnchor, windowAnchor)
 
         context.service.resetPetPosition()
         XCTAssertNil(context.preferences.snapshot.petAnchor)
         XCTAssertEqual(context.preferences.snapshot.windowAnchor, windowAnchor)
-        XCTAssertEqual(context.service.targetSource, .codexWindowFallback)
+        XCTAssertEqual(context.service.targetSource, .pet)
+        XCTAssertEqual(context.service.petPlacementStatus, .automatic(.below))
+        XCTAssertEqual(context.service.petPlacementMode, .automatic)
         await context.service.stop()
     }
 
@@ -692,7 +714,10 @@ final class WindowFollowingServiceTests: XCTestCase {
             pointOffset: PointOffsetValue(width: 0, height: 0)
         )
         let context = makeContext(
-            petAccessResult: .selected(PetTargetSnapshot(generation: 0, frame: petFrame)),
+            petAccessResult: .selected(PetEnvironmentSnapshot(
+                generation: 0,
+                petFrame: petFrame
+            )),
             enabled: true,
             anchor: windowAnchor
         )
@@ -720,9 +745,9 @@ final class WindowFollowingServiceTests: XCTestCase {
             pointOffset: PointOffsetValue(width: 10, height: 10)
         )
         let context = makeContext(
-            petAccessResult: .selected(PetTargetSnapshot(
+            petAccessResult: .selected(PetEnvironmentSnapshot(
                 generation: 0,
-                frame: CGRect(x: 500, y: 300, width: 120, height: 110)
+                petFrame: CGRect(x: 500, y: 300, width: 120, height: 110)
             )),
             enabled: true,
             petAnchor: petAnchor
@@ -753,9 +778,9 @@ final class WindowFollowingServiceTests: XCTestCase {
             pointOffset: PointOffsetValue(width: 10, height: 10)
         )
         let context = makeContext(
-            petAccessResult: .selected(PetTargetSnapshot(
+            petAccessResult: .selected(PetEnvironmentSnapshot(
                 generation: 0,
-                frame: CGRect(x: 500, y: 300, width: 120, height: 110)
+                petFrame: CGRect(x: 500, y: 300, width: 120, height: 110)
             )),
             enabled: true,
             anchor: windowAnchor,
@@ -775,6 +800,234 @@ final class WindowFollowingServiceTests: XCTestCase {
     }
 
     @MainActor
+    func testFirstPetAppearanceAttachesAutomaticallyWithoutCalibrationRequired() async {
+        let snapshot = PetEnvironmentSnapshot(
+            generation: 0,
+            petFrame: CGRect(x: 500, y: 600, width: 120, height: 110)
+        )
+        let context = makeContext(
+            petAccessResult: .selected(snapshot),
+            enabled: true
+        )
+        let recorder = FollowingEventRecorder()
+        recorder.start(context.service.events())
+
+        context.service.start()
+        for _ in 0 ..< 100
+            where context.service.targetSource != .pet
+                || !recorder.events.contains(where: { event in
+                    if case .placePetAttachment = event { return true }
+                    return false
+                })
+        {
+            await Task.yield()
+        }
+
+        XCTAssertEqual(context.service.targetSource, .pet)
+        XCTAssertEqual(context.service.state, .following)
+        XCTAssertEqual(context.service.petPlacementMode, .automatic)
+        XCTAssertEqual(context.service.petPlacementStatus, .automatic(.above))
+        XCTAssertEqual(context.accessor.resolveCount, 0)
+        XCTAssertFalse(recorder.events.contains(.stateChanged(.calibrationRequired)))
+        XCTAssertTrue(recorder.events.contains { event in
+            if case let .placePetAttachment(layout) = event {
+                return layout.side == .above
+            }
+            return false
+        })
+        recorder.stop()
+        await context.service.stop()
+    }
+
+    @MainActor
+    func testAutomaticPlacementCentersPanelOnPaddedPetSurface() async {
+        let context = makeContext(
+            petAccessResult: .selected(PetEnvironmentSnapshot(
+                generation: 0,
+                petFrame: CGRect(x: 300, y: 200, width: 400, height: 400),
+                activityFrame: CGRect(x: 380, y: 420, width: 240, height: 48)
+            )),
+            enabled: true
+        )
+        let recorder = FollowingEventRecorder()
+        recorder.start(context.service.events())
+
+        context.service.start()
+        for _ in 0 ..< 100 where !recorder.events.contains(where: { event in
+            if case .placePetAttachment = event { return true }
+            return false
+        }) {
+            await Task.yield()
+        }
+
+        let layout = recorder.events.compactMap { event -> PetAttachmentLayout? in
+            if case let .placePetAttachment(layout) = event { return layout }
+            return nil
+        }.last
+        XCTAssertEqual(context.service.petPlacementStatus, .automatic(.below))
+        XCTAssertEqual(layout?.side, .below)
+        XCTAssertEqual(layout?.panelFrame, CGRect(x: 412, y: 312, width: 176, height: 176))
+        recorder.stop()
+        await context.service.stop()
+    }
+
+    @MainActor
+    func testActivityComplementWaitsForStabilityAndTransientHintDoesNotFlip() async {
+        let petFrame = CGRect(x: 500, y: 250, width: 120, height: 110)
+        let context = makeContext(
+            petAccessResult: .selected(PetEnvironmentSnapshot(
+                generation: 0,
+                petFrame: petFrame
+            )),
+            enabled: true
+        )
+        context.service.start()
+        XCTAssertEqual(context.service.petPlacementStatus, .automatic(.below))
+
+        context.petAccessor.snapshot = PetEnvironmentSnapshot(
+            generation: 1,
+            petFrame: petFrame,
+            activityFrame: CGRect(x: 420, y: 100, width: 360, height: 70)
+        )
+        context.petAccessor.emit(.geometryChanged)
+        XCTAssertEqual(context.service.petPlacementStatus, .automatic(.below))
+
+        context.petAccessor.snapshot = PetEnvironmentSnapshot(
+            generation: 1,
+            petFrame: petFrame
+        )
+        context.petAccessor.emit(.geometryChanged)
+        try? await Task.sleep(for: .milliseconds(350))
+        XCTAssertEqual(context.service.petPlacementStatus, .automatic(.below))
+
+        context.petAccessor.snapshot = PetEnvironmentSnapshot(
+            generation: 1,
+            petFrame: petFrame,
+            activityFrame: CGRect(x: 420, y: 100, width: 360, height: 70)
+        )
+        context.petAccessor.emit(.geometryChanged)
+        try? await Task.sleep(for: .milliseconds(350))
+        XCTAssertEqual(context.service.petPlacementStatus, .automatic(.above))
+        await context.service.stop()
+    }
+
+    @MainActor
+    func testStalePetGenerationCannotChangeAutomaticSide() async {
+        let petFrame = CGRect(x: 500, y: 250, width: 120, height: 110)
+        let context = makeContext(
+            petAccessResult: .selected(PetEnvironmentSnapshot(
+                generation: 0,
+                petFrame: petFrame
+            )),
+            enabled: true
+        )
+        context.service.start()
+        XCTAssertEqual(context.service.petPlacementStatus, .automatic(.below))
+
+        context.petAccessor.snapshot = PetEnvironmentSnapshot(
+            generation: 1,
+            petFrame: petFrame,
+            activityFrame: CGRect(x: 420, y: 100, width: 360, height: 70)
+        )
+        context.petAccessor.emit(.geometryChanged, generation: -1)
+        try? await Task.sleep(for: .milliseconds(350))
+
+        XCTAssertEqual(context.service.petPlacementStatus, .automatic(.below))
+        await context.service.stop()
+    }
+
+    @MainActor
+    func testPresentationTransitionHoldsSideUntilNewGeometryIsStable() async {
+        let petFrame = CGRect(x: 500, y: 250, width: 120, height: 110)
+        let context = makeContext(
+            petAccessResult: .selected(PetEnvironmentSnapshot(
+                generation: 0,
+                petFrame: petFrame
+            )),
+            enabled: true
+        )
+        context.service.start()
+        XCTAssertEqual(context.service.petPlacementStatus, .automatic(.below))
+
+        context.service.beginPresentationTransition()
+        context.petAccessor.snapshot = PetEnvironmentSnapshot(
+            generation: 1,
+            petFrame: petFrame,
+            activityFrame: CGRect(x: 420, y: 100, width: 360, height: 70)
+        )
+        context.petAccessor.emit(.geometryChanged)
+        try? await Task.sleep(for: .milliseconds(350))
+        XCTAssertEqual(context.service.petPlacementStatus, .automatic(.below))
+
+        context.service.finishPresentationTransition(
+            panelSize: CGSize(width: 360, height: 176)
+        )
+        XCTAssertEqual(context.service.petPlacementStatus, .automatic(.below))
+        try? await Task.sleep(for: .milliseconds(350))
+        XCTAssertEqual(context.service.petPlacementStatus, .automatic(.above))
+        await context.service.stop()
+    }
+
+    @MainActor
+    func testTuckAwayFallsBackAndWakeRestoresAutomaticPlacement() async {
+        let petFrame = CGRect(x: 500, y: 600, width: 120, height: 110)
+        let windowAnchor = HaloWindowAnchor(
+            version: 1,
+            normalizedWindowPoint: UnitPointValue(x: 0.5, y: 0.5),
+            pointOffset: PointOffsetValue(width: 0, height: 0)
+        )
+        let context = makeContext(
+            petAccessResult: .selected(PetEnvironmentSnapshot(
+                generation: 0,
+                petFrame: petFrame
+            )),
+            enabled: true,
+            anchor: windowAnchor
+        )
+        context.service.start()
+        XCTAssertEqual(context.service.targetSource, .pet)
+
+        context.petAccessor.result = .unavailable
+        context.petAccessor.snapshot = nil
+        context.petAccessor.emit(.targetInvalidated)
+        XCTAssertEqual(context.service.targetSource, .codexWindowFallback)
+        XCTAssertEqual(context.service.petPlacementStatus, .unavailable)
+
+        context.petAccessor.result = .selected(PetEnvironmentSnapshot(
+            generation: 0,
+            petFrame: petFrame
+        ))
+        context.accessor.emit(.selectionChanged)
+        XCTAssertEqual(context.service.targetSource, .pet)
+        XCTAssertEqual(context.service.petPlacementStatus, .automatic(.above))
+        XCTAssertNil(context.preferences.snapshot.petAnchor)
+        await context.service.stop()
+    }
+
+    @MainActor
+    func testCancelFineTuneRestoresAutomaticPlacementWithoutPersisting() async {
+        let context = makeContext(
+            petAccessResult: .selected(PetEnvironmentSnapshot(
+                generation: 0,
+                petFrame: CGRect(x: 500, y: 600, width: 120, height: 110)
+            )),
+            enabled: true
+        )
+        context.service.start()
+        XCTAssertEqual(context.service.petPlacementStatus, .automatic(.above))
+
+        context.service.beginPetCalibration(currentReferencePoint: CGPoint(x: 650, y: 800))
+        XCTAssertEqual(context.service.state, .calibrating)
+        context.service.cancelCalibration()
+
+        XCTAssertEqual(context.service.state, .following)
+        XCTAssertEqual(context.service.targetSource, .pet)
+        XCTAssertEqual(context.service.petPlacementStatus, .automatic(.above))
+        XCTAssertTrue(context.preferences.petAnchorWrites.isEmpty)
+        await context.service.stop()
+    }
+
+    @MainActor
     private func makeContext(
         permission: FakePermissionProvider = FakePermissionProvider(current: .granted),
         locatorSelection: CodexApplicationSelection = .selected(processIdentifier: 42),
@@ -784,7 +1037,11 @@ final class WindowFollowingServiceTests: XCTestCase {
         ),
         enabled: Bool = false,
         anchor: HaloWindowAnchor? = nil,
-        petAnchor: PetRelativeAnchor? = nil
+        petAnchor: PetRelativeAnchor? = nil,
+        screens: [ScreenGeometry] = [ScreenGeometry(
+            frame: CGRect(x: 0, y: 0, width: 1_200, height: 900),
+            visibleFrame: CGRect(x: 0, y: 0, width: 1_200, height: 900)
+        )]
     ) -> Context {
         let locator = FakeApplicationLocator(locatorSelection)
         let petAccessor = FakePetAccessor(result: petAccessResult)
@@ -801,7 +1058,8 @@ final class WindowFollowingServiceTests: XCTestCase {
             petAccessor: petAccessor,
             windowAccessor: accessor,
             systemEvents: events,
-            preferences: preferences
+            preferences: preferences,
+            screenGeometryProvider: { screens }
         )
         return Context(
             service: service,

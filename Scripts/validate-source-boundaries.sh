@@ -27,7 +27,7 @@ fi
 
 if grep -EnR 'UserDefaults([.(]|[[:space:]])' PetHalo PetHaloCore \
     | grep -Ev '^PetHalo/WindowFollowing/WindowFollowingPreferences\.swift:'; then
-    echo "error: preferences escaped the reviewed M5 boundary" >&2
+    echo "error: preferences escaped the reviewed M6 boundary" >&2
     exit 1
 fi
 
@@ -57,7 +57,7 @@ if find PetHalo -type f \( \
     -iname '*.svg' -o \
     -iname '*.pdf' \
 \) | grep -q .; then
-    echo "error: M5 production source must not contain final artwork assets" >&2
+    echo "error: M6 production source must not contain final artwork assets" >&2
     exit 1
 fi
 

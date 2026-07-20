@@ -8,6 +8,7 @@ private final class FakeHaloPanelController: HaloPanelControlling {
     private(set) var mode: HaloPresentationMode = .compact
     private(set) var frame = CGRect(x: 100, y: 100, width: 176, height: 176)
     private(set) var isCalibrationEnabled = false
+    private(set) var attachmentLayout: PetAttachmentLayout?
     private(set) var ignoresMouseEvents = true
     private(set) var showCount = 0
     private(set) var hideCount = 0
@@ -34,12 +35,20 @@ private final class FakeHaloPanelController: HaloPanelControlling {
     func setMode(_ mode: HaloPresentationMode) {
         guard !stopped else { return }
         self.mode = mode
+        frame.size = HaloPanelController.size(for: mode)
         ignoresMouseEvents = !isCalibrationEnabled && mode == .compact
     }
 
     func setReferencePoint(_ referencePoint: CGPoint) {
         guard !stopped else { return }
+        attachmentLayout = nil
         frame = HaloPlacementGeometry.frame(referencePoint: referencePoint, size: frame.size)
+    }
+
+    func setAttachmentLayout(_ layout: PetAttachmentLayout) {
+        guard !stopped else { return }
+        attachmentLayout = layout
+        frame = layout.panelFrame
     }
 
     func setCalibrationEnabled(_ enabled: Bool) {
@@ -80,6 +89,7 @@ private final class FakeWindowFollowingService: HaloWindowFollowing {
     private(set) var finishCount = 0
     private(set) var cancelCount = 0
     private(set) var resetCount = 0
+    private(set) var presentationTransitionCount = 0
     var eventsOnCancel: [HaloWindowFollowingEvent] = []
 
     init() {
@@ -110,6 +120,8 @@ private final class FakeWindowFollowingService: HaloWindowFollowing {
         }
     }
     func resetPetPosition() { resetCount += 1 }
+    func beginPresentationTransition() { presentationTransitionCount += 1 }
+    func finishPresentationTransition(panelSize: CGSize) { presentationTransitionCount += 1 }
 
     func emit(_ event: HaloWindowFollowingEvent) {
         continuation.yield(event)
@@ -526,6 +538,53 @@ final class ApplicationCoordinatorTests: XCTestCase {
         XCTAssertEqual(following.beginPetCount, 0)
         XCTAssertEqual(following.beginWindowCount, 0)
         XCTAssertEqual(coordinator.windowFollowingState, .calibrating)
+        coordinator.requestTermination()
+        await coordinator.waitForShutdown()
+    }
+
+    @MainActor
+    func testAutomaticAttachmentStatusAndSideSurvivePresentationModeChanges() async {
+        let panel = FakeHaloPanelController()
+        let following = FakeWindowFollowingService()
+        let coordinator = ApplicationCoordinator(
+            usageService: FakeUsageService(),
+            haloPanelController: panel,
+            windowFollowingService: following,
+            terminateApplication: {}
+        )
+        coordinator.start()
+        let compactLayout = PetAttachmentLayout(
+            side: .above,
+            referencePoint: CGPoint(x: 648, y: 794),
+            panelFrame: CGRect(x: 472, y: 618, width: 176, height: 176)
+        )
+        following.emit(.targetSourceChanged(.pet))
+        following.emit(.petPlacementStatusChanged(.automatic(.above)))
+        following.emit(.placePetAttachment(compactLayout))
+        for _ in 0 ..< 20 where panel.attachmentLayout != compactLayout {
+            await Task.yield()
+        }
+        XCTAssertEqual(coordinator.petPlacementStatusText, "Pet placement: Automatic Centered")
+        XCTAssertEqual(panel.attachmentLayout?.side, .above)
+
+        coordinator.setHaloMode(.expanded)
+        XCTAssertEqual(following.presentationTransitionCount, 2)
+        let expandedLayout = PetAttachmentLayout(
+            side: .above,
+            referencePoint: CGPoint(x: 740, y: 1_138),
+            panelFrame: CGRect(x: 380, y: 618, width: 360, height: 520)
+        )
+        following.emit(.placePetAttachment(expandedLayout))
+        for _ in 0 ..< 20 where panel.attachmentLayout != expandedLayout {
+            await Task.yield()
+        }
+        XCTAssertEqual(panel.mode, .expanded)
+        XCTAssertEqual(panel.attachmentLayout?.side, .above)
+        XCTAssertEqual(panel.referencePoint, expandedLayout.referencePoint)
+
+        coordinator.setHaloMode(.compact)
+        XCTAssertEqual(following.presentationTransitionCount, 4)
+        XCTAssertTrue(panel.ignoresMouseEvents)
         coordinator.requestTermination()
         await coordinator.waitForShutdown()
     }

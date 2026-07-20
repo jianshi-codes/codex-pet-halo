@@ -25,6 +25,8 @@ private final class XCTestDisabledWindowFollowingService: HaloWindowFollowing {
     func finishCalibration(currentReferencePoint: CGPoint) {}
     func cancelCalibration() {}
     func resetPetPosition() {}
+    func beginPresentationTransition() {}
+    func finishPresentationTransition(panelSize: CGSize) {}
 }
 #endif
 
@@ -49,6 +51,8 @@ final class ApplicationCoordinator: ObservableObject {
     @Published private(set) var petStatusText = PetTargetDiscoveryState.disabled.statusText
     @Published private(set) var targetSource: HaloFollowingTargetSource = .freeFloating
     @Published private(set) var targetStatusText = HaloFollowingTargetSource.freeFloating.statusText
+    @Published private(set) var petPlacementStatus: PetPlacementStatus = .unavailable
+    @Published private(set) var petPlacementStatusText = PetPlacementStatus.unavailable.statusText
 
     private let logger = Logger(subsystem: "io.github.jianshicodes.PetHalo", category: "lifecycle")
     private let usageService: any CodexUsageServing
@@ -143,8 +147,12 @@ final class ApplicationCoordinator: ObservableObject {
 
     func setHaloMode(_ mode: HaloPresentationMode) {
         guard canChangeHaloMode else { return }
+        windowFollowingService.beginPresentationTransition()
         haloPanelController?.setMode(mode)
         haloMode = haloPanelController?.mode ?? mode
+        windowFollowingService.finishPresentationTransition(
+            panelSize: haloPanelController?.frame.size ?? HaloPanelController.size(for: mode)
+        )
     }
 
     func refreshUsage() {
@@ -196,7 +204,9 @@ final class ApplicationCoordinator: ObservableObject {
     }
 
     var canResetPetPosition: Bool {
-        state == .running && windowFollowingState != .calibrating
+        state == .running
+            && petPlacementStatus == .manual
+            && windowFollowingState != .calibrating
     }
 
     func enablePetFollowing() {
@@ -332,10 +342,15 @@ final class ApplicationCoordinator: ObservableObject {
         case let .targetSourceChanged(newSource):
             targetSource = newSource
             targetStatusText = newSource.statusText
+        case let .petPlacementStatusChanged(newStatus):
+            petPlacementStatus = newStatus
+            petPlacementStatusText = newStatus.statusText
         case let .setCalibrationEnabled(enabled):
             haloPanelController?.setCalibrationEnabled(enabled)
         case let .placeReferencePoint(referencePoint):
             haloPanelController?.setReferencePoint(referencePoint)
+        case let .placePetAttachment(layout):
+            haloPanelController?.setAttachmentLayout(layout)
         case .resetToDefaultPosition:
             haloPanelController?.resetToDefaultPosition()
         }
