@@ -1,13 +1,14 @@
 # Current State
 
-- Milestone: M4 — Window Following
+- Milestone: M4 — Codex Window Following & Fallback
 - Status: **PASS**
 - M0 status: **PASS-CORE / PARTIAL-OPTIONALS**
 - Core gate: owned stdio bridge ✅ / weekly quota ✅ / Account Usage ✅ / non-activating Halo ✅ / component freshness ✅ / clean shutdown ✅
 - Optional capabilities: five-hour window unavailable on the validation account and omitted / Context unsupported and omitted
 - Native application: Swift 6 / SwiftUI menu-bar and Halo content / AppKit lifecycle and `NSPanel` / `PetHaloCore` framework
 - Halo: one transparent borderless floating panel / compact click-through / expanded scrollable without activation or key/main eligibility / menu controlled
-- Placement: fixed upper-right free-floating default / exact `com.openai.codex` lookup only after following is enabled / explicit calibration / versioned relative anchor / no Pet detection
+- Target hierarchy: future Pet target following preferred / calibrated Codex standard-window following is the permanent implemented fallback / free-floating Halo is the final fallback
+- Placement: fixed upper-right free-floating default / exact `com.openai.codex` lookup only after following is enabled / explicit calibration / versioned relative window anchor / no Pet detection
 - Persisted UI preferences only: following enabled and version-1 normalized point plus point offset; no PID, window identity, screen index, Usage, account, title, path, or AX element
 - Local automated validation: 100 Swift tests ✅ (51 Core + 49 application; 1 local-only bridge smoke skipped in deterministic runs) / 14 retained M0 tests ✅
 - Focused M3 validation: 21 presentation/accessibility/panel/coordinator tests ✅
@@ -26,8 +27,8 @@
 
 The M3 presentation uses remaining percentages without a second inversion, whole-percent deterministic rounding, localized reset formatting with an absolute accessibility value, and present-only Account Usage fields. Missing data is omitted or explicitly unavailable and never estimated. Account identity, Context, raw failures, protocol data, and Usage values never enter logs or persistence.
 
-M4 uses Accessibility only for exact Codex process/window geometry and observation. It does not read window titles, labels, document text, conversation content, prompts, responses, screenshots, or Pet pixels. Free-floating Usage remains available whenever permission or a deterministic target is unavailable.
+M4 uses Accessibility only for exact Codex process/standard-window geometry and observation. It follows a calibrated point relative to that window, not the independently movable Codex Pet, and does not claim Pet following or automatic Pet detection. It does not read window titles, labels, document text, conversation content, prompts, responses, screenshots, or Pet pixels. This window-level capability remains the permanent fallback when future Pet-target following is unavailable; free-floating Usage remains the final fallback whenever permission or a deterministic window target is unavailable.
 
 Direct M4 validation passed explicit permission, target resolution, calibration/Cancel, physical move/resize, compact/expanded stability, click-through, scrolling, focus retention, permission recovery, Codex termination fallback, Pet Halo restart, cleanup, and multi-display behavior. The observed Codex launch-before-window-ready race was fixed by extending the existing single five-second recovery task to retry exact Codex/window resolution only for permission-required, Codex-unavailable, and transient window-unavailable states while preserving the anchor. Its deterministic regression and focused physical relaunch recheck both passed without recalibration.
 
-M4 is closed at PASS. This does not authorize M5, Pet recognition, Screen Recording, artwork, motion, themes, or any later milestone.
+M4 is closed at PASS. M5 owns discovery-first Pet targeting and Pet-relative geometry; M6 owns final branding, motion, themes, and game-like visual design; M7 owns compatibility hardening, packaging, privacy audits, and release readiness. This roadmap correction does not authorize M5, Screen Recording, visual detection, or any later milestone implementation.

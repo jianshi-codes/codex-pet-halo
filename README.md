@@ -6,7 +6,9 @@ Pet Halo is an independent, unofficial macOS companion that aims to display a tr
 
 ## Status
 
-**M4 Window Following is complete with `PASS`.** Pet Halo remains free-floating by default, requests Accessibility only after `Enable Window Following`, discovers only the exact `com.openai.codex` application, selects a standard window deterministically, and supports explicit drag calibration. A versioned normalized-window-point plus point-offset anchor follows move/resize events and remains contained in multi-display visible frames. Missing permission, Codex, an unambiguous window, or a valid observer leaves Usage visible in safe free-floating fallback.
+**M4 Codex Window Following & Fallback is complete with `PASS`.** Pet Halo remains free-floating by default, requests Accessibility only after `Enable Window Following`, discovers only the exact `com.openai.codex` application, selects a standard window deterministically, and supports explicit drag calibration. A versioned normalized-window-point plus point-offset anchor follows move/resize events and remains contained in multi-display visible frames. Missing permission, Codex, an unambiguous window, or a valid observer leaves Usage visible in safe free-floating fallback.
+
+The product target hierarchy is: Pet target following is preferred; calibrated Codex standard-window following is the permanent fallback; and a free-floating Halo is the final fallback. M4 implements the latter two levels. It follows the Codex standard window, not the independently movable Codex Pet, and does not claim Pet following or automatic Pet detection.
 
 The M3 non-activating panel behavior remains intact: compact is click-through outside calibration, expanded accepts scrolling, and neither mode can become key or main. Direct local validation passed permission, calibration, move/resize, focus, interaction, fallback, Codex and Pet Halo restart recovery, cleanup, and multi-display checks. The Codex launch-before-window-ready race found during validation was fixed and passed focused physical revalidation without recalibration.
 
@@ -41,7 +43,7 @@ XcodeGen 2.46.0 is required. `project.yml` is the editable project source of tru
 
 `make m2-tests`, `make m3-tests`, and `make m4-tests` are deterministic and require neither Accessibility permission nor a running Codex application. `make m4-smoke` adds a sanitized live permission/exact-application/window check and clearly labels interactive observations that remain manual.
 
-M4 follows only an explicitly calibrated point relative to an eligible Codex window. It does not inspect Codex UI text, titles, prompts, responses, screenshots, or Pet artwork, and it does not claim automatic Pet detection. Final artwork, motion, and game-like visual design remain M5.
+M5 owns discovery-first Pet target discovery and Pet-relative following: first a separate Codex-owned Accessibility window or panel, then a stable Accessibility child element, and only if Accessibility is impossible a separately authorized visual-detection route that may require Screen Recording. This roadmap entry does not authorize M5, Screen Recording, or visual detection. M6 owns final branding, motion, themes, and game-like visual design; M7 owns compatibility hardening, packaging, privacy audits, and release readiness.
 
 See [the M4 report](docs/milestones/m4-window-following.md), [window-following ADR](docs/adr/0006-window-following-calibration.md), [compatibility contract](docs/COMPATIBILITY.md), and [privacy policy](docs/PRIVACY.md).
 

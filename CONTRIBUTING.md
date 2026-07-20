@@ -1,6 +1,6 @@
 # Contributing
 
-M0 through M4 are complete. Contributions must remain within the completed M4 boundary until a later milestone receives separate authorization.
+M0 through M4 are complete. M4 follows the Codex standard window as the permanent window-level fallback; it does not follow or automatically detect the independently movable Codex Pet. Contributions must remain within the completed M4 boundary until a later milestone receives separate authorization.
 
 ## Development rules
 
@@ -14,6 +14,7 @@ M0 through M4 are complete. Contributions must remain within the completed M4 bo
 8. Keep the Halo non-activating, compact click-through outside calibration, account-identity-free, and driven by component freshness rather than aggregate timestamps.
 9. M4 Accessibility access is restricted to the exact Codex bundle and reviewed window role/subrole, minimized, position, and size attributes plus lifecycle/geometry notifications. Never inspect titles, labels, values, document text, prompts, or responses.
 10. Do not add screenshots, ScreenCaptureKit, OCR, automatic Pet recognition, Apple Events, private IPC, final artwork, animation, themes, or later milestone behavior during M4.
+11. M5 owns discovery-first Pet targeting and Pet-relative geometry; M6 owns final visual design; M7 owns hardening and release readiness. None is authorized by the M4 roadmap correction.
 
 ## Validation
 

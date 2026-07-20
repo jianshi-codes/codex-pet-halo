@@ -5,7 +5,7 @@
 
 ## Decision
 
-Pet Halo remains useful as a free-floating non-activating panel. Window following is an explicit opt-in enhancement. Startup loads validated UI preferences and checks Accessibility trust without a prompt. Only `Enable Window Following` requests the system Accessibility prompt; denial or revocation never blocks launch, Usage display, or Quit.
+Pet Halo's preferred product target is the independently movable Codex Pet. M4 cannot claim that target because the Pet implementation and discovery surface are not yet known. M4 therefore establishes calibrated Codex standard-window following as the permanent window-level fallback, with a free-floating non-activating Halo as the final fallback. Window following is an explicit opt-in enhancement. Startup loads validated UI preferences and checks Accessibility trust without a prompt. Only `Enable Window Following` requests the system Accessibility prompt; denial or revocation never blocks launch, Usage display, or Quit.
 
 Codex discovery uses only the exact reviewed bundle identifier `com.openai.codex` through the bundle-specific `NSRunningApplication` API. One candidate is selected directly. With multiple candidates, exactly one active candidate is selected; all other multiplicity is ambiguous. Workspace launch, termination, and activation notifications are filtered to the same exact bundle before entering the service.
 
@@ -42,6 +42,8 @@ Only following enabled and the version-1 anchor are stored in a dedicated namesp
 
 Absent permission, Codex, a deterministic window, valid calibration, or a working observer leaves the Halo visible at its last valid frame or M3 default. Temporary Codex loss does not erase calibration. Exact-bundle lifecycle events trigger immediate deterministic resumption without guessing. Because a launch notification may precede creation of the new standard window, the existing single five-second low-frequency recovery task also retries only permission-required, Codex-unavailable, and transient window-unavailable states. It remains a bounded-frequency recovery path, not the primary geometry tracker, and is cancelled during service shutdown.
 
-## Rejected alternatives and scope
+## Product hierarchy and deferred discovery
 
-Pet image recognition, OCR, screenshots, ScreenCaptureKit, broad window enumeration, title-based logic, private Codex IPC, and UI-text inspection are rejected. They require broader permissions, expose content, or claim semantics not proved by M4. Screen Recording is unnecessary because geometry and lifecycle come from Accessibility. Smooth animation, springs, glow, artwork, sound, and final themes remain M5 and are not introduced here.
+M5 owns discovery-first Pet targeting and Pet-relative geometry. It must investigate, in order, a separate Codex-owned Accessibility window or panel, then a stable Accessibility child element. Only if Accessibility discovery is impossible may a separately authorized visual-detection route be considered; that route may require Screen Recording and a new privacy review. This ADR does not authorize Screen Recording, screenshots, OCR, or visual detection.
+
+For M4, Pet image recognition, OCR, screenshots, ScreenCaptureKit, broad window enumeration, title-based logic, private Codex IPC, and UI-text inspection remain rejected. They require broader permissions, expose content, or claim semantics not proved by this milestone. M6 owns final branding, motion, themes, and game-like visual design. M7 owns compatibility hardening, packaging, privacy audits, and release readiness.
