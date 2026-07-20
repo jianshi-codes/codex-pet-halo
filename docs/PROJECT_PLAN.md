@@ -41,7 +41,7 @@ Generate schemas from the installed Codex CLI, build a read-only protocol probe,
 
 ### M7 — Pet Ring Surface & Target-aware Presentation
 
-**Implemented — final gate validation pending.** Pet uses only a transparent, click-through vector surface centered on the AX Pet frame plus a persisted visual-center offset. Three concentric partial rings independently present Weekly remaining, an optional exact 300-minute 5h remaining value, and Today tokens versus nonzero historical peak. Fixed semantic thresholds and debounced dialog-aware opening direction remain functional M7 policy. Compact/Expanded fallbacks remain intact and are rejected on Pet. See [the M7 report](milestones/m7-pet-ring-presentation.md).
+**Implemented and validated — independent review pending.** Pet uses only a transparent, click-through vector surface centered on the AX Pet frame plus a persisted visual-center offset. Three concentric partial rings independently present Weekly remaining, an optional exact 300-minute 5h remaining value, and Today tokens versus nonzero historical peak. Fixed semantic thresholds and debounced dialog-aware opening direction remain functional M7 policy. Compact/Expanded fallbacks remain intact and are rejected on Pet. Automated checks, direct calibration/orientation/fast-drag acceptance, lifecycle smoke, Draft PR publication, and current-patch CI pass; merge and M8 remain unauthorized. See [the M7 report](milestones/m7-pet-ring-presentation.md).
 
 ### M8 — Visual Polish, Themes & Motion
 

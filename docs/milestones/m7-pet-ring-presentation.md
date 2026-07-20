@@ -2,7 +2,7 @@
 
 - Branch: `m7/pet-ring-presentation`
 - Scope: target-aware surface state, persistent visual-center alignment, concentric Usage rings, semantic thresholds, functional dialog-aware partial arcs, fallback preservation, tests, sanitized smoke tooling, and documentation
-- Gate: implementation, automated validation, and direct live interaction complete; current patch publication, CI, and independent review pending
+- Gate: implementation, automated validation, direct live interaction, Draft PR publication, and current-patch CI complete; independent review pending
 
 ## Outcome
 
@@ -47,7 +47,7 @@ M7 adds no OpenAI, ChatGPT, or Codex Pet artwork; no screenshots, OCR, Screen Re
 | M0-M6 regression and complete Swift suite | PASS — 158 Swift tests with one local-only authenticated smoke skipped, plus 14 M0 tests |
 | Debug and universal Release bundle | PASS — Debug plus arm64/x86_64 Release |
 | Source, privacy, generated-project, and bundle boundaries | PASS |
-| Draft PR CI | PASS — Protocol evidence and macOS application jobs on implementation commit `063a73a` |
+| Draft PR CI | PASS — Protocol evidence and macOS application jobs on the complete M7 patch; PR remains Draft |
 | M7 smoke | PASS — fast independent movement with saved visual offset and bounded selected-frame sampling, Tuck Away fallback, Wake recovery, surface restoration, non-activation, Quit, observer shutdown, and owned app-server cleanup directly observed |
 | Direct visible-Pet/no-rectangle confirmation | PASS — user-operated calibration confirmed visible Pet containment; forced openings retained the calibrated center; Auto directly mirrored for the activity surface below the calibrated visual Pet center; final fast-drag tracking feel was accepted; supplied/current screenshots show concentric partial arcs, transparent center, separated labels, optional 5h omission, and no rectangle |
 | Independent review | Pending publication review |

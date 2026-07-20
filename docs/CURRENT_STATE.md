@@ -2,8 +2,8 @@
 
 - Milestone: M7 — Pet Ring Surface & Target-aware Presentation
 - Route: `ROUTE_A — PET_ACCESSIBILITY_WINDOW`
-- Implementation: complete on `m7/pet-ring-presentation`; automated and direct M7 interaction validation pass
-- Gate: M7 not yet PASS — publication to Draft PR #8, current-commit CI, and independent review remain gates
+- Implementation: complete on `m7/pet-ring-presentation`; automated, direct M7 interaction, publication, and current-patch CI validation pass
+- Gate: M7 not yet PASS — independent review remains the publication gate; Draft PR #8 is not authorized to merge
 - Target hierarchy: Pet / calibrated Codex standard window / free-floating Halo
 - Pet placement invariant: the AX Pet midpoint remains the stable tracking basis; the shared visual ring center is `petFrame.center + PetVisualCenterOffset`
 - Geometry boundary: `PetTargetSnapshot` carries the Pet frame, generation, and content-free activity-geometry hint; the fixed M7 surface is `252×252` with three 104/94/84-point rings and a `162`-point transparent center while fallback cards retain `176×176` Compact and `360×520` Expanded sizing
@@ -18,7 +18,7 @@
 - Labels/orientation: radius-bound 135/90/45-degree labels mirror with the shared opening; Auto prefers the current unique wide `AXSystemDialog`, falls back to a unique wide `AXDialog`, and compares it with the calibrated visual Pet center; activity above opens top, activity below opens bottom, no activity uses the fixed default, and ambiguous/transient geometry retains the prior 180 ms-debounced direction without moving the panel; DEBUG can force either gap without persistence
 - Focused M7 validation: 105 application/presentation/following tests pass with fakes and synthetic geometry; no Codex process or Accessibility permission required
 - Full validation: generated-project/source/privacy scans, Debug build/bundle, universal arm64+x86_64 Release build/bundle, 158 Swift tests pass with one local-only authenticated smoke skipped, all 14 M0 protocol tests pass, and whitespace checks pass
-- Draft PR CI: Protocol evidence and macOS application jobs pass on implementation commit `063a73a`
+- Draft PR CI: Protocol evidence and macOS application jobs pass on the complete M7 patch; the PR remains Draft
 - M2 timing validation: `testSparseNotificationBurstDebouncesToOneCompleteRefreshSeam` passes 30/30 fail-fast repetitions without retry
 - Live validation: `make m7-smoke` directly passes exact-process/Pet selection, automatic Pet Ring attachment, fast independent movement with the saved visual-center offset and bounded selected-frame sampling, Tuck Away fallback, Wake recovery, non-activation, fallback-card restoration, Quit, observer shutdown, and owned app-server cleanup. User-operated calibration confirmed visible Pet containment; forced openings preserved the calibrated center, Auto was directly confirmed to mirror for the activity surface below the calibrated visual Pet center, and the final fast-drag tracking feel was accepted after removing the multi-frame chase
 - Retained protocol boundary: M0 remains PASS-CORE / PARTIAL-OPTIONALS; production remains fail-closed to CLI `0.145.0-alpha.18`; no Codex internal database dependency
