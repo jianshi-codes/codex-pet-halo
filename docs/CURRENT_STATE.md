@@ -2,9 +2,9 @@
 
 - Milestone: M8 — Release UI Polish
 - Route: `ROUTE_A — PET_ACCESSIBILITY_WINDOW`
-- Status: **LOCAL VALIDATION COMPLETE — DRAFT PR CI PENDING**
+- Status: **PASS**
 - Branch: `m8/release-ui-polish`
-- Gate: Draft PR CI is the only remaining requirement before M8 is PASS
+- Gate: M8 is closed; Draft PR #9 remains open and unmerged, and M9 requires separate authorization
 - Next milestone: M9 — Public Beta Release Readiness; not started and not authorized by M8
 
 ## Preserved contracts
@@ -35,4 +35,4 @@
 - Retained M2–M7 smoke: PASS — M7 harness follows the current default-hide contract rather than requiring an obsolete automatic fallback card
 - `make m8-smoke`: PASS — appearance, contrast, edge placement, motion, layout, and compiled icon checks
 - Manual: PASS — light/dark, Increase Contrast, Reduce Motion, both screen edges, menu/App icon surfaces, Pet movement, Tuck Away default hide, Wake, and Quit; current Today-present/5h-absent capability state observed without estimating unavailable combinations
-- Draft PR CI: pending publication
+- Draft PR CI: PASS — Protocol evidence and macOS application jobs both passed on PR #9

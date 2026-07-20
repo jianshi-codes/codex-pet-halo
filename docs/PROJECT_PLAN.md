@@ -45,7 +45,7 @@ Generate schemas from the installed Codex CLI, build a read-only protocol probe,
 
 ### M8 — Release UI Polish
 
-**Local validation complete — Draft PR CI pending.** Live light/dark and accessibility treatment, appearance-aware metric-key contrast, visible-frame-safe capsule sides without moving the Ring center, direct Reduce Motion following, original AppIcon and monochrome template menu icon, normalized spacing, deterministic tests, smoke tooling, and documentation are implemented. Full regression, universal Release, retained smoke, and direct appearance/live-Pet acceptance pass. Pet discovery, Usage semantics, target hierarchy, panel centering, bridge behavior, and fallback architecture remain unchanged. M8 adds no theme system, decorative animation, glow, particles, sound, packaging, signing, notarization, or release automation. See [the M8 report](milestones/m8-release-ui-polish.md).
+**Complete — PASS.** Live light/dark and accessibility treatment, appearance-aware metric-key contrast, visible-frame-safe capsule sides without moving the Ring center, direct Reduce Motion following, original AppIcon and monochrome template menu icon, normalized spacing, deterministic tests, smoke tooling, and documentation are implemented. Full regression, universal Release, retained smoke, direct appearance/live-Pet acceptance, and both Draft PR #9 CI jobs pass. Pet discovery, Usage semantics, target hierarchy, panel centering, bridge behavior, and fallback architecture remain unchanged. M8 adds no theme system, decorative animation, glow, particles, sound, packaging, signing, notarization, or release automation. Draft PR #9 remains open and unmerged. See [the M8 report](milestones/m8-release-ui-polish.md).
 
 ### M9 — Public Beta Release Readiness
 
