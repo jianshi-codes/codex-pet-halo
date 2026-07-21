@@ -4,6 +4,10 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 
 ## [Unreleased]
 
+No changes yet.
+
+## [0.1.0-beta.2] - 2026-07-21
+
 ### Added
 
 - Weekly Ring capsules display the verified Weekly reset date in the user's local timezone when Codex provides one.
@@ -11,8 +15,17 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 
 ### Changed
 
-- Replaced the exact-version-only startup allowlist with bounded provisional compatibility for supported pre-1.0 Codex CLI versions, guarded by required runtime capability validation and a known-incompatible denylist.
-- Provisional protocol incompatibility now closes the owned app-server and pauses automatic reconnect while preserving user Refresh and restart retries.
+- Added bounded provisional forward compatibility for newer supported pre-1.0 Codex CLI versions.
+- Required initialize, account, rate-limit, and usable Weekly runtime capability validation for provisional sessions.
+- Made runtime-incompatible handling terminal without an automatic reconnect loop.
+- Preserved manual Refresh and application-restart retries after a runtime-incompatible result.
+
+### Release
+
+- Published tag `v0.1.0-beta.2` and the public GitHub Release on 2026-07-21.
+- Published the unsigned Universal `Pet-Halo-0.1.0-beta.2-unsigned-universal.zip`, `release-manifest.json`, `RELEASE_NOTES.md`, and `SHA256SUMS` assets.
+- Fresh public download verification passed for all checksum entries, and manifest `sourceCommit` matched the peeled tag commit `4e14938e06b50162a810cdaa5b195357e5239342`.
+- The release uses product version `0.1.0`, bundle build `2`, `signing: unsigned`, and `notarization: not-submitted`.
 
 ## [0.1.0-beta.1] - 2026-07-21
 

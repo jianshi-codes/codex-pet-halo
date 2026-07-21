@@ -6,7 +6,7 @@
 
 Pet Halo is a macOS menu-bar companion that places a transparent Usage ring around Codex Pet, with safe Codex-window and free-floating fallbacks.
 
-[![Download v0.1.0-beta.1](https://img.shields.io/badge/download-v0.1.0--beta.1-5865F2)](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.1)
+[![Download v0.1.0-beta.2](https://img.shields.io/badge/download-v0.1.0--beta.2-5865F2)](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.2)
 [![CI](https://github.com/jianshi-codes/codex-pet-halo/actions/workflows/ci.yml/badge.svg)](https://github.com/jianshi-codes/codex-pet-halo/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-black)
@@ -54,9 +54,9 @@ Weekly and 5h use independent rate-limit freshness. Today uses independent Accou
 
 ## Download
 
-[Download Pet Halo v0.1.0-beta.1 from its tag-specific GitHub Release page.](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.1)
+[Download Pet Halo v0.1.0-beta.2 from its tag-specific GitHub Release page.](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.2)
 
-> **Unsigned preview warning:** `Pet-Halo-0.1.0-beta.1-unsigned-universal.zip` is unsigned and not notarized by Apple. It is not a Developer ID release, and macOS may block its first launch. Only override Gatekeeper after independently verifying the GitHub source, release checksum, and repository provenance.
+> **Unsigned preview warning:** `Pet-Halo-0.1.0-beta.2-unsigned-universal.zip` is unsigned and not notarized by Apple. It is not a Developer ID release, and macOS may block its first launch. Only override Gatekeeper after independently verifying the GitHub source, release checksum, and repository provenance.
 
 Before downloading, confirm the installed CLI version:
 
@@ -87,7 +87,7 @@ Only exact registry entries carry reviewed semantic evidence. Provisional compat
 
 ## Installation and first run
 
-1. Download `Pet-Halo-0.1.0-beta.1-unsigned-universal.zip`, `SHA256SUMS`, `release-manifest.json`, and `RELEASE_NOTES.md` from the [Beta 1 Release](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.1).
+1. Download `Pet-Halo-0.1.0-beta.2-unsigned-universal.zip`, `SHA256SUMS`, `release-manifest.json`, and `RELEASE_NOTES.md` from the [Beta 2 Release](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.2).
 2. In the directory containing all four assets, verify the archive, manifest, and release notes:
 
    ```sh
@@ -169,7 +169,7 @@ make check
 make release-unsigned-preview MARKETING_VERSION=0.1.0 BUILD_NUMBER=2 RELEASE_TAG=v0.1.0-beta.2
 ```
 
-The unsigned preview target requires a clean source tree and produces `Pet-Halo-0.1.0-beta.2-unsigned-universal.zip`. Developer ID signing and Apple notarization remain separate credentialed steps described in the [Release checklist](docs/RELEASE_CHECKLIST.md). The Download section continues to point to the currently published Beta 1 release until Beta 2 is separately reviewed and published.
+The unsigned preview target requires a clean source tree and produces `Pet-Halo-0.1.0-beta.2-unsigned-universal.zip`. Developer ID signing and Apple notarization remain separate credentialed steps described in the [Release checklist](docs/RELEASE_CHECKLIST.md). The Download section points to the published Beta 2 unsigned preview.
 
 ## Contributing and security
 

@@ -7,12 +7,12 @@ Observed on 2026-07-21 with `gh repo view` and GitHub REST API calls against `ji
 | Area | API-confirmed state |
 | --- | --- |
 | Visibility | Public |
-| Description | `Unofficial macOS usage halo for Codex Pet.` |
+| Description | `Transparent Usage ring around Codex Pet` |
 | Topics | `accessibility`, `codex`, `codex-pet`, `macos`, `menu-bar-app`, `swift`, `usage-tracker` |
 | Issues | Enabled |
 | Default branch | `main` |
 | Classic branch protection | Direct branch-protection endpoint returned 404 (`Branch not protected`) |
-| Repository ruleset | Active `main-branch-protection` ruleset targets the default branch with no bypass actors |
+| Repository ruleset | Active `main-branch-protection` ruleset targets the default branch; one `RepositoryRole` bypass actor (ID `5`) is configured and the current administrator can bypass |
 | Ruleset history safety | Deletion and non-fast-forward updates are blocked; this prevents branch deletion and force-push through the active ruleset |
 | Pull requests | One approving review required; merge and squash are allowed |
 | Required checks | Strictly up-to-date `macOS application` and `Protocol evidence` |
@@ -20,14 +20,14 @@ Observed on 2026-07-21 with `gh repo view` and GitHub REST API calls against `ji
 | Actions default token | `read`; workflows cannot approve pull-request reviews |
 | Fork contributor approval | First-time contributors require approval |
 | Fork workflow API | Private-repository fork-workflow endpoint is not applicable to this public repository (HTTP 422) |
-| Issue-form labels | `bug` and `compatibility` both exist |
+| Issue labels | `bug`, `compatibility`, `dependencies`, `documentation`, `duplicate`, `enhancement`, `github_actions`, `good first issue`, `help wanted`, `invalid`, `question`, and `wontfix` |
 | Private vulnerability reporting | Disabled |
 | Environments | None returned; `public-beta` does not currently exist |
 | Pages | No Pages site returned (HTTP 404) |
-| Tags | `v0.1.0-beta.1` at `4fe6f0e4926a1acd6a8e6faaf1a34be430eaddc1` |
-| Releases | One published Release: `v0.1.0-beta.1`; target `main`; non-draft, non-prerelease, latest |
+| Tags | `v0.1.0-beta.2` peels to `4e14938e06b50162a810cdaa5b195357e5239342`; `v0.1.0-beta.1` resolves to `4fe6f0e4926a1acd6a8e6faaf1a34be430eaddc1` |
+| Releases | `v0.1.0-beta.2`: target `main`, published `2026-07-21T08:43:44Z`, non-draft, non-prerelease, latest; `v0.1.0-beta.1`: target `main`, published `2026-07-21T05:17:24Z`, non-draft, non-prerelease, not latest |
 
-The `compatibility` label, final description, and missing topics were added during this closeout. The existing `bug` label was preserved.
+The complete observed label list includes the `bug` and `compatibility` labels required by the issue forms.
 
 ## Recommended manual settings
 
