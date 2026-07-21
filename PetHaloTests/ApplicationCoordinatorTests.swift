@@ -241,6 +241,52 @@ private actor FakeUsageService: CodexUsageServing {
 
 final class ApplicationCoordinatorTests: XCTestCase {
     @MainActor
+    func testPublicUsageFailureMessagesAreConciseAndSafe() {
+        let cases: [(SafeFailureReason, String)] = [
+            (.executableMissing, "Usage: Codex CLI not found"),
+            (.unsupportedProtocolVersion, "Usage: Unsupported Codex CLI version"),
+            (.authenticationUnavailable, "Usage: Sign in to Codex"),
+            (.rateLimitsUnavailable, "Usage: Rate limits temporarily unavailable"),
+            (.accountUsageUnavailable, "Usage: Today temporarily unavailable"),
+            (.accountUsageUnsupported, "Usage: Today temporarily unavailable"),
+            (.transportClosed, "Usage: Temporarily unavailable"),
+        ]
+
+        for (failure, expected) in cases {
+            let state = CodexUsageState(
+                connection: .unavailable,
+                compatibility: .unknown,
+                snapshot: nil,
+                capabilities: .unavailable,
+                componentFreshness: .unavailable,
+                lastSuccessfulRefresh: nil,
+                failureReason: failure
+            )
+            let message = ApplicationCoordinator.usageStatusText(for: state)
+            XCTAssertEqual(message, expected)
+            XCTAssertFalse(message.contains("/"))
+            XCTAssertFalse(message.contains("{"))
+            XCTAssertFalse(message.contains("future"))
+        }
+    }
+
+    @MainActor
+    func testFollowingFailureMessagesMatchPublicTroubleshootingStates() {
+        XCTAssertEqual(
+            WindowFollowingState.permissionRequired.statusText,
+            "Following: Accessibility Required"
+        )
+        XCTAssertEqual(
+            WindowFollowingState.unavailable(.codexUnavailable).statusText,
+            "Following: Codex Not Running"
+        )
+        XCTAssertEqual(
+            WindowFollowingState.unavailable(.windowAmbiguous).statusText,
+            "Following: Target Ambiguous"
+        )
+    }
+
+    @MainActor
     func testConnectedBridgePublishesSafeMenuStatus() async {
         let service = FakeUsageService()
         let panel = FakeHaloPanelController()
@@ -251,11 +297,11 @@ final class ApplicationCoordinatorTests: XCTestCase {
         )
 
         coordinator.start()
-        for _ in 0 ..< 100 where coordinator.bridgeStatusText != "Bridge: Connected" {
+        for _ in 0 ..< 100 where coordinator.bridgeStatusText != "Usage: Connected" {
             await Task.yield()
         }
 
-        XCTAssertEqual(coordinator.bridgeStatusText, "Bridge: Connected")
+        XCTAssertEqual(coordinator.bridgeStatusText, "Usage: Connected")
         coordinator.requestTermination()
         await coordinator.waitForShutdown()
     }
@@ -366,7 +412,7 @@ final class ApplicationCoordinatorTests: XCTestCase {
         await coordinator.waitForShutdown()
 
         XCTAssertEqual(terminationCount, 1)
-        XCTAssertEqual(coordinator.bridgeStatusText, "Bridge: Unavailable")
+        XCTAssertEqual(coordinator.bridgeStatusText, "Usage: Temporarily unavailable")
         XCTAssertEqual(panel.stopCount, 1)
     }
 
@@ -380,7 +426,7 @@ final class ApplicationCoordinatorTests: XCTestCase {
             terminateApplication: {}
         )
         coordinator.start()
-        for _ in 0 ..< 100 where coordinator.bridgeStatusText != "Bridge: Connected" {
+        for _ in 0 ..< 100 where coordinator.bridgeStatusText != "Usage: Connected" {
             await Task.yield()
         }
 

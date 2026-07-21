@@ -39,11 +39,11 @@ The discovery phase directly observed independent Pet movement with the standard
 | Gate | Result |
 | --- | --- |
 | `make check` | PASS — Debug, universal Release, bundle, generated project, privacy/source boundaries, 51 Core tests, 75 application tests, and 14 M0 tests |
-| `make m5-tests` | PASS — 62 focused tests |
+| Historical `make m5-tests` (now covered by `make pet-following-tests`) | PASS — 62 focused tests |
 | `make m2-smoke` | PASS — read-only bridge and owned-child shutdown |
 | `make m3-smoke` | PASS — non-activating presentation regression |
 | `make m4-smoke` | PASS — deterministic fallback, live Accessibility target, and bridge regression |
-| `make m5-smoke` | PASS — Route A unique target, independent Pet movement, and stationary standard window |
+| Historical `make m5-smoke` (now covered by `make pet-following-smoke`) | PASS — Route A unique target, independent Pet movement, and stationary standard window |
 | Direct interaction | PASS — Pet follow, window fallback, Pet recovery, and stable delayed calibration |
 | Screen Recording / visual detection | Absent |
 | Draft PR CI | Required for the current pushed Head before the final M5 gate |

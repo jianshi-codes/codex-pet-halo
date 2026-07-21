@@ -2,7 +2,7 @@
 set -euo pipefail
 
 readonly repository_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-readonly derived_data_path="${DERIVED_DATA_PATH:-$repository_root/DerivedData/M7Tests}"
+readonly derived_data_path="${DERIVED_DATA_PATH:-$repository_root/DerivedData/PetFollowingTests}"
 cd "$repository_root"
 
 ./Scripts/generate.sh

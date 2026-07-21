@@ -33,7 +33,7 @@ Safe placement status is limited to Centered or Unavailable. No coordinates, sid
 
 | Gate | Result |
 | --- | --- |
-| `make m6-tests` | PASS — 58 focused application tests |
+| Historical `make m6-tests` (now covered by `make pet-following-tests`) | PASS — 58 focused application tests |
 | No saved Pet anchor → centered | PASS — deterministic |
 | Legacy Pet anchor removed / M4 anchor preserved | PASS — deterministic and real `UserDefaults` migration coverage |
 | Movement / resize / negative coordinates | PASS — deterministic exact midpoint equality |
@@ -45,7 +45,7 @@ Safe placement status is limited to Centered or Unavailable. No coordinates, sid
 | Observer and service shutdown | PASS — deterministic |
 | Repeated M2 refresh-coalescing test | PASS — 30/30 fail-fast repetitions without retry |
 | `make check` | PASS — source/privacy, Debug, universal arm64+x86_64 Release, 121 Swift passes + 1 designed local-only skip, 14 M0 passes |
-| `make m2-smoke` through `make m5-smoke` | PASS — current working tree |
+| Historical `make m2-smoke` through `make m5-smoke` | PASS — current working tree; M5 is now covered by `make pet-following-smoke` |
 | Corrected complete M6 center-lock smoke harness | PASS — Pet visible at start; exact midpoint initially, after independent movement, and after Wake; Tuck Away activated M4 fallback; Quit closed the panel; observer and owned app-server exited |
 | Draft PR CI and independent review | Pending current Head |
 

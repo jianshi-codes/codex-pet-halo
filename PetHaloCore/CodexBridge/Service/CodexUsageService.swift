@@ -303,7 +303,9 @@ public actor CodexUsageService: CodexUsageServing {
         }
         guard connectionAttemptIsCurrent(epoch) else { return }
 
-        guard CodexCompatibilityRegistry.compatibility(for: version) != nil else {
+        guard let compatibilityEntry = CodexCompatibilityRegistry.compatibility(for: version),
+              compatibilityEntry.supportsProductionSemantics
+        else {
             compatibility = .unsupported(version: version)
             publishUnavailable(failure: .unsupportedProtocolVersion)
             return

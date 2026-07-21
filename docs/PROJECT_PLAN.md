@@ -49,4 +49,4 @@ Generate schemas from the installed Codex CLI, build a read-only protocol probe,
 
 ### M9 — Public Beta Release Readiness
 
-Expand compatibility fixtures, transport/reconnect tests, UI/window tests, privacy audits, packaging, signing/notarization, release automation, release documentation, and public-beta readiness. M8 completion does not authorize M9.
+**In progress — authorized.** M9 hardens the reviewed CLI/Desktop compatibility boundary, user onboarding and safe failure states, privacy/security/legal evidence, reproducible Universal ZIP packaging, external-only Developer ID/notarization operations, sanitized public issue forms, and a manually gated prerelease workflow. No public tag, artifact, GitHub Release, or repository visibility change is authorized by the M9 implementation PR. See [the M9 report](milestones/m9-public-beta-readiness.md).

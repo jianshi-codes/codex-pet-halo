@@ -15,7 +15,7 @@ Pet Halo is an independent, unofficial macOS companion for Codex. The current ap
 - M6 — Automatic Center-Locked Pet Attachment — makes first-use Pet attachment automatic, removes legacy positional overrides, locks the panel midpoint to the Pet midpoint, and preserves M4/M3 fallbacks and lifecycle behavior.
 - M7 — Pet Ring Surface & Target-aware Presentation — is complete with PASS. It replaces the Pet demo card with concentric functional Usage rings, explicit visual-center calibration, semantic thresholds, dialog-aware partial arcs, capsule labels, and a non-overshooting display-linked tracking follower while preserving fallback cards.
 - M8 — Release UI Polish — is complete with PASS. It owns system appearance/accessibility polish, appearance-aware capsule contrast, visible-frame-safe label sides, Reduce Motion direct following, original application/menu icons, spacing, tests, smoke tooling, and documentation. It does not add a theme system or decorative effects.
-- M9 — Public Beta Release Readiness — is next and has not started. It contains compatibility hardening, packaging, signing/notarization, privacy audits, release documentation, automation, and public-beta readiness.
+- M9 — Public Beta Release Readiness — is in progress. It contains compatibility hardening, packaging, signing/notarization, privacy audits, release documentation, automation, and public-beta readiness. The product and release UI remain frozen.
 - Do not begin Screen Recording, visual detection, screenshots/OCR, themes, particles, glow, sound, decorative animation, packaging, signing/notarization, release automation, or later milestone work without separate authorization.
 
 ## Build and test
@@ -32,14 +32,16 @@ make m3-tests
 make m3-smoke
 make m4-tests
 make m4-smoke
-make m5-tests
-make m5-smoke
-make m6-tests
-make m6-smoke
-make m7-tests
-make m7-smoke
+make pet-following-gate
 make m8-tests
 make m8-smoke
+make release-build
+make release-archive
+make release-checksum
+make release-sign
+make release-notarize
+make release-verify
+make release-launch-smoke
 make check
 ```
 

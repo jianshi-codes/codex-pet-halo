@@ -2,15 +2,15 @@
 
 Pet Halo is designed to expose only the minimum local usage state needed for its display.
 
-The M8 application launches one owned local `codex app-server --stdio` child and requests only account availability, rate-limit windows, and Account Usage. It keeps normalized Usage and UI presentation state in memory and stores none of it. It makes no direct network request and includes no analytics, telemetry, crash upload, or cloud service.
+The M9 Public Beta candidate launches one owned local `codex app-server --stdio` child and requests only account availability, rate-limit windows, and Account Usage. It keeps normalized Usage and UI presentation state in memory and stores none of it. It makes no direct network request and includes no analytics, telemetry, crash upload, updater, or cloud service.
 
 ## Data boundaries
 
-Production M8 may display read-only account availability, rate-limit windows, Account Usage summaries/daily buckets, and the owned connection state from the Codex app-server protocol. The Pet Ring receives only weekly remaining, an optional exact 300-minute five-hour remaining value, and the current Calendar day's token bucket; detailed Account Usage remains confined to the Expanded fallback card. It does not display account identity, Context, raw errors, or raw protocol data. It must not refresh credentials, log in or out, purchase/reset credits, execute tasks, mutate threads, inspect conversation content, read Codex internal SQLite databases, or modify Codex Desktop or Codex Pet.
+Production may display read-only account availability, rate-limit windows, Account Usage summaries/daily buckets, and the owned connection state from the Codex app-server protocol. The Pet Ring receives only weekly remaining, an optional exact 300-minute five-hour remaining value, and the current Calendar day's token bucket; detailed Account Usage remains confined to the Expanded fallback card. It does not display account identity, Context, raw errors, or raw protocol data. It must not refresh credentials, log in or out, purchase/reset credits, execute tasks, mutate threads, inspect conversation content, read Codex internal SQLite databases, or modify Codex Desktop or Codex Pet.
 
 Following is off by default. After an explicit user command, M8 may use Accessibility inside the exact `com.openai.codex` application. The M4 fallback identifies the standard window; the preferred target identifies a unique near-square `AXWindow/AXDialog` logical frame. Production reads only the application window list, role/subrole, minimized/hidden state, position, and size and observes selected Pet geometry plus window lifecycle notifications. A movement notification wakes a bounded display-linked path that re-reads only position and size from the already-selected Pet core elements until four refreshes are unchanged; it never enumerates windows, discovers, or selects a target. After Pet selection, a unique wide activity surface may supply only an above/below arc-opening hint relative to the calibrated visual Pet center; the current `AXSystemDialog` form is preferred and the earlier `AXDialog` form is a compatibility fallback. Ambiguous geometry is ignored. The hint never participates in discovery, tracking, placement, offset, or fallback. M8 separately reads only local `NSScreen` frame/visible-frame geometry to choose a capsule side; no screen identity is persisted and the result cannot move the Ring center. Production never reads window titles, accessibility labels, descriptions, identifiers, values, document text, conversation content, prompts, or responses. It does not capture the screen, use OCR, or request Screen Recording or Apple Events permission.
 
-M8 persists only these namespaced local UI preferences:
+Pet Halo persists only these namespaced local UI preferences:
 
 - `io.github.jianshicodes.PetHalo.windowFollowing.enabled`: Boolean user choice;
 - `io.github.jianshicodes.PetHalo.windowFollowing.anchor.v1`: M4 JSON containing `version`, normalized window `x/y`, and point-offset `width/height`;
@@ -36,3 +36,7 @@ Account identity is neither decoded into the domain model nor retained. `account
 - local home directories, project absolute paths, or other user-identifying data.
 
 Committed fixtures are recursively redacted. A fixture is evidence of payload structure, not a replay of a user's account or thread. M8 smoke output also omits coordinates, PIDs, titles, identifiers, paths, raw AX trees/failures, and Usage values. User-supplied screenshots used during discovery are not committed or consumed by production.
+
+## Release operations
+
+Unsigned local packaging performs no network request. Developer ID signing uses a local certificate and Keychain. Notarization, when explicitly requested by a release operator, submits only the finished application archive to Apple's notary service through `notarytool`; it is an external release operation, not an application runtime service. Credentials remain in environment variables, Keychain, or GitHub encrypted secrets and are neither packaged nor logged. The release manifest contains only product version, build number, tag, bundle identifier, minimum macOS version, architectures, signing/notarization state, and source commit.

@@ -106,9 +106,9 @@ enum PetTargetDiscoveryState: Equatable, Sendable {
         case .found:
             "Pet: Found"
         case .ambiguous:
-            "Pet: Ambiguous"
+            "Pet: Target Ambiguous"
         case .unavailable:
-            "Pet: Not Found"
+            "Pet: Unavailable or Tucked Away"
         case .suspended:
             "Pet: Suspended"
         }

@@ -289,6 +289,26 @@ final class WindowFollowingServiceTests: XCTestCase {
     }
 
     @MainActor
+    func testRevokedPermissionFailsClosedAndLaterGrantRecovers() async {
+        let permission = FakePermissionProvider(current: .granted, requested: .granted)
+        let context = makeContext(permission: permission, enabled: true)
+        context.service.start()
+
+        permission.current = .notGranted
+        context.service.recoverStateIfNeeded()
+
+        XCTAssertEqual(context.service.state, .permissionRequired)
+        XCTAssertEqual(context.service.petDiscoveryState, .suspended)
+        XCTAssertEqual(context.service.targetSource, .freeFloating)
+
+        permission.current = .granted
+        context.service.recoverStateIfNeeded()
+
+        XCTAssertNotEqual(context.service.state, .permissionRequired)
+        await context.service.stop()
+    }
+
+    @MainActor
     func testWindowCalibrationPersistsOnlyM4Anchor() async {
         let context = makeContext(enabled: true)
         context.service.start()
