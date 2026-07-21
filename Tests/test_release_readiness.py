@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 import tempfile
@@ -57,6 +58,7 @@ class ReleaseReadinessTests(unittest.TestCase):
             "release-notarize",
             "release-verify",
             "release-launch-smoke",
+            "release-unsigned-preview",
         ):
             self.assertRegex(makefile, rf"(?m)^{re.escape(target)}:")
         self.assertRegex(makefile, r"(?m)^public-exposure-audit:")
@@ -160,6 +162,132 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("CURRENT_PROJECT_VERSION: 1", project)
         self.assertNotIn("beta", info.lower())
         self.assertIn("v0.1.0-beta.1", common)
+
+    def test_public_preview_screenshots_are_metadata_free_png_files(self) -> None:
+        signature = b"\x89PNG\r\n\x1a\n"
+        for filename in (
+            "pet-halo-activity-above.png",
+            "pet-halo-activity-below.png",
+        ):
+            path = ROOT / "docs/assets/screenshots" / filename
+            payload = path.read_bytes()
+            self.assertTrue(payload.startswith(signature), filename)
+            chunk_types: list[bytes] = []
+            offset = len(signature)
+            while offset < len(payload):
+                length = int.from_bytes(payload[offset : offset + 4], "big")
+                chunk_type = payload[offset + 4 : offset + 8]
+                chunk_types.append(chunk_type)
+                offset += 12 + length
+            self.assertEqual(offset, len(payload), filename)
+            self.assertEqual(chunk_types[0], b"IHDR", filename)
+            self.assertEqual(chunk_types[-1], b"IEND", filename)
+            self.assertTrue(set(chunk_types) <= {b"IHDR", b"IDAT", b"IEND"}, filename)
+
+    def test_readme_documents_both_screenshots_and_unsigned_warning(self) -> None:
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertIn("# Pet Halo for Codex", readme)
+        self.assertIn("docs/assets/screenshots/pet-halo-activity-above.png", readme)
+        self.assertIn("docs/assets/screenshots/pet-halo-activity-below.png", readme)
+        self.assertIn("Source Public Beta / Unsigned Developer Preview", readme)
+        self.assertIn("unsigned and not notarized", readme)
+        self.assertIn("Only override Gatekeeper after independently verifying", readme)
+        self.assertIn("jianshi-codes/codex-pet-halo", readme)
+
+    def test_release_notes_warn_that_preview_is_unsigned(self) -> None:
+        notes = (ROOT / "docs/release-notes/v0.1.0-beta.1.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn(
+            "Pet Halo 0.1.0 Beta 1 — Unsigned Developer Preview",
+            notes,
+        )
+        self.assertIn("artifact is unsigned", notes)
+        self.assertIn("not notarized by Apple", notes)
+        self.assertIn("Do not treat this artifact as a signed or notarized release", notes)
+        self.assertIn("will use a new Beta version", notes)
+
+    def test_unsigned_preview_artifact_name_and_make_path_are_explicit(self) -> None:
+        environment = os.environ.copy()
+        environment["RELEASE_ARTIFACT_QUALIFIER"] = "unsigned"
+        result = subprocess.run(
+            [
+                "bash",
+                "-c",
+                'source Scripts/release-common.sh; printf "%s\\n" "$release_archive"',
+            ],
+            cwd=ROOT,
+            env=environment,
+            check=True,
+            text=True,
+            stdout=subprocess.PIPE,
+        )
+        self.assertEqual(
+            Path(result.stdout.strip()).name,
+            "Pet-Halo-0.1.0-beta.1-unsigned-universal.zip",
+        )
+        environment.pop("RELEASE_ARTIFACT_QUALIFIER")
+        default_result = subprocess.run(
+            [
+                "bash",
+                "-c",
+                'source Scripts/release-common.sh; printf "%s\\n" "$release_archive"',
+            ],
+            cwd=ROOT,
+            env=environment,
+            check=True,
+            text=True,
+            stdout=subprocess.PIPE,
+        )
+        self.assertEqual(
+            Path(default_result.stdout.strip()).name,
+            "Pet-Halo-0.1.0-beta.1-universal.zip",
+        )
+        makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
+        target = makefile.split("release-unsigned-preview:", maxsplit=1)[1]
+        target = target.split("\n\n", maxsplit=1)[0]
+        self.assertEqual(target.count("RELEASE_ARTIFACT_QUALIFIER=unsigned"), 5)
+        self.assertIn("release-build", target)
+        self.assertIn("release-archive", target)
+        self.assertIn("release-checksum", target)
+        self.assertIn("release-verify", target)
+        self.assertIn("RELEASE_MODE=unsigned", target)
+        self.assertIn("release-launch-smoke", target)
+
+    def test_signed_and_notarized_workflow_remains_credential_gated(self) -> None:
+        signing = (ROOT / "Scripts/release-sign.sh").read_text(encoding="utf-8")
+        notarization = (ROOT / "Scripts/release-notarize.sh").read_text(encoding="utf-8")
+        workflow = (ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
+        self.assertIn('[[ -n "${DEVELOPER_ID_APPLICATION:-}" ]]', signing)
+        self.assertIn("--timestamp", signing)
+        self.assertIn('if [[ -n "${NOTARYTOOL_PROFILE:-}" ]]', notarization)
+        for variable in (
+            "APPLE_NOTARY_KEY_PATH",
+            "APPLE_NOTARY_KEY_ID",
+            "APPLE_NOTARY_ISSUER_ID",
+        ):
+            self.assertIn(variable, notarization)
+        self.assertIn('== "Accepted"', notarization)
+        self.assertIn("stapler staple", notarization)
+        self.assertIn("environment: public-beta", workflow)
+        self.assertIn("make release-sign", workflow)
+        self.assertIn("make release-notarize", workflow)
+        self.assertIn("RELEASE_MODE=notarized make release-verify", workflow)
+
+    def test_checksums_include_only_public_preview_assets(self) -> None:
+        checksum = (ROOT / "Scripts/release-checksum.sh").read_text(encoding="utf-8")
+        assets = checksum.split("readonly public_release_assets=(", maxsplit=1)[1]
+        assets = assets.split("\n    )", maxsplit=1)[0]
+        self.assertEqual(
+            re.findall(r"\$release_[a-z]+", assets),
+            ["$release_archive", "$release_manifest", "$release_notes"],
+        )
+        self.assertIn('shasum -a 256 "${public_release_assets[@]}"', checksum)
+
+    def test_user_facing_security_link_uses_current_repository(self) -> None:
+        config = (ROOT / ".github/ISSUE_TEMPLATE/config.yml").read_text(encoding="utf-8")
+        self.assertIn("jianshi-codes/codex-pet-halo", config)
+        self.assertNotIn("jianshi-codes/pet-halo", config)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-# Pet Halo
+# Pet Halo for Codex
 
 <p align="center">
   <img src="PetHalo/Assets.xcassets/AppIcon.appiconset/app-icon-256.png" width="128" height="128" alt="Pet Halo original three-ring app icon">
@@ -8,16 +8,35 @@ Pet Halo is a small macOS menu-bar companion that places a transparent Usage rin
 
 > Pet Halo is an independent, unofficial project. It is not affiliated with, endorsed by, or supported by OpenAI. Codex and Codex Pet are OpenAI products.
 
-## Public Beta status
+## Preview
 
-M9 source and reachable Git-history public readiness is complete after the deterministic public-exposure audit. No public binary or GitHub Release has been published. The signing workflow is wired to a temporary Keychain but still requires credentialed execution; Apple acceptance, stapling, Gatekeeper verification, and exact signed-artifact clean-machine acceptance remain mandatory. Until then, build from source or use an explicitly identified unsigned development archive.
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <img src="docs/assets/screenshots/pet-halo-activity-above.png" width="100%" alt="Pet Halo with Codex activity above and Usage labels on the right">
+    </td>
+    <td width="50%" align="center">
+      <img src="docs/assets/screenshots/pet-halo-activity-below.png" width="100%" alt="Pet Halo with Codex activity below and Usage labels on the left">
+    </td>
+  </tr>
+  <tr>
+    <td align="center">Activity above · labels on the right</td>
+    <td align="center">Activity below · labels on the left</td>
+  </tr>
+</table>
+
+Codex Pet is shown only to demonstrate integration. It is not Pet Halo project branding.
+
+## Source Public Beta / Unsigned Developer Preview
+
+The source code is ready for public use. The downloadable preview ZIP is unsigned and not notarized, so macOS may block its first launch. Only override Gatekeeper after independently verifying the GitHub source, release checksum, and repository provenance. A signed and notarized binary remains planned for a future Beta.
+
+> **Unsigned preview warning:** `Pet-Halo-0.1.0-beta.1-unsigned-universal.zip` is not signed with a Developer ID certificate and is not notarized by Apple. Do not treat it as a signed or notarized release.
 
 GitHub-hosted PRs, comments, reviews, Actions logs/artifacts, variables,
 environments, tags, Releases, discussions, and Pages require the separate
 [manual public-metadata checklist](docs/PUBLIC_EXPOSURE_AUDIT.md) immediately
 before repository visibility changes.
-
-A live-product screenshot is intentionally deferred to the release page so it can be captured in a clean account with no conversations, account identity, credentials, or real Usage values visible.
 
 ## System requirements
 
@@ -39,9 +58,9 @@ Pet Halo checks the CLI version before launching its owned app-server. Unsupport
 
 ## Installation
 
-When the Beta artifact is published:
+When the unsigned Developer Preview artifact is published:
 
-1. Download `Pet-Halo-0.1.0-beta.1-universal.zip` and `SHA256SUMS` from the matching GitHub prerelease.
+1. Download `Pet-Halo-0.1.0-beta.1-unsigned-universal.zip`, `SHA256SUMS`, `release-manifest.json`, and `RELEASE_NOTES.md` from `jianshi-codes/codex-pet-halo`.
 2. Verify the archive:
 
    ```sh
@@ -49,9 +68,9 @@ When the Beta artifact is published:
    ```
 
 3. Extract the ZIP and move **Pet Halo.app** to Applications.
-4. Open Pet Halo. A notarized Beta should pass normal Gatekeeper verification.
+4. Open Pet Halo. Because this preview is unsigned and not notarized, macOS may block its first launch.
 
-Do not bypass Gatekeeper for an artifact that is presented as signed/notarized but fails verification. Unsigned local builds are development artifacts and macOS may block or warn about them.
+Only override Gatekeeper after independently verifying the GitHub source, `SHA256SUMS`, and the `jianshi-codes/codex-pet-halo` repository provenance. Do not bypass Gatekeeper for an artifact presented as signed/notarized that fails verification.
 
 ## First run
 
@@ -137,13 +156,10 @@ Xcode 26.4.1, Swift 6.3.1, and XcodeGen 2.46.0 are the current reviewed toolchai
 ```sh
 make bootstrap
 make check
-make release-build MARKETING_VERSION=0.1.0 BUILD_NUMBER=1 RELEASE_TAG=v0.1.0-beta.1
-make release-archive MARKETING_VERSION=0.1.0 BUILD_NUMBER=1 RELEASE_TAG=v0.1.0-beta.1
-make release-checksum MARKETING_VERSION=0.1.0 BUILD_NUMBER=1 RELEASE_TAG=v0.1.0-beta.1
-make release-verify MARKETING_VERSION=0.1.0 BUILD_NUMBER=1 RELEASE_TAG=v0.1.0-beta.1
+make release-unsigned-preview MARKETING_VERSION=0.1.0 BUILD_NUMBER=1 RELEASE_TAG=v0.1.0-beta.1
 ```
 
-The default release path is unsigned and requires a clean source tree. Developer ID signing and Apple notarization are separate credentialed steps described in [Release checklist](docs/RELEASE_CHECKLIST.md).
+The unsigned preview target requires a clean source tree and produces `Pet-Halo-0.1.0-beta.1-unsigned-universal.zip`. Developer ID signing and Apple notarization remain separate credentialed steps described in [Release checklist](docs/RELEASE_CHECKLIST.md).
 
 ## Contributing and security
 

@@ -21,15 +21,12 @@ This checklist is an operator procedure. M9 does not publish a tag, GitHub Relea
 ## Unsigned candidate
 
 ```sh
-make release-build MARKETING_VERSION=0.1.0 BUILD_NUMBER=1 RELEASE_TAG=v0.1.0-beta.1
-make release-archive MARKETING_VERSION=0.1.0 BUILD_NUMBER=1 RELEASE_TAG=v0.1.0-beta.1
-make release-checksum MARKETING_VERSION=0.1.0 BUILD_NUMBER=1 RELEASE_TAG=v0.1.0-beta.1
-make release-verify MARKETING_VERSION=0.1.0 BUILD_NUMBER=1 RELEASE_TAG=v0.1.0-beta.1 RELEASE_MODE=unsigned
+make release-unsigned-preview MARKETING_VERSION=0.1.0 BUILD_NUMBER=1 RELEASE_TAG=v0.1.0-beta.1
 ```
 
 - [ ] Verify the bundle is Release and universal `arm64 x86_64`.
 - [ ] Verify versions, identifier, minimum macOS, icons, and packaged-file allowlist.
-- [ ] Verify the deterministic ZIP name, manifest, release notes, and SHA-256.
+- [ ] Verify the deterministic `Pet-Halo-0.1.0-beta.1-unsigned-universal.zip` name, manifest states `unsigned` / `not-submitted`, release notes, and SHA-256.
 
 ## Developer ID and notarization
 
