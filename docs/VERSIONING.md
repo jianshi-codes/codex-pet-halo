@@ -6,7 +6,7 @@ Pet Halo uses semantic product versions and monotonically increasing integer bui
 - `CFBundleVersion` is a positive integer, such as `1`.
 - Beta identity belongs in the Git tag and release title, such as `v0.1.0-beta.1` and `Pet Halo 0.1.0 Beta 1`.
 - Unsigned preview artifacts use `Pet-Halo-<version>-unsigned-universal.zip`, where `<version>` includes the Beta identity (for example, `0.1.0-beta.1`).
-- Future Developer ID-signed and notarized Beta artifacts use `Pet-Halo-<version>-universal.zip` (for example, `Pet-Halo-0.1.0-beta.2-universal.zip`).
+- Future Developer ID-signed and notarized Beta artifacts use `Pet-Halo-<version>-universal.zip` (for example, `Pet-Halo-0.1.0-beta.3-universal.zip`).
 - Every tag must resolve to a reviewed commit whose injected bundle versions match the tag.
 
 Compatibility or security fixes increment the patch version or Beta sequence as appropriate. User-facing compatible features increment minor. Breaking compatibility increments major after an explicit migration plan. No tag, GitHub Release identity, or build number is reused, and publication automation must fail closed when either the requested tag or Release already exists.

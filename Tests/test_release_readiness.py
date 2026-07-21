@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import os
 import re
 import subprocess
@@ -228,12 +229,14 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("unsigned and not notarized", readme)
         self.assertIn("Only override Gatekeeper after independently verifying", readme)
         self.assertIn("jianshi-codes/codex-pet-halo", readme)
+        self.assertIn("Download v0.1.0-beta.2", readme)
+        self.assertIn("Pet-Halo-0.1.0-beta.2-unsigned-universal.zip", readme)
 
     def test_readme_release_link_metric_meanings_and_thresholds_are_explicit(self) -> None:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         release_url = (
             "https://github.com/jianshi-codes/codex-pet-halo/releases/tag/"
-            "v0.1.0-beta.1"
+            "v0.1.0-beta.2"
         )
         self.assertIn(release_url, readme)
         self.assertLess(
@@ -335,15 +338,71 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("Do not treat this artifact as a signed or notarized release", notes)
         self.assertIn("will use a new Beta version", notes)
 
-    def test_beta_two_uses_publication_neutral_release_notes(self) -> None:
+    def test_beta_two_release_closeout_documents_published_state(self) -> None:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
-        notes = (ROOT / "docs/release-notes/v0.1.0-beta.2.md").read_text(
-            encoding="utf-8"
-        )
         changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+        current_state = (ROOT / "docs/CURRENT_STATE.md").read_text(encoding="utf-8")
+        checklist = (ROOT / "docs/RELEASE_CHECKLIST.md").read_text(encoding="utf-8")
+        settings = (ROOT / "docs/GITHUB_SETTINGS.md").read_text(encoding="utf-8")
+
         self.assertIn("CURRENT_PROJECT_VERSION: 2", (ROOT / "project.yml").read_text())
         self.assertIn("W 39% · Jul 27", readme)
-        self.assertIn("v0.1.0-beta.1", readme)
+        self.assertIn("download-v0.1.0--beta.2", readme)
+        self.assertIn(
+            "https://github.com/jianshi-codes/codex-pet-halo/releases/tag/"
+            "v0.1.0-beta.2",
+            readme,
+        )
+        self.assertIn("Pet-Halo-0.1.0-beta.2-unsigned-universal.zip", readme)
+        self.assertIn("unsigned and not notarized", readme)
+        self.assertIn("`0.145.0-alpha.18`", readme)
+        self.assertIn("`>= 0.145.0-alpha.18` and `< 1.0.0`", readme)
+        self.assertIn("required runtime capability validation", readme)
+        self.assertIn("known-broken versions may be denied", readme)
+        self.assertIn("Provisional compatibility does not claim schema review", readme)
+
+        unreleased = changelog.split("## [Unreleased]", maxsplit=1)[1]
+        unreleased = unreleased.split("## [0.1.0-beta.2]", maxsplit=1)[0]
+        self.assertEqual(unreleased.strip(), "No changes yet.")
+        beta_two = changelog.split("## [0.1.0-beta.2]", maxsplit=1)[1]
+        beta_two = beta_two.split("## [0.1.0-beta.1]", maxsplit=1)[0]
+        self.assertTrue(beta_two.lstrip().startswith("- 2026-07-21"))
+        self.assertIn("Weekly Ring capsules display", beta_two)
+        self.assertIn("bounded provisional forward compatibility", beta_two)
+        self.assertIn("draft", settings.lower())
+        self.assertIn("## [0.1.0-beta.1] - 2026-07-21", changelog)
+
+        for merged_pr in ("PR #14", "PR #15"):
+            self.assertIn(merged_pr, current_state)
+        self.assertIn("Published release: `v0.1.0-beta.2`", current_state)
+        self.assertIn("2026-07-21T08:43:44Z", current_state)
+        self.assertIn("bundle build `2`", current_state)
+        self.assertIn("draft: false", current_state)
+        self.assertIn("prerelease: false", current_state)
+        self.assertIn("signing: unsigned", current_state)
+        self.assertIn("notarization: not-submitted", current_state)
+        self.assertIn("exact reviewed baseline", current_state)
+        self.assertIn("may run provisionally", current_state)
+        self.assertIn("not formal schema-review evidence", current_state)
+
+        self.assertIn("## Published Beta 2 record — 2026-07-21", checklist)
+        self.assertIn("- [x] PR #14 and PR #15 merged", checklist)
+        self.assertIn("- [x] Release owned-child launch/shutdown smoke", checklist)
+        future = checklist.split("## Source and compatibility for a future Beta", maxsplit=1)[1]
+        self.assertIn("v0.1.0-beta.3", future)
+        self.assertIn("BUILD_NUMBER=3", future)
+        self.assertIn("Pet-Halo-0.1.0-beta.3-unsigned-universal.zip", future)
+        self.assertNotIn("BUILD_NUMBER=2", future)
+        self.assertNotIn("v0.1.0-beta.2", future)
+
+        self.assertIn("`v0.1.0-beta.2` peels to", settings)
+        self.assertIn("2026-07-21T08:43:44Z", settings)
+        self.assertIn("non-draft, non-prerelease, latest", settings)
+
+    def test_beta_two_release_notes_remain_publication_neutral_and_unchanged(self) -> None:
+        notes_path = ROOT / "docs/release-notes/v0.1.0-beta.2.md"
+        notes_bytes = notes_path.read_bytes()
+        notes = notes_bytes.decode("utf-8")
         self.assertIn("Pet-Halo-0.1.0-beta.2-unsigned-universal.zip", notes)
         self.assertIn("The downloadable artifact is unsigned", notes)
         self.assertIn("This is Beta software", notes)
@@ -351,7 +410,32 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertNotIn("not published", notes)
         self.assertIn("No Usage semantics", notes)
         self.assertIn("exact reviewed registry remains unchanged", notes)
-        self.assertIn("Weekly Ring capsules display", changelog)
+        self.assertEqual(
+            hashlib.sha256(notes_bytes).hexdigest(),
+            "f6fb65e7cfe06376824f58f9c5a35994089cdeeeb0e269a2b505cb6e93a9ec5c",
+        )
+
+    def test_current_documents_have_no_stale_beta_two_prepublication_claim(self) -> None:
+        current_documents = "\n".join(
+            (ROOT / path).read_text(encoding="utf-8")
+            for path in (
+                "README.md",
+                "CHANGELOG.md",
+                "docs/CURRENT_STATE.md",
+                "docs/RELEASE_CHECKLIST.md",
+                "docs/GITHUB_SETTINGS.md",
+                "docs/PROJECT_PLAN.md",
+                "docs/milestones/m9-public-beta-readiness.md",
+                "docs/VERSIONING.md",
+            )
+        )
+        self.assertNotRegex(
+            current_documents,
+            re.compile(
+                r"Beta\s*2.{0,120}(prepared|not published|unpublished|pending publication|publication pending)",
+                re.IGNORECASE | re.DOTALL,
+            ),
+        )
 
     def test_unsigned_preview_artifact_name_and_make_path_are_explicit(self) -> None:
         environment = os.environ.copy()
