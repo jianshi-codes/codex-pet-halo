@@ -61,6 +61,9 @@ for raw_line in sys.stdin:
         if SCENARIO == "initialize-method-not-found":
             write({"id": request_id, "error": {"code": -32601, "message": "unsupported"}})
             continue
+        if SCENARIO == "initialize-internal-error":
+            write({"id": request_id, "error": {"code": -32603, "message": "temporary"}})
+            continue
         if SCENARIO in {"malformed", "invalid-delayed-termination"}:
             sys.stdout.write("{bad json\n")
             sys.stdout.flush()
@@ -90,7 +93,16 @@ for raw_line in sys.stdin:
 
     if method == "account/read":
         account_request_count += 1
-        authentication_unavailable = SCENARIO == "auth-unavailable" or (
+        if SCENARIO == "account-method-not-found":
+            write({"id": request_id, "error": {"code": -32601, "message": "unsupported"}})
+            continue
+        if SCENARIO == "account-internal-error":
+            write({"id": request_id, "error": {"code": -32603, "message": "temporary"}})
+            continue
+        authentication_unavailable = SCENARIO in {
+            "auth-unavailable",
+            "auth-unavailable-rate-must-not-run",
+        } or (
             SCENARIO == "account-logout" and account_request_count > 1
         )
         account_response = (
@@ -107,6 +119,17 @@ for raw_line in sys.stdin:
         )
     elif method == "account/rateLimits/read":
         rate_request_count += 1
+        if SCENARIO == "auth-unavailable-rate-must-not-run":
+            write({"id": request_id, "error": {"code": -32603, "message": "must not run"}})
+            continue
+        if SCENARIO == "rate-method-not-found":
+            write({"id": request_id, "error": {"code": -32601, "message": "unsupported"}})
+            continue
+        if SCENARIO == "rate-internal-error" or (
+            SCENARIO == "rate-internal-after-first" and rate_request_count > 1
+        ):
+            write({"id": request_id, "error": {"code": -32603, "message": "temporary"}})
+            continue
         if SCENARIO == "delayed":
             time.sleep(0.05)
         if SCENARIO == "account-update-during-initial" and rate_request_count == 1:
