@@ -11,8 +11,6 @@ Pet Halo is a macOS menu-bar companion that places a transparent Usage ring arou
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-black)
 
-> **Unofficial project:** Pet Halo is independent and is not affiliated with, endorsed by, or supported by OpenAI. Codex and Codex Pet are OpenAI products.
-
 ## Preview
 
 <table>

@@ -322,7 +322,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("Do not treat this artifact as a signed or notarized release", notes)
         self.assertIn("will use a new Beta version", notes)
 
-    def test_beta_two_is_prepared_without_rewriting_beta_one_release_links(self) -> None:
+    def test_beta_two_uses_publication_neutral_release_notes(self) -> None:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         notes = (ROOT / "docs/release-notes/v0.1.0-beta.2.md").read_text(
             encoding="utf-8"
@@ -332,7 +332,10 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("W 39% · Jul 27", readme)
         self.assertIn("v0.1.0-beta.1", readme)
         self.assertIn("Pet-Halo-0.1.0-beta.2-unsigned-universal.zip", notes)
-        self.assertIn("Beta 2 release identity is prepared but not published", notes)
+        self.assertIn("The downloadable artifact is unsigned", notes)
+        self.assertIn("This is Beta software", notes)
+        self.assertIn("not signed with a Developer ID certificate", notes)
+        self.assertNotIn("not published", notes)
         self.assertIn("No Usage semantics", notes)
         self.assertIn("exact supported Codex CLI and Desktop versions remain unchanged", notes)
         self.assertIn("Weekly Ring capsules display", changelog)
