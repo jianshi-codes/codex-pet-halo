@@ -635,7 +635,7 @@ final class PetRingPresentationMapperTests: XCTestCase {
         }
         return CodexUsageState(
             connection: .connected,
-            compatibility: .supported(version: "test"),
+            compatibility: .reviewed(version: "test"),
             snapshot: UsageSnapshot(
                 rateLimitBuckets: [],
                 accountUsage: accountValue,

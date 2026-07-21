@@ -112,6 +112,7 @@ public enum SafeFailureReason: String, Equatable, Sendable {
     case executableMissing
     case versionInspectionFailed
     case unsupportedProtocolVersion
+    case runtimeIncompatible
     case processLaunchFailed
     case transportClosed
     case requestTimedOut
@@ -173,8 +174,10 @@ public enum BridgeConnectionState: Equatable, Sendable {
 
 public enum ProtocolCompatibilityState: Equatable, Sendable {
     case unknown
-    case supported(version: String)
-    case unsupported(version: String?)
+    case reviewed(version: String)
+    case provisional(version: String)
+    case blocked(version: String?)
+    case runtimeIncompatible(version: String)
 }
 
 public enum DataFreshness: Equatable, Sendable {

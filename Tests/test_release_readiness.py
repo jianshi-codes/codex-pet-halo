@@ -48,6 +48,18 @@ class ReleaseReadinessTests(unittest.TestCase):
             for marker in prohibited:
                 self.assertNotIn(marker, source, path.name)
 
+    def test_release_launch_smoke_has_safe_typed_missing_child_diagnostics(self) -> None:
+        source = (ROOT / "Scripts/release-launch-smoke.sh").read_text(encoding="utf-8")
+        for diagnostic in (
+            "Codex executable unavailable",
+            "Codex CLI version blocked",
+            "Codex CLI runtime incompatible",
+            "generic child-start timeout",
+        ):
+            self.assertIn(diagnostic, source)
+        for unsafe in ("$PATH", "raw logs", "payload"):
+            self.assertNotIn(unsafe, source)
+
     def test_make_exposes_complete_release_surface(self) -> None:
         makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
         for target in (
@@ -251,7 +263,8 @@ class ReleaseReadinessTests(unittest.TestCase):
             readme,
         )
         self.assertIn("codex --version", readme)
-        self.assertIn("Only the exact reviewed CLI version", readme)
+        self.assertIn("The reviewed baseline remains the strongest evidence", readme)
+        self.assertIn("Session-only acceptance after required runtime capability validation", readme)
 
     def test_beta_one_is_released_and_current_docs_have_no_prepublication_state(self) -> None:
         changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
@@ -337,7 +350,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("not signed with a Developer ID certificate", notes)
         self.assertNotIn("not published", notes)
         self.assertIn("No Usage semantics", notes)
-        self.assertIn("exact supported Codex CLI and Desktop versions remain unchanged", notes)
+        self.assertIn("exact reviewed registry remains unchanged", notes)
         self.assertIn("Weekly Ring capsules display", changelog)
 
     def test_unsigned_preview_artifact_name_and_make_path_are_explicit(self) -> None:

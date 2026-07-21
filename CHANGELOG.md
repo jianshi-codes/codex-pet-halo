@@ -7,6 +7,12 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 ### Added
 
 - Weekly Ring capsules display the verified Weekly reset date in the user's local timezone when Codex provides one.
+- A safe menu diagnostic distinguishes reviewed, provisional, blocked, and runtime-incompatible CLI states.
+
+### Changed
+
+- Replaced the exact-version-only startup allowlist with bounded provisional compatibility for supported pre-1.0 Codex CLI versions, guarded by required runtime capability validation and a known-incompatible denylist.
+- Provisional protocol incompatibility now closes the owned app-server and pauses automatic reconnect while preserving user Refresh and restart retries.
 
 ## [0.1.0-beta.1] - 2026-07-21
 

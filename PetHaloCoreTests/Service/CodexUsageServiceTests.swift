@@ -268,9 +268,11 @@ final class CodexUsageServiceTests: XCTestCase {
 
         await service.start()
         let state = await service.stateForTesting()
+        let validationState = await service.provisionalValidationStateForTesting()
 
         XCTAssertEqual(state.connection, .connected)
-        XCTAssertEqual(state.compatibility, .supported(version: "0.145.0-alpha.18"))
+        XCTAssertEqual(state.compatibility, .reviewed(version: "0.145.0-alpha.18"))
+        XCTAssertEqual(validationState, .notApplicable)
         XCTAssertEqual(
             state.componentFreshness,
             UsageComponentFreshness(rateLimits: .current, accountUsage: .current)
@@ -412,6 +414,309 @@ final class CodexUsageServiceTests: XCTestCase {
         XCTAssertEqual(state.failureReason, .authenticationUnavailable)
         XCTAssertNotEqual(state.failureReason, .transportClosed)
         XCTAssertEqual(state.componentFreshness, .unavailable)
+        await service.stop()
+    }
+
+    func testProvisionalVersionLaunchesAndConnectsAfterRequiredCapabilitiesSucceed() async throws {
+        let (service, _, factory) = try makeService(
+            scenarios: ["valid"],
+            version: "0.145.0-alpha.27"
+        )
+
+        await service.start()
+        let state = await service.stateForTesting()
+        let validationState = await service.provisionalValidationStateForTesting()
+
+        XCTAssertEqual(state.connection, .connected)
+        XCTAssertEqual(state.compatibility, .provisional(version: "0.145.0-alpha.27"))
+        XCTAssertEqual(validationState, .validated)
+        XCTAssertEqual(factory.count(), 1)
+        XCTAssertEqual(state.capabilities.generalFiveHour, .unavailable(.matchingWindowMissing))
+        await service.stop()
+    }
+
+    func testProvisionalVersionToleratesUnknownResponseFields() async throws {
+        let (service, _, _) = try makeService(
+            scenarios: ["unknown-fields"],
+            version: "0.146.0"
+        )
+
+        await service.start()
+        let state = await service.stateForTesting()
+
+        XCTAssertEqual(state.connection, .connected)
+        XCTAssertEqual(state.compatibility, .provisional(version: "0.146.0"))
+        XCTAssertEqual(state.capabilities.generalWeekly, .available(
+            QuotaWindow(source: .primary, usedPercent: 25, durationMinutes: 10_080, resetsAt: nil)
+        ))
+        await service.stop()
+    }
+
+    func testProvisionalVersionKeepsWeeklyWhenAccountUsageIsUnsupported() async throws {
+        let (service, _, _) = try makeService(
+            scenarios: ["usage-fails"],
+            version: "0.145.0-alpha.27"
+        )
+
+        await service.start()
+        let state = await service.stateForTesting()
+
+        XCTAssertEqual(state.connection, .connected)
+        XCTAssertEqual(state.failureReason, .accountUsageUnsupported)
+        XCTAssertEqual(state.componentFreshness.rateLimits, .current)
+        XCTAssertEqual(state.capabilities.accountUsage, .unavailable(.unsupported))
+        await service.stop()
+    }
+
+    func testProvisionalAuthenticationUnavailableIsNotRuntimeIncompatible() async throws {
+        let observation = try makeObservationFile()
+        defer { try? FileManager.default.removeItem(at: observation.deletingLastPathComponent()) }
+        let (service, _, _) = try makeService(
+            scenarios: ["auth-unavailable-rate-must-not-run"],
+            version: "0.145.0-alpha.27",
+            observationURL: observation
+        )
+
+        await service.start()
+        let state = await service.stateForTesting()
+        let validationState = await service.provisionalValidationStateForTesting()
+
+        XCTAssertEqual(state.connection, .connected)
+        XCTAssertEqual(state.compatibility, .provisional(version: "0.145.0-alpha.27"))
+        XCTAssertEqual(state.failureReason, .authenticationUnavailable)
+        XCTAssertEqual(validationState, .pending)
+        XCTAssertEqual(try methodCount("account/read", in: observation), 1)
+        XCTAssertEqual(try methodCount("account/rateLimits/read", in: observation), 0)
+        XCTAssertEqual(try methodCount("account/usage/read", in: observation), 0)
+        await service.stop()
+    }
+
+    func testProvisionalInitializeInternalErrorReconnectsInsteadOfBecomingIncompatible() async throws {
+        let (service, clock, factory) = try makeService(
+            scenarios: ["initialize-internal-error", "valid"],
+            version: "0.145.0-alpha.27"
+        )
+
+        await service.start()
+        let retrying = await service.stateForTesting()
+        let pendingValidationState = await service.provisionalValidationStateForTesting()
+        XCTAssertEqual(retrying.connection, .reconnecting(attempt: 1))
+        XCTAssertNotEqual(retrying.failureReason, .runtimeIncompatible)
+        XCTAssertEqual(pendingValidationState, .pending)
+        XCTAssertEqual(factory.count(), 1)
+
+        try await waitForClockWaiter(clock, dueIn: 1_000_000_000)
+        clock.advance(by: 1_000_000_000)
+        let connected = try await waitForState(service) { $0.connection == .connected }
+        let validationState = await service.provisionalValidationStateForTesting()
+        XCTAssertEqual(connected.compatibility, .provisional(version: "0.145.0-alpha.27"))
+        XCTAssertEqual(validationState, .validated)
+        XCTAssertEqual(factory.count(), 2)
+        await service.stop()
+    }
+
+    func testProvisionalAccountMethodNotFoundIsRuntimeIncompatible() async throws {
+        let (service, _, factory) = try makeService(
+            scenarios: ["account-method-not-found"],
+            version: "0.145.0-alpha.27"
+        )
+
+        await service.start()
+        let state = await service.stateForTesting()
+
+        XCTAssertEqual(state.failureReason, .runtimeIncompatible)
+        XCTAssertEqual(factory.count(), 1)
+        await service.stop()
+    }
+
+    func testProvisionalAccountInternalErrorReconnectsInsteadOfBecomingIncompatible() async throws {
+        let (service, clock, factory) = try makeService(
+            scenarios: ["account-internal-error", "valid"],
+            version: "0.145.0-alpha.27"
+        )
+
+        await service.start()
+        let retrying = await service.stateForTesting()
+        XCTAssertEqual(retrying.connection, .reconnecting(attempt: 1))
+        XCTAssertNotEqual(retrying.failureReason, .runtimeIncompatible)
+        XCTAssertEqual(factory.count(), 1)
+
+        try await waitForClockWaiter(clock, dueIn: 1_000_000_000)
+        clock.advance(by: 1_000_000_000)
+        _ = try await waitForState(service) { $0.connection == .connected }
+        XCTAssertEqual(factory.count(), 2)
+        await service.stop()
+    }
+
+    func testProvisionalInitializeMethodNotFoundIsTerminalUntilManualRefresh() async throws {
+        let (service, clock, factory) = try makeService(
+            scenarios: ["initialize-method-not-found", "valid"],
+            version: "0.145.0-alpha.27"
+        )
+
+        await service.start()
+        let incompatible = await service.stateForTesting()
+        XCTAssertEqual(incompatible.connection, .unavailable)
+        XCTAssertEqual(incompatible.failureReason, .runtimeIncompatible)
+        XCTAssertEqual(
+            incompatible.compatibility,
+            .runtimeIncompatible(version: "0.145.0-alpha.27")
+        )
+        XCTAssertEqual(factory.count(), 1)
+
+        clock.advance(by: 60_000_000_000)
+        for _ in 0 ..< 20 { await Task.yield() }
+        XCTAssertEqual(factory.count(), 1)
+
+        await service.refresh()
+        let recovered = await service.stateForTesting()
+        XCTAssertEqual(recovered.connection, .connected)
+        XCTAssertEqual(recovered.compatibility, .provisional(version: "0.145.0-alpha.27"))
+        XCTAssertEqual(factory.count(), 2)
+        await service.stop()
+    }
+
+    func testProvisionalRequiredRateLimitDecodingFailureIsRuntimeIncompatible() async throws {
+        let (service, _, factory) = try makeService(
+            scenarios: ["rate-invalid-decoding"],
+            version: "0.145.0-alpha.27"
+        )
+
+        await service.start()
+        let state = await service.stateForTesting()
+
+        XCTAssertEqual(state.connection, .unavailable)
+        XCTAssertEqual(state.failureReason, .runtimeIncompatible)
+        XCTAssertEqual(factory.count(), 1)
+        await service.stop()
+    }
+
+    func testProvisionalRateLimitMethodNotFoundIsRuntimeIncompatible() async throws {
+        let (service, _, factory) = try makeService(
+            scenarios: ["rate-method-not-found"],
+            version: "0.145.0-alpha.27"
+        )
+
+        await service.start()
+        let state = await service.stateForTesting()
+
+        XCTAssertEqual(state.connection, .unavailable)
+        XCTAssertEqual(state.failureReason, .runtimeIncompatible)
+        XCTAssertEqual(factory.count(), 1)
+        await service.stop()
+    }
+
+    func testProvisionalInitialRateLimitInternalErrorReconnects() async throws {
+        let (service, clock, factory) = try makeService(
+            scenarios: ["rate-internal-error", "valid"],
+            version: "0.145.0-alpha.27"
+        )
+
+        await service.start()
+        let retrying = await service.stateForTesting()
+        XCTAssertEqual(retrying.connection, .reconnecting(attempt: 1))
+        XCTAssertNotEqual(retrying.failureReason, .runtimeIncompatible)
+        XCTAssertEqual(factory.count(), 1)
+
+        try await waitForClockWaiter(clock, dueIn: 1_000_000_000)
+        clock.advance(by: 1_000_000_000)
+        _ = try await waitForState(service) { $0.connection == .connected }
+        XCTAssertEqual(factory.count(), 2)
+        await service.stop()
+    }
+
+    func testValidatedProvisionalSessionKeepsTransientRateFailureAsStale() async throws {
+        let (service, _, factory) = try makeService(
+            scenarios: ["rate-internal-after-first"],
+            version: "0.145.0-alpha.27"
+        )
+        await service.start()
+        let initialValidationState = await service.provisionalValidationStateForTesting()
+        XCTAssertEqual(initialValidationState, .validated)
+
+        await service.refresh()
+        let state = await service.stateForTesting()
+
+        XCTAssertEqual(state.connection, .connected)
+        XCTAssertEqual(state.failureReason, .rateLimitsUnavailable)
+        XCTAssertEqual(state.componentFreshness.rateLimits, .stale)
+        XCTAssertEqual(state.compatibility, .provisional(version: "0.145.0-alpha.27"))
+        let refreshedValidationState = await service.provisionalValidationStateForTesting()
+        XCTAssertEqual(refreshedValidationState, .validated)
+        XCTAssertEqual(factory.count(), 1)
+        await service.stop()
+    }
+
+    func testImmediateRefreshDuringRuntimeIncompatibleUnwindCreatesExactlyOneRetry() async throws {
+        let tracker = ChildOwnershipTracker()
+        let clock = TestBridgeClock()
+        let factory = ScenarioFactoryBox(
+            scenarios: ["invalid-delayed-termination", "valid"],
+            scriptURL: try fixtureURL(),
+            tracker: tracker
+        )
+        let service = makeService(
+            versionInspector: FixedVersionInspector(result: .available("0.145.0-alpha.27")),
+            clock: clock,
+            factory: factory
+        )
+        let stream = await service.states()
+        let refreshOnFailure = Task { () -> CodexUsageState? in
+            for await state in stream where state.failureReason == .runtimeIncompatible {
+                await service.refresh()
+                return state
+            }
+            return nil
+        }
+
+        let start = Task { await service.start() }
+        let observedState = await refreshOnFailure.value
+        let incompatible = try XCTUnwrap(observedState)
+        XCTAssertEqual(incompatible.connection, .unavailable)
+        XCTAssertEqual(factory.count(), 1)
+        XCTAssertEqual(tracker.snapshot().live, 1)
+
+        await start.value
+        let connected = await service.stateForTesting()
+        XCTAssertEqual(connected.connection, .connected)
+        XCTAssertEqual(connected.compatibility, .provisional(version: "0.145.0-alpha.27"))
+        XCTAssertEqual(factory.count(), 2)
+        XCTAssertEqual(tracker.snapshot().maximum, 1)
+
+        clock.advance(by: 60_000_000_000)
+        for _ in 0 ..< 20 { await Task.yield() }
+        XCTAssertEqual(factory.count(), 2)
+        await service.stop()
+        XCTAssertEqual(tracker.snapshot().live, 0)
+    }
+
+    func testProvisionalMissingRequiredWeeklyWindowIsRuntimeIncompatible() async throws {
+        let (service, _, _) = try makeService(
+            scenarios: ["rate-missing-weekly"],
+            version: "0.145.0-alpha.27"
+        )
+
+        await service.start()
+        let state = await service.stateForTesting()
+        let validationState = await service.provisionalValidationStateForTesting()
+
+        XCTAssertEqual(state.connection, .unavailable)
+        XCTAssertEqual(state.failureReason, .runtimeIncompatible)
+        XCTAssertEqual(validationState, .pending)
+        await service.stop()
+    }
+
+    func testProvisionalInvalidJSONRPCEnvelopeIsRuntimeIncompatible() async throws {
+        let (service, _, _) = try makeService(
+            scenarios: ["malformed"],
+            version: "0.145.0-alpha.27"
+        )
+
+        await service.start()
+        let state = await service.stateForTesting()
+
+        XCTAssertEqual(state.connection, .unavailable)
+        XCTAssertEqual(state.failureReason, .runtimeIncompatible)
         await service.stop()
     }
 
@@ -569,8 +874,8 @@ final class CodexUsageServiceTests: XCTestCase {
         XCTAssertEqual(loggedOut.capabilities.accountUsage, .unavailable(.authenticationUnavailable))
         XCTAssertEqual(loggedOut.componentFreshness, .unavailable)
         XCTAssertEqual(try methodCount("account/read", in: observation), 2)
-        XCTAssertEqual(try methodCount("account/rateLimits/read", in: observation), 2)
-        XCTAssertEqual(try methodCount("account/usage/read", in: observation), 2)
+        XCTAssertEqual(try methodCount("account/rateLimits/read", in: observation), 1)
+        XCTAssertEqual(try methodCount("account/usage/read", in: observation), 1)
         await service.stop()
     }
 
@@ -785,6 +1090,7 @@ final class CodexUsageServiceTests: XCTestCase {
 
     private func makeService(
         scenarios: [String],
+        version: String = "0.145.0-alpha.18",
         timeoutPolicy: JSONRPCTimeoutPolicy = JSONRPCTimeoutPolicy(),
         observationURL: URL? = nil
     ) throws -> (CodexUsageService, TestBridgeClock, ScenarioFactoryBox) {
@@ -798,7 +1104,7 @@ final class CodexUsageServiceTests: XCTestCase {
         let service = CodexUsageService(
             applicationVersion: "test",
             locator: FixedLocator(result: .available(URL(fileURLWithPath: "/usr/bin/python3"))),
-            versionInspector: FixedVersionInspector(result: .available("0.145.0-alpha.18")),
+            versionInspector: FixedVersionInspector(result: .available(version)),
             clientFactory: factory.makeClient,
             clock: clock,
             refreshPolicy: RefreshPolicy(
