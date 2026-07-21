@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: bootstrap generate build test m0-tests m2-tests m2-smoke m3-tests m3-smoke m4-tests m4-smoke pet-following-tests pet-following-smoke pet-following-gate m7-tests m7-smoke m8-tests m8-smoke check validate-bundle validate-generated-project release-build release-archive release-checksum release-sign release-notarize release-verify release-launch-smoke
+.PHONY: bootstrap generate build test m0-tests m2-tests m2-smoke m3-tests m3-smoke m4-tests m4-smoke pet-following-tests pet-following-smoke pet-following-gate m7-tests m7-smoke m8-tests m8-smoke public-exposure-audit check validate-bundle validate-generated-project release-build release-archive release-checksum release-sign release-notarize release-verify release-launch-smoke
 
 bootstrap:
 	./Scripts/bootstrap.sh
@@ -52,6 +52,9 @@ m8-tests:
 
 m8-smoke:
 	./Scripts/m8-smoke.sh
+
+public-exposure-audit:
+	python3 ./Scripts/public-exposure-audit.py
 
 release-build:
 	./Scripts/release-build.sh

@@ -8,6 +8,8 @@ readonly bundle_id="io.github.jianshicodes.PetHalo"
 readonly smoke_temp_dir="$(mktemp -d "${TMPDIR:-/tmp}/pet-halo-following-smoke.XXXXXX")"
 readonly route_a_log="$smoke_temp_dir/route-a.log"
 readonly live_log="$smoke_temp_dir/live.log"
+readonly route_a_probe="$smoke_temp_dir/route-a-probe"
+readonly ring_probe="$smoke_temp_dir/ring-probe"
 chmod 700 "$smoke_temp_dir"
 touch "$route_a_log" "$live_log"
 chmod 600 "$route_a_log" "$live_log"
@@ -32,6 +34,16 @@ if pgrep -x 'Pet Halo' >/dev/null 2>&1; then
 fi
 if ! CONFIGURATION=Debug DERIVED_DATA_PATH="$derived_data_path" ./Scripts/build.sh >/dev/null 2>&1; then
     echo "Pet-following smoke blocker: current application build failed" >&2
+    exit 1
+fi
+if ! xcrun swiftc "$repository_root/Tools/M5PetDiscovery/main.swift" \
+    -o "$route_a_probe" >/dev/null 2>&1; then
+    echo "Pet-following smoke blocker: Route A probe compilation failed" >&2
+    exit 1
+fi
+if ! xcrun swiftc "$repository_root/Tools/M6CenterLockSmoke/main.swift" \
+    -o "$ring_probe" >/dev/null 2>&1; then
+    echo "Pet-following smoke blocker: Ring probe compilation failed" >&2
     exit 1
 fi
 if ! /usr/bin/open -n "$app_bundle" >/dev/null 2>&1; then
@@ -69,10 +81,9 @@ echo "Unified Pet-following observation starts now and prints only sanitized out
 echo "Keep Pet visible. After 5 seconds, move Pet first; then Tuck Away, Wake, and Quit Pet Halo within 60 seconds."
 echo "Confirm concentric Usage rings share one transparent center with no rectangular card; if activity appears, confirm it occupies the arc opening."
 sleep 5
-xcrun swift "$repository_root/Tools/M5PetDiscovery/main.swift" \
-    --observe-pet-target 60 >"$route_a_log" 2>&1 &
+"$route_a_probe" --observe-pet-target 60 >"$route_a_log" 2>&1 &
 route_a_pid="$!"
-if ! xcrun swift "$repository_root/Tools/M6CenterLockSmoke/main.swift" 60 >"$live_log" 2>&1; then
+if ! "$ring_probe" 60 >"$live_log" 2>&1; then
     echo "Pet-following smoke blocker: live read-only Ring observation did not complete" >&2
     exit 1
 fi

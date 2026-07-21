@@ -35,6 +35,7 @@ make m4-smoke
 make pet-following-gate
 make m8-tests
 make m8-smoke
+make public-exposure-audit
 make release-build
 make release-archive
 make release-checksum

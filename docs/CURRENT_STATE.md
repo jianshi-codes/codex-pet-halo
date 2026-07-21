@@ -14,8 +14,9 @@
 - Desktop `26.715.31925 (5551)` remains supported. Current Desktop `26.715.52143 (5591)` passed the consolidated Route A and complete Pet-following gate.
 - User-facing bridge, following, and Pet failure states are concise and omit raw errors, payloads, identity, paths, and process details.
 - User-first README, public contribution/security policy, Code of Conduct, changelog, issue forms, versioning/release documentation, and privacy boundaries are implemented.
+- Source and every reachable Git blob pass the deterministic public-exposure audit. GitHub-hosted metadata/log/artifact review remains a separate manual visibility-change hold point.
 - Unsigned Release build, deterministic archive naming, manifest, SHA-256, extraction verification, and isolated clean-preferences launch/shutdown smoke pass. Release binaries contain no user-specific path and exclude schemas, fixtures, smoke/report assets, logs, and debug material.
-- Developer ID/notarization scripts and a manually gated pinned-action GitHub prerelease workflow are implemented; this host has no valid signing identity, so credentialed validation is unavailable.
+- Developer ID/notarization scripts and a manually gated pinned-action GitHub prerelease workflow are implemented. CI exports the imported certificate SHA-1 fingerprint and binds every codesign call to its temporary Keychain; credentialed execution has not occurred because this host has no valid signing identity.
 
 ## Validation state
 
@@ -36,7 +37,8 @@ the duplicate M5/M6 commands were removed.
 - M8 smoke: deterministic PASS.
 - Unsigned release archive verification and extracted launch/quit: PASS.
 - Equivalent isolated-host unsigned launch/quit: PASS; signed/notarized clean-machine acceptance is blocked by external Developer ID credentials.
+- `make public-exposure-audit`: PASS — all reachable Git blobs, including deleted history, inspected with one exact synthetic fixture allowance.
 
 ## Stop conditions
 
-Do not report binary Public Beta readiness without Developer ID signing, Apple notarization acceptance, stapling/Gatekeeper verification, and clean-machine launch. Do not publish from the M9 Draft PR.
+Complete the manual GitHub-hosted metadata/log/artifact checklist before changing repository visibility. Do not report binary Public Beta readiness without credentialed Developer ID signing, Apple `Accepted`, stapling, Gatekeeper verification, and exact signed-artifact clean-machine acceptance. Do not publish from the M9 Draft PR.

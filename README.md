@@ -10,7 +10,12 @@ Pet Halo is a small macOS menu-bar companion that places a transparent Usage rin
 
 ## Public Beta status
 
-M9 is preparing `v0.1.0-beta.1`. No public binary or GitHub Release has been published yet. Until a signed and notarized artifact completes clean-machine acceptance, build from source or use an explicitly identified unsigned development archive.
+M9 source and reachable Git-history public readiness is complete after the deterministic public-exposure audit. No public binary or GitHub Release has been published. The signing workflow is wired to a temporary Keychain but still requires credentialed execution; Apple acceptance, stapling, Gatekeeper verification, and exact signed-artifact clean-machine acceptance remain mandatory. Until then, build from source or use an explicitly identified unsigned development archive.
+
+GitHub-hosted PRs, comments, reviews, Actions logs/artifacts, variables,
+environments, tags, Releases, discussions, and Pages require the separate
+[manual public-metadata checklist](docs/PUBLIC_EXPOSURE_AUDIT.md) immediately
+before repository visibility changes.
 
 A live-product screenshot is intentionally deferred to the release page so it can be captured in a clean account with no conversations, account identity, credentials, or real Usage values visible.
 

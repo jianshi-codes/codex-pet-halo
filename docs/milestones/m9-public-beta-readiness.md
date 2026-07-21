@@ -15,6 +15,18 @@ M9 hardens compatibility, public onboarding, safe failure messages, reproducible
 
 The source tree provides explicit build, archive, checksum, signing, notarization, verification, and launch-smoke commands. Unsigned output is a development artifact. A signed/notarized Public Beta requires an external Developer ID Application certificate, notarization credentials, an Apple `Accepted` response, stapling/Gatekeeper verification, and clean-machine acceptance.
 
+Source and reachable-history public readiness is complete after
+`make public-exposure-audit` inspects every reachable Git blob. GitHub-hosted
+PR/comment/review content, issues/discussions, Actions logs and artifacts,
+variables/environments, old Releases/tags, and Pages remain a separate manual
+visibility-change checklist because they are not Git blobs. Questionable old
+Actions runs or artifacts must be deleted before the repository becomes public.
+
+The release workflow resolves the imported Developer ID Application certificate
+to its exact SHA-1 fingerprint and binds each codesign invocation to the
+temporary release Keychain. This wiring is source-tested but has not been run
+with real credentials.
+
 M9 also consolidates the overlapping M5–M7 validation into the single
 `make pet-following-gate` entry point. It runs the deterministic M7 superset
 once, then starts the app once and collects Route A uniqueness/stationary-window,
@@ -29,6 +41,8 @@ shutdown evidence without repeating tests or the same user interaction three tim
 | Baseline M8 smoke | PASS |
 | Baseline M7 live smoke | INCOMPLETE — Pet was tucked away; no compatibility claim |
 | Current CLI schema/semantic review | PASS |
+| Reachable Git-history public-exposure audit | PASS — all reachable blobs; one exact synthetic fixture allowance |
+| GitHub-hosted metadata/log/artifact audit | MANUAL HOLD — required immediately before visibility change |
 | Unified M5–M7 Pet-following gate | PASS — 110 deterministic tests and one complete live interaction |
 | Unsigned reproducible package | PASS — Release Universal ZIP, manifest, checksum, extraction, and launch/shutdown |
 | Developer ID signing/notarization | BLOCKED — zero valid local identities; no Apple submission attempted |
@@ -38,7 +52,10 @@ shutdown evidence without repeating tests or the same user interaction three tim
 
 `PARTIAL — SOURCE RELEASE READY, SIGNED BINARY BLOCKED`
 
-The sole external blocker is a valid Developer ID Application identity plus
-notarytool credentials and the resulting Apple-accepted, stapled candidate.
-No signing or notarization PASS is claimed, and M9 does not publish a tag,
-GitHub Release, public artifact, or repository visibility change.
+Source-public readiness is complete. The signed binary remains externally
+blocked on a valid Developer ID Application identity, notarytool credentials,
+credentialed workflow execution, Apple `Accepted`, stapling, Gatekeeper, and
+exact signed-artifact clean-machine acceptance. No signing or notarization PASS
+is claimed. The separate GitHub-hosted manual audit remains a visibility-change
+hold point, and M9 does not publish a tag, GitHub Release, public artifact, or
+repository visibility change.

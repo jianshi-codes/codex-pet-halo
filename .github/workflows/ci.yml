@@ -16,6 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
+          fetch-depth: 0
           persist-credentials: false
       - name: Run retained M0 tests
         run: |
@@ -39,6 +40,8 @@ jobs:
           PY
       - name: Run privacy and path scans
         run: ./Scripts/privacy-scan.sh
+      - name: Audit reachable Git history for public exposure
+        run: make public-exposure-audit
       - name: Check whitespace
         run: git diff --check
 

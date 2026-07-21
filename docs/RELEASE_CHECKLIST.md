@@ -10,6 +10,14 @@ This checklist is an operator procedure. M9 does not publish a tag, GitHub Relea
 - [ ] Run `make check`, M2–M4 smoke, the single `make pet-following-gate`, and M8 smoke.
 - [ ] Confirm the repository privacy/secret scan is clean.
 
+## Public exposure
+
+- [ ] Run `make public-exposure-audit` from a full clone containing every branch and tag.
+- [ ] Confirm the deterministic scan covers all reachable Git blobs and only the documented exact synthetic fixture is allowed.
+- [ ] Complete every item in the separate [GitHub-hosted metadata and log checklist](PUBLIC_EXPOSURE_AUDIT.md#manual-github-hosted-metadata-and-log-audit).
+- [ ] Delete questionable old Actions runs and artifacts before making the repository public.
+- [ ] Record sanitized audit outcomes without copying sensitive material into GitHub content.
+
 ## Unsigned candidate
 
 ```sh
@@ -25,7 +33,7 @@ make release-verify MARKETING_VERSION=0.1.0 BUILD_NUMBER=1 RELEASE_TAG=v0.1.0-be
 
 ## Developer ID and notarization
 
-Provide a `Developer ID Application` identity through local Keychain in `DEVELOPER_ID_APPLICATION`. Provide notarization credentials through a `notarytool` Keychain profile (`NOTARYTOOL_PROFILE`, optional `NOTARYTOOL_KEYCHAIN`) or API-key environment variables (`APPLE_NOTARY_KEY_PATH`, `APPLE_NOTARY_KEY_ID`, `APPLE_NOTARY_ISSUER_ID`). Never place these values in the repository or command output.
+Provide a `Developer ID Application` identity through local Keychain in `DEVELOPER_ID_APPLICATION`. A CI release exports the exact certificate SHA-1 fingerprint and sets `RELEASE_KEYCHAIN_PATH` to the temporary Keychain; local signing may omit that variable and use the normal Keychain search list. Provide notarization credentials through a `notarytool` Keychain profile (`NOTARYTOOL_PROFILE`, optional `NOTARYTOOL_KEYCHAIN`) or API-key environment variables (`APPLE_NOTARY_KEY_PATH`, `APPLE_NOTARY_KEY_ID`, `APPLE_NOTARY_ISSUER_ID`). Never place these values in the repository or command output.
 
 ```sh
 make release-sign MARKETING_VERSION=0.1.0 BUILD_NUMBER=1 RELEASE_TAG=v0.1.0-beta.1
@@ -35,6 +43,7 @@ make release-verify MARKETING_VERSION=0.1.0 BUILD_NUMBER=1 RELEASE_TAG=v0.1.0-be
 ```
 
 - [ ] Record actual Apple `Accepted` confirmation; never infer it from submission.
+- [ ] Confirm credentialed signing used the imported certificate fingerprint and temporary Keychain path without printing either identity names or Keychain contents.
 - [ ] Verify stapling, `codesign`, `spctl`, archive checksum, and extracted artifact.
 - [ ] Confirm credentials and temporary keychains/API keys were removed.
 

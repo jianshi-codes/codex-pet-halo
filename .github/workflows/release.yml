@@ -45,6 +45,7 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
+          fetch-depth: 0
           persist-credentials: false
       - name: Install pinned XcodeGen
         run: |
@@ -61,6 +62,7 @@ jobs:
       - name: Validate source and unsigned artifact
         run: |
           set -euo pipefail
+          make public-exposure-audit
           make check
           make release-build
           make release-archive
@@ -79,6 +81,7 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
+          fetch-depth: 0
           persist-credentials: false
       - name: Install pinned XcodeGen
         run: |
@@ -121,10 +124,16 @@ jobs:
             -P "$DEVELOPER_ID_P12_PASSWORD" -T /usr/bin/codesign >/dev/null
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s \
             -k "$RELEASE_KEYCHAIN_PASSWORD" "$keychain" >/dev/null
-          readonly identity="$(security find-identity -v -p codesigning "$keychain" | awk -F'"' '/Developer ID Application/ {print $2; exit}')"
-          test -n "$identity"
+          mapfile -t identity_fingerprints < <(
+            security find-identity -v -p codesigning "$keychain" |
+              awk '/Developer ID Application/ {print $2}'
+          )
+          test "${#identity_fingerprints[@]}" -eq 1
+          readonly identity_fingerprint="${identity_fingerprints[0]}"
+          [[ "$identity_fingerprint" =~ ^[0-9A-Fa-f]{40}$ ]]
           {
-            echo "DEVELOPER_ID_APPLICATION=$identity"
+            echo "DEVELOPER_ID_APPLICATION=$identity_fingerprint"
+            echo "RELEASE_KEYCHAIN_PATH=$keychain"
             echo "APPLE_NOTARY_KEY_PATH=$RUNNER_TEMP/notary-api-key.p8"
             echo "APPLE_NOTARY_KEY_ID=$APPLE_NOTARY_KEY_ID"
             echo "APPLE_NOTARY_ISSUER_ID=$APPLE_NOTARY_ISSUER_ID"
