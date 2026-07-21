@@ -117,6 +117,28 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertTrue(action_refs)
         self.assertTrue(all(re.fullmatch(r"[0-9a-f]{40}", ref) for ref in action_refs))
 
+    def test_future_release_identity_is_explicit_and_collision_safe(self) -> None:
+        workflow = (ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
+        trigger = workflow.split("permissions:", maxsplit=1)[0]
+        for input_name in ("build_number", "release_tag"):
+            input_block = trigger.split(f"{input_name}:", maxsplit=1)[1]
+            input_block = input_block.split("type:", maxsplit=1)[0]
+            self.assertIn("required: true", input_block)
+            self.assertNotIn("default:", input_block)
+        self.assertIn("default: false", trigger)
+        self.assertNotIn("default: v0.1.0-beta.1", trigger)
+        self.assertNotIn('default: "1"', trigger)
+        self.assertEqual(workflow.count("Reject an existing release identity"), 2)
+        self.assertEqual(workflow.count("git ls-remote --exit-code --refs"), 2)
+        self.assertEqual(workflow.count("gh api --include"), 2)
+        self.assertEqual(workflow.count("GitHub Release already exists"), 2)
+        self.assertEqual(workflow.count("Unable to prove release tag is unused"), 2)
+        publish_job = workflow.split("  publish:", maxsplit=1)[1]
+        self.assertLess(
+            publish_job.index("Reject an existing release identity"),
+            publish_job.index("Import signing and notarization credentials"),
+        )
+
     def test_signing_identity_is_bound_to_optional_release_keychain(self) -> None:
         signing = (ROOT / "Scripts/release-sign.sh").read_text(encoding="utf-8")
         workflow = (ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
@@ -189,10 +211,102 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("# Pet Halo for Codex", readme)
         self.assertIn("docs/assets/screenshots/pet-halo-activity-above.png", readme)
         self.assertIn("docs/assets/screenshots/pet-halo-activity-below.png", readme)
-        self.assertIn("Source Public Beta / Unsigned Developer Preview", readme)
+        self.assertIn("## Download", readme)
         self.assertIn("unsigned and not notarized", readme)
         self.assertIn("Only override Gatekeeper after independently verifying", readme)
         self.assertIn("jianshi-codes/codex-pet-halo", readme)
+
+    def test_readme_release_link_metric_meanings_and_thresholds_are_explicit(self) -> None:
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        release_url = (
+            "https://github.com/jianshi-codes/codex-pet-halo/releases/tag/"
+            "v0.1.0-beta.1"
+        )
+        self.assertIn(release_url, readme)
+        self.assertLess(
+            readme.index("## What the rings mean"),
+            readme.index("### System requirements"),
+        )
+        for metric in (
+            "Outer ring — Weekly remaining",
+            "Middle ring — optional 5h remaining",
+            "Inner ring — Today versus historical peak",
+        ):
+            self.assertIn(metric, readme)
+        for threshold in (
+            "healthy: `>= 50%`",
+            "warning: `20%` through `49%`",
+            "critical: `< 20%`",
+            "healthy: `<= 50%`",
+            "warning: `> 50%` through `80%`",
+            "critical: `> 80%`",
+        ):
+            self.assertIn(threshold, readme)
+        self.assertIn("Status color does not identify the metric", readme)
+        self.assertIn("Today is not a quota", readme)
+        self.assertIn(
+            "`T 10%` means today’s usage is 10% of the historical peak day, "
+            "not 90% remaining",
+            readme,
+        )
+        self.assertIn("codex --version", readme)
+        self.assertIn("Only the exact reviewed CLI version", readme)
+
+    def test_beta_one_is_released_and_current_docs_have_no_prepublication_state(self) -> None:
+        changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+        beta_one = changelog.split("## [0.1.0-beta.1]", maxsplit=1)[1]
+        self.assertTrue(beta_one.lstrip().startswith("- 2026-07-21"))
+        self.assertNotIn("Unreleased", beta_one)
+
+        current_documents = "\n".join(
+            (ROOT / path).read_text(encoding="utf-8")
+            for path in (
+                "docs/CURRENT_STATE.md",
+                "docs/PROJECT_PLAN.md",
+                "docs/milestones/m9-public-beta-readiness.md",
+            )
+        )
+        for stale in (
+            "Publication: prohibited",
+            "PR #8 remains Draft",
+            "PR #9 remains open",
+            "In progress — authorized",
+            "No public tag",
+            "before repository visibility changes",
+            "does not publish a tag",
+        ):
+            self.assertNotIn(stale, current_documents)
+        for merged_pr in ("PR #8", "PR #9", "PR #10", "PR #11"):
+            self.assertIn(merged_pr, current_documents)
+        self.assertIn(
+            "PARTIAL — SOURCE RELEASE READY, SIGNED BINARY BLOCKED",
+            current_documents,
+        )
+        self.assertIn("no normalized Pet anchor exists", current_documents)
+
+    def test_versioning_documents_unsigned_and_signed_artifact_names(self) -> None:
+        versioning = (ROOT / "docs/VERSIONING.md").read_text(encoding="utf-8")
+        self.assertIn("Pet-Halo-<version>-unsigned-universal.zip", versioning)
+        self.assertIn("Pet-Halo-<version>-universal.zip", versioning)
+
+    def test_issue_form_labels_are_documented_by_configuration_audit(self) -> None:
+        settings = (ROOT / "docs/GITHUB_SETTINGS.md").read_text(encoding="utf-8")
+        form_labels: set[str] = set()
+        for path in sorted((ROOT / ".github/ISSUE_TEMPLATE").glob("*.yml")):
+            source = path.read_text(encoding="utf-8")
+            match = re.search(r"(?m)^labels:\s*\[([^]]+)\]", source)
+            if match:
+                form_labels.update(
+                    label.strip() for label in match.group(1).split(",") if label.strip()
+                )
+        self.assertEqual(form_labels, {"bug", "compatibility"})
+        for label in form_labels:
+            self.assertIn(f"`{label}`", settings)
+
+    def test_dependabot_checks_github_actions_monthly(self) -> None:
+        dependabot = (ROOT / ".github/dependabot.yml").read_text(encoding="utf-8")
+        self.assertIn("package-ecosystem: github-actions", dependabot)
+        self.assertIn("interval: monthly", dependabot)
 
     def test_release_notes_warn_that_preview_is_unsigned(self) -> None:
         notes = (ROOT / "docs/release-notes/v0.1.0-beta.1.md").read_text(

@@ -3,7 +3,9 @@
 - Branch: `m7/pet-ring-presentation`
 - Scope: target-aware surface state, persistent visual-center alignment, concentric Usage rings, semantic thresholds, functional dialog-aware partial arcs, fallback preservation, tests, sanitized smoke tooling, and documentation
 - Status: **PASS**
-- Gate: implementation, automated validation, direct live interaction, live smoke, independent review, Draft PR publication, and current-head CI complete; no unresolved review threads
+- Gate: implementation, automated validation, direct live interaction, live smoke, independent review, and CI complete; PR #8 merged on 2026-07-20
+
+This is the historical M7 implementation record. Its original closeout statements described the state at that time and are superseded by the merged M8/M9 and published Beta 1 state.
 
 ## Outcome
 
@@ -48,10 +50,10 @@ M7 adds no OpenAI, ChatGPT, or Codex Pet artwork; no screenshots, OCR, Screen Re
 | M0-M6 regression and complete Swift suite | PASS — 160 Swift tests executed: 159 passed and one designed local-only authenticated Codex integration smoke skipped; 14 retained M0 tests passed |
 | Debug and universal Release bundle | PASS — Debug plus arm64/x86_64 Release |
 | Source, privacy, generated-project, and bundle boundaries | PASS |
-| Draft PR CI | PASS — latest Protocol evidence and macOS application jobs on the complete M7 head; PR remains Draft |
+| PR CI | PASS — Protocol evidence and macOS application jobs passed on the complete M7 head before PR #8 merged |
 | M7 smoke | PASS — fast independent movement with saved visual offset and bounded selected-frame sampling, Tuck Away/Wake recovery, explicit fallback restoration, non-activation, Quit, observer shutdown, and owned app-server cleanup directly observed |
 | Visible Pet containment and calibrated center | PASS — user-operated calibration and restart/idle/position checks confirmed the Pet remains inside the transparent center without a first-message trigger |
 | Final capsule-label screenshot | PASS — Today / optional 5h / Weekly ordering, fixed identity dots, neutral connectors, concentric arcs, mirrored placement, transparent center, and no rectangle accepted |
 | Independent review | PASS — no unresolved review threads |
 
-M7 is closed with PASS. M8 — Visual Polish, Themes & Motion — is the next milestone and has not started. The Draft PR remains unmerged, and M7 closeout does not authorize M8.
+M7 is closed with PASS. Historical closeout did not itself authorize M8; M8 was subsequently authorized, completed, and merged through PR #9, and M9 later published Beta 1.

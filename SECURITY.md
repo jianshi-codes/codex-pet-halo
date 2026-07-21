@@ -2,7 +2,9 @@
 
 ## Supported release
 
-Security support begins with the `0.1.0` Public Beta line. Until a signed and notarized Beta is published, the repository source is the only authoritative release material.
+The supported security line is `0.1.0-beta.x`.
+
+The reviewed source at each published tag is authoritative. The unsigned Universal ZIP attached to `v0.1.0-beta.1` is a convenience artifact whose contents and accompanying release metadata are verified through the published `SHA256SUMS`. It is not Apple-signed or notarized, and it must not be treated as evidence of Developer ID or Gatekeeper readiness.
 
 ## Reporting a vulnerability
 
