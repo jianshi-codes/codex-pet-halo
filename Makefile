@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: bootstrap generate build test m0-tests m2-tests m2-smoke m3-tests m3-smoke m4-tests m4-smoke pet-following-tests pet-following-smoke pet-following-gate m7-tests m7-smoke m8-tests m8-smoke public-exposure-audit check validate-bundle validate-generated-project release-build release-archive release-checksum release-sign release-notarize release-verify release-launch-smoke
+.PHONY: bootstrap generate build test m0-tests m2-tests m2-smoke m3-tests m3-smoke m4-tests m4-smoke pet-following-tests pet-following-smoke pet-following-gate m7-tests m7-smoke m8-tests m8-smoke public-exposure-audit check validate-bundle validate-generated-project release-build release-archive release-checksum release-sign release-notarize release-verify release-launch-smoke release-unsigned-preview
 
 bootstrap:
 	./Scripts/bootstrap.sh
@@ -76,6 +76,13 @@ release-verify:
 
 release-launch-smoke:
 	./Scripts/release-launch-smoke.sh
+
+release-unsigned-preview:
+	$(MAKE) release-build RELEASE_ARTIFACT_QUALIFIER=unsigned
+	$(MAKE) release-archive RELEASE_ARTIFACT_QUALIFIER=unsigned
+	$(MAKE) release-checksum RELEASE_ARTIFACT_QUALIFIER=unsigned
+	$(MAKE) release-verify RELEASE_ARTIFACT_QUALIFIER=unsigned RELEASE_MODE=unsigned
+	$(MAKE) release-launch-smoke RELEASE_ARTIFACT_QUALIFIER=unsigned
 
 validate-bundle:
 	./Scripts/validate-bundle.sh

@@ -38,10 +38,12 @@ printf '%s\n' \
 
 (
     cd "$release_output_root"
-    shasum -a 256 \
-        "$(basename "$release_archive")" \
-        "$(basename "$release_manifest")" \
-        "$(basename "$release_notes")" >"$(basename "$release_checksums")"
+    readonly public_release_assets=(
+        "$(basename "$release_archive")"
+        "$(basename "$release_manifest")"
+        "$(basename "$release_notes")"
+    )
+    shasum -a 256 "${public_release_assets[@]}" >"$(basename "$release_checksums")"
 )
 
 echo "Release checksums: $(basename "$release_checksums")"

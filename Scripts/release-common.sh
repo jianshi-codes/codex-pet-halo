@@ -9,7 +9,9 @@ readonly release_label="${release_tag#v}"
 readonly release_output_root="${RELEASE_OUTPUT_ROOT:-$release_repository_root/dist/$release_tag}"
 readonly release_derived_data="${RELEASE_DERIVED_DATA:-$release_repository_root/DerivedData/PublicBeta}"
 readonly release_app="$release_output_root/stage/Pet Halo.app"
-readonly release_archive="$release_output_root/Pet-Halo-$release_label-universal.zip"
+readonly release_artifact_qualifier="${RELEASE_ARTIFACT_QUALIFIER:-}"
+readonly release_archive_qualifier="${release_artifact_qualifier:+-$release_artifact_qualifier}"
+readonly release_archive="$release_output_root/Pet-Halo-$release_label$release_archive_qualifier-universal.zip"
 readonly release_manifest="$release_output_root/release-manifest.json"
 readonly release_notes_source="$release_repository_root/docs/release-notes/$release_tag.md"
 readonly release_notes="$release_output_root/RELEASE_NOTES.md"
@@ -27,6 +29,10 @@ release_validate_inputs() {
         || release_fail "BUILD_NUMBER must be a positive integer"
     [[ "$release_tag" =~ ^v${release_marketing_version}-beta\.[1-9][0-9]*$ ]] \
         || release_fail "RELEASE_TAG must match v<MARKETING_VERSION>-beta.<number>"
+    case "$release_artifact_qualifier" in
+        ""|unsigned) ;;
+        *) release_fail "RELEASE_ARTIFACT_QUALIFIER must be empty or unsigned" ;;
+    esac
     case "$release_output_root" in
         "$release_repository_root"/dist/*) ;;
         *) release_fail "RELEASE_OUTPUT_ROOT must remain inside the repository dist directory" ;;
