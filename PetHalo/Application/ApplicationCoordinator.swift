@@ -119,7 +119,7 @@ final class ApplicationCoordinator: ObservableObject {
         latestUsageState = .stopped
         haloPresentationModel = presentationMapper.map(.stopped)
         petRingPresentationModel = petRingPresentationMapper.map(.stopped, date: currentDate())
-        bridgeStatusText = "Bridge: Starting"
+        bridgeStatusText = "Usage: Connecting"
         self.haloPanelController = haloPanelController
             ?? HaloPanelController(model: haloPresentationModel)
     }
@@ -391,7 +391,7 @@ final class ApplicationCoordinator: ObservableObject {
                 .stopped,
                 date: self.currentDate()
             )
-            self.bridgeStatusText = "Bridge: Unavailable"
+            self.bridgeStatusText = "Usage: Temporarily unavailable"
             self.haloPanelController = nil
             completion()
         }
@@ -505,13 +505,35 @@ final class ApplicationCoordinator: ObservableObject {
             cardModel: haloPresentationModel,
             petRingModel: petRingPresentationModel
         )
+        bridgeStatusText = Self.usageStatusText(for: usageState)
+    }
+
+    static func usageStatusText(for usageState: CodexUsageState) -> String {
+        if usageState.failureReason == .unsupportedProtocolVersion {
+            return "Usage: Unsupported Codex CLI version"
+        }
+        if usageState.failureReason == .executableMissing {
+            return "Usage: Codex CLI not found"
+        }
+        if usageState.failureReason == .authenticationUnavailable {
+            return "Usage: Sign in to Codex"
+        }
+        if usageState.failureReason == .rateLimitsUnavailable {
+            return "Usage: Rate limits temporarily unavailable"
+        }
+        if usageState.failureReason == .accountUsageUnavailable
+            || usageState.failureReason == .accountUsageUnsupported
+        {
+            return "Usage: Today temporarily unavailable"
+        }
+
         switch usageState.connection {
         case .connected:
-            bridgeStatusText = "Bridge: Connected"
+            return "Usage: Connected"
         case .starting, .reconnecting:
-            bridgeStatusText = "Bridge: Starting"
+            return "Usage: Connecting"
         case .stopped, .unavailable:
-            bridgeStatusText = "Bridge: Unavailable"
+            return "Usage: Temporarily unavailable"
         }
     }
 

@@ -16,6 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
+          fetch-depth: 0
           persist-credentials: false
       - name: Run retained M0 tests
         run: |
@@ -39,6 +40,8 @@ jobs:
           PY
       - name: Run privacy and path scans
         run: ./Scripts/privacy-scan.sh
+      - name: Audit reachable Git history for public exposure
+        run: make public-exposure-audit
       - name: Check whitespace
         run: git diff --check
 
@@ -74,7 +77,7 @@ jobs:
           mkdir -p /tmp/xcodegen-release
           ditto -x -k "$archive" /tmp/xcodegen-release
           echo "/tmp/xcodegen-release/xcodegen/bin" >> "$GITHUB_PATH"
-      - name: Validate M0 through M7 deterministic gates
+      - name: Validate M0 through M9 deterministic gates
         run: make check
       - name: Check whitespace
         run: git diff --check

@@ -313,8 +313,11 @@ final class PetTargetModelsTests: XCTestCase {
         )
         XCTAssertEqual(HaloFollowingTargetSource.freeFloating.statusText, "Target: Free-floating")
         XCTAssertEqual(PetTargetDiscoveryState.searching.statusText, "Pet: Searching")
-        XCTAssertEqual(PetTargetDiscoveryState.unavailable.statusText, "Pet: Not Found")
-        XCTAssertEqual(PetTargetDiscoveryState.ambiguous.statusText, "Pet: Ambiguous")
+        XCTAssertEqual(
+            PetTargetDiscoveryState.unavailable.statusText,
+            "Pet: Unavailable or Tucked Away"
+        )
+        XCTAssertEqual(PetTargetDiscoveryState.ambiguous.statusText, "Pet: Target Ambiguous")
         XCTAssertEqual(PetPlacementStatus.centered.statusText, "Pet placement: Centered")
         XCTAssertEqual(PetPlacementStatus.unavailable.statusText, "Pet placement: Unavailable")
     }

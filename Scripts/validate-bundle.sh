@@ -7,6 +7,8 @@ readonly derived_data_path="${DERIVED_DATA_PATH:-$repository_root/DerivedData}"
 readonly app_bundle="$derived_data_path/Build/Products/$configuration/Pet Halo.app"
 readonly info_plist="$app_bundle/Contents/Info.plist"
 readonly executable="$app_bundle/Contents/MacOS/Pet Halo"
+readonly expected_marketing_version="${EXPECTED_MARKETING_VERSION:-0.1.0}"
+readonly expected_build_number="${EXPECTED_BUILD_NUMBER:-1}"
 
 if [[ ! -d "$app_bundle" ]]; then
     echo "error: application bundle not found: $app_bundle" >&2
@@ -25,8 +27,8 @@ assert_plist_value() {
 }
 
 assert_plist_value CFBundleIdentifier io.github.jianshicodes.PetHalo
-assert_plist_value CFBundleShortVersionString 0.1.0
-assert_plist_value CFBundleVersion 1
+assert_plist_value CFBundleShortVersionString "$expected_marketing_version"
+assert_plist_value CFBundleVersion "$expected_build_number"
 assert_plist_value LSUIElement true
 assert_plist_value LSMinimumSystemVersion 14.0
 assert_plist_value CFBundleIconName AppIcon

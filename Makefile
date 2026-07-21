@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: bootstrap generate build test m0-tests m2-tests m2-smoke m3-tests m3-smoke m4-tests m4-smoke m5-tests m5-smoke m6-tests m6-smoke m7-tests m7-smoke m8-tests m8-smoke check validate-bundle validate-generated-project
+.PHONY: bootstrap generate build test m0-tests m2-tests m2-smoke m3-tests m3-smoke m4-tests m4-smoke pet-following-tests pet-following-smoke pet-following-gate m7-tests m7-smoke m8-tests m8-smoke public-exposure-audit check validate-bundle validate-generated-project release-build release-archive release-checksum release-sign release-notarize release-verify release-launch-smoke
 
 bootstrap:
 	./Scripts/bootstrap.sh
@@ -35,29 +35,47 @@ m4-tests:
 m4-smoke:
 	./Scripts/m4-smoke.sh
 
-m5-tests:
-	./Scripts/m5-tests.sh
+pet-following-tests:
+	./Scripts/pet-following-tests.sh
 
-m5-smoke:
-	./Scripts/m5-smoke.sh
+pet-following-smoke:
+	./Scripts/pet-following-smoke.sh
 
-m6-tests:
-	./Scripts/m6-tests.sh
+pet-following-gate: pet-following-tests pet-following-smoke
 
-m6-smoke:
-	./Scripts/m6-smoke.sh
+m7-tests: pet-following-tests
 
-m7-tests:
-	./Scripts/m7-tests.sh
-
-m7-smoke:
-	./Scripts/m7-smoke.sh
+m7-smoke: pet-following-smoke
 
 m8-tests:
 	./Scripts/m8-tests.sh
 
 m8-smoke:
 	./Scripts/m8-smoke.sh
+
+public-exposure-audit:
+	python3 ./Scripts/public-exposure-audit.py
+
+release-build:
+	./Scripts/release-build.sh
+
+release-archive:
+	./Scripts/release-archive.sh
+
+release-checksum:
+	./Scripts/release-checksum.sh
+
+release-sign:
+	./Scripts/release-sign.sh
+
+release-notarize:
+	./Scripts/release-notarize.sh
+
+release-verify:
+	./Scripts/release-verify.sh
+
+release-launch-smoke:
+	./Scripts/release-launch-smoke.sh
 
 validate-bundle:
 	./Scripts/validate-bundle.sh

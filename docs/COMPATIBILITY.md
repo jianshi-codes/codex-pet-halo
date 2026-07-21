@@ -1,5 +1,37 @@
 # Compatibility
 
+## M9 reviewed Public Beta registry
+
+Pet Halo fails closed unless the detected CLI version has an explicit registry entry covering every production-used semantic. Successful JSON decoding alone is not evidence of compatibility.
+
+| Component | Reviewed version | Status | Evidence boundary |
+| --- | --- | --- | --- |
+| Codex CLI | `0.145.0-alpha.18` | Supported | Current local CLI; all production-used schemas and semantics reviewed |
+| Codex Desktop | `26.715.31925 (5551)` | Supported | Route A Pet/window Accessibility behavior previously validated |
+| Codex Desktop | `26.715.52143 (5591)` | Supported | Current M9 Route A and complete Pet-following gate validated |
+
+The CLI registry covers these semantic groups: initialize/initialized; `account/read`; `account/rateLimits/read`; `account/rateLimits/updated`; `account/usage/read`; and JSON-RPC request, response, error, and notification envelopes. It also covers exact rate-limit window durations, sparse update behavior, Account Usage summary/daily buckets, independent component freshness, and account-data clearing boundaries.
+
+M9 regenerated 341 JSON schema files from the current local CLI into a temporary directory. All 340 individual schema files were byte-identical to the retained `0.145.0-alpha.18` evidence. The aggregate v2 schema differed only in object ordering; both canonical sorted documents had SHA-256 `d7da14579e98011d40ad9c97a376cccfd69d0da5b2eb174b32d5bb6bd9159b6b`. This confirms schema stability for the already-supported CLI version but does not replace semantic review.
+
+For Desktop `26.715.52143 (5591)`, the consolidated M9 Pet-following gate directly observed one unique Route A Pet core moving while the resolved Codex standard window remained stationary, automatic visual-center attachment, Tuck Away fallback, Wake recovery, Pet Ring selection, non-activation, and complete Pet Halo/owned-child shutdown. M5–M7 use this one live flow rather than repeating the same interaction across milestone scripts.
+
+The M9 validation host is macOS 26.5.2 (Build 25F84), arm64, with Xcode 26.4.1 (17E202), Swift 6.3.1, Codex CLI 0.145.0-alpha.18, and Codex Desktop 26.715.52143 (5591). Host observations are evidence, not a broad compatibility promise.
+
+## Sanitized compatibility reports
+
+Use the GitHub compatibility-report issue form and provide only:
+
+- macOS version and architecture;
+- Pet Halo version;
+- Codex CLI version;
+- Codex Desktop version;
+- whether Pet is visible or tucked away;
+- one safe application state from the issue form;
+- concise reproduction steps with no private data.
+
+Do not attach raw protocol payloads, tokens, authorization data, account identity, conversation content, private screenshots, raw Accessibility errors or trees, executable paths, PIDs, or user-specific absolute paths. If a maintainer needs structural evidence, use generated schemas from the installed CLI and recursively sanitized synthetic fixtures.
+
 ## M0 validation host
 
 | Component | Observed version |

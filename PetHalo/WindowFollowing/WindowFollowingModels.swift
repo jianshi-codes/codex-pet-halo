@@ -32,7 +32,7 @@ enum WindowFollowingState: Equatable, Sendable {
         case .disabled:
             "Following: Off"
         case .permissionRequired:
-            "Following: Needs Permission"
+            "Following: Accessibility Required"
         case .searching:
             "Following: Searching"
         case .calibrationRequired, .calibrating:
@@ -44,11 +44,11 @@ enum WindowFollowingState: Equatable, Sendable {
         case let .unavailable(reason):
             switch reason {
             case .codexUnavailable:
-                "Following: Codex Unavailable"
+                "Following: Codex Not Running"
             case .processAmbiguous, .windowAmbiguous:
                 "Following: Target Ambiguous"
             case .permissionRequired:
-                "Following: Needs Permission"
+                "Following: Accessibility Required"
             case .windowUnavailable, .observerFailed, .invalidPlacement:
                 "Following: Unavailable"
             }

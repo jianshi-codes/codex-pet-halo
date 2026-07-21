@@ -1,0 +1,172 @@
+name: Public Beta release
+
+on:
+  workflow_dispatch:
+    inputs:
+      marketing_version:
+        description: Numeric Apple marketing version
+        required: true
+        default: 0.1.0
+        type: string
+      build_number:
+        description: Positive integer bundle build number
+        required: true
+        default: "1"
+        type: string
+      release_tag:
+        description: Beta tag matching the marketing version
+        required: true
+        default: v0.1.0-beta.1
+        type: string
+      publish:
+        description: Create the tag and GitHub prerelease after credentialed validation
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: public-beta-release
+  cancel-in-progress: false
+
+env:
+  XCODEGEN_VERSION: 2.46.0
+  XCODEGEN_SHA256: 4d9e34b62172d645eed6457cac13fc222569974098ef4ee9c3368bedf0196806
+  MARKETING_VERSION: ${{ inputs.marketing_version }}
+  BUILD_NUMBER: ${{ inputs.build_number }}
+  RELEASE_TAG: ${{ inputs.release_tag }}
+
+jobs:
+  validate:
+    name: Validate unsigned source release
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install pinned XcodeGen
+        run: |
+          set -euo pipefail
+          readonly archive="$RUNNER_TEMP/xcodegen.zip"
+          curl --fail --show-error --silent --location --proto '=https' --tlsv1.2 \
+            --retry 3 --retry-all-errors --retry-delay 2 --connect-timeout 15 --max-time 120 \
+            --output "$archive" \
+            "https://github.com/yonaskolb/XcodeGen/releases/download/${XCODEGEN_VERSION}/xcodegen.zip"
+          printf '%s  %s\n' "$XCODEGEN_SHA256" "$archive" | shasum -a 256 --check
+          mkdir -p "$RUNNER_TEMP/xcodegen-release"
+          ditto -x -k "$archive" "$RUNNER_TEMP/xcodegen-release"
+          echo "$RUNNER_TEMP/xcodegen-release/xcodegen/bin" >> "$GITHUB_PATH"
+      - name: Validate source and unsigned artifact
+        run: |
+          set -euo pipefail
+          make public-exposure-audit
+          make check
+          make release-build
+          make release-archive
+          make release-checksum
+          RELEASE_MODE=unsigned make release-verify
+          git diff --check
+
+  publish:
+    name: Sign, notarize, and publish prerelease
+    if: ${{ inputs.publish && github.ref == 'refs/heads/main' }}
+    needs: validate
+    runs-on: macos-15
+    environment: public-beta
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install pinned XcodeGen
+        run: |
+          set -euo pipefail
+          readonly archive="$RUNNER_TEMP/xcodegen.zip"
+          curl --fail --show-error --silent --location --proto '=https' --tlsv1.2 \
+            --retry 3 --retry-all-errors --retry-delay 2 --connect-timeout 15 --max-time 120 \
+            --output "$archive" \
+            "https://github.com/yonaskolb/XcodeGen/releases/download/${XCODEGEN_VERSION}/xcodegen.zip"
+          printf '%s  %s\n' "$XCODEGEN_SHA256" "$archive" | shasum -a 256 --check
+          mkdir -p "$RUNNER_TEMP/xcodegen-release"
+          ditto -x -k "$archive" "$RUNNER_TEMP/xcodegen-release"
+          echo "$RUNNER_TEMP/xcodegen-release/xcodegen/bin" >> "$GITHUB_PATH"
+      - name: Import signing and notarization credentials
+        env:
+          DEVELOPER_ID_P12_BASE64: ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
+          DEVELOPER_ID_P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
+          APPLE_NOTARY_KEY_BASE64: ${{ secrets.APPLE_NOTARY_KEY_BASE64 }}
+          APPLE_NOTARY_KEY_ID: ${{ secrets.APPLE_NOTARY_KEY_ID }}
+          APPLE_NOTARY_ISSUER_ID: ${{ secrets.APPLE_NOTARY_ISSUER_ID }}
+          RELEASE_KEYCHAIN_PASSWORD: ${{ secrets.RELEASE_KEYCHAIN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          set +x
+          umask 077
+          python3 - <<'PY'
+          import base64
+          import os
+          from pathlib import Path
+
+          root = Path(os.environ["RUNNER_TEMP"])
+          root.joinpath("developer-id.p12").write_bytes(base64.b64decode(os.environ["DEVELOPER_ID_P12_BASE64"], validate=True))
+          root.joinpath("notary-api-key.p8").write_bytes(base64.b64decode(os.environ["APPLE_NOTARY_KEY_BASE64"], validate=True))
+          PY
+          readonly keychain="$RUNNER_TEMP/pet-halo-release.keychain-db"
+          security create-keychain -p "$RELEASE_KEYCHAIN_PASSWORD" "$keychain" >/dev/null
+          security set-keychain-settings -lut 21600 "$keychain" >/dev/null
+          security unlock-keychain -p "$RELEASE_KEYCHAIN_PASSWORD" "$keychain" >/dev/null
+          security import "$RUNNER_TEMP/developer-id.p12" -k "$keychain" \
+            -P "$DEVELOPER_ID_P12_PASSWORD" -T /usr/bin/codesign >/dev/null
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s \
+            -k "$RELEASE_KEYCHAIN_PASSWORD" "$keychain" >/dev/null
+          mapfile -t identity_fingerprints < <(
+            security find-identity -v -p codesigning "$keychain" |
+              awk '/Developer ID Application/ {print $2}'
+          )
+          test "${#identity_fingerprints[@]}" -eq 1
+          readonly identity_fingerprint="${identity_fingerprints[0]}"
+          [[ "$identity_fingerprint" =~ ^[0-9A-Fa-f]{40}$ ]]
+          {
+            echo "DEVELOPER_ID_APPLICATION=$identity_fingerprint"
+            echo "RELEASE_KEYCHAIN_PATH=$keychain"
+            echo "APPLE_NOTARY_KEY_PATH=$RUNNER_TEMP/notary-api-key.p8"
+            echo "APPLE_NOTARY_KEY_ID=$APPLE_NOTARY_KEY_ID"
+            echo "APPLE_NOTARY_ISSUER_ID=$APPLE_NOTARY_ISSUER_ID"
+          } >> "$GITHUB_ENV"
+      - name: Build, sign, notarize, and verify
+        run: |
+          set -euo pipefail
+          make release-build
+          make release-sign
+          make release-archive
+          make release-notarize
+          RELEASE_MODE=notarized make release-verify
+      - name: Publish GitHub prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          readonly output="dist/$RELEASE_TAG"
+          readonly label="${RELEASE_TAG#v}"
+          gh release create "$RELEASE_TAG" \
+            --target "$GITHUB_SHA" \
+            --title "Pet Halo ${MARKETING_VERSION} Beta ${RELEASE_TAG##*.}" \
+            --notes-file "$output/RELEASE_NOTES.md" \
+            --prerelease \
+            "$output/Pet-Halo-$label-universal.zip" \
+            "$output/SHA256SUMS" \
+            "$output/release-manifest.json"
+      - name: Remove temporary credentials
+        if: ${{ always() }}
+        env:
+          RELEASE_KEYCHAIN_PASSWORD: ${{ secrets.RELEASE_KEYCHAIN_PASSWORD }}
+        run: |
+          set +e
+          set +x
+          security delete-keychain "$RUNNER_TEMP/pet-halo-release.keychain-db" >/dev/null 2>&1
+          rm -f "$RUNNER_TEMP/developer-id.p12" "$RUNNER_TEMP/notary-api-key.p8"

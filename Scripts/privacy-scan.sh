@@ -11,6 +11,7 @@ scan_tracked_and_pending() {
     local excluded_path="${excluded_glob#!}"
     local files=()
     while IFS= read -r -d '' file; do
+        [[ -f "$file" ]] || continue
         if [[ -n "$excluded_glob" && "$file" == "$excluded_path" ]]; then
             continue
         fi

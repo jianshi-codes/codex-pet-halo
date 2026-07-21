@@ -1,38 +1,44 @@
 # Current State
 
-- Milestone: M8 — Release UI Polish
-- Route: `ROUTE_A — PET_ACCESSIBILITY_WINDOW`
-- Status: **PASS**
-- Branch: `m8/release-ui-polish`
-- Gate: M8 is closed; Draft PR #9 remains open and unmerged, and M9 requires separate authorization
-- Next milestone: M9 — Public Beta Release Readiness; not started and not authorized by M8
+- Milestone: M9 — Public Beta Release Readiness
+- Status: **PARTIAL — SOURCE RELEASE READY, SIGNED BINARY BLOCKED**
+- Branch: `m9/public-beta-readiness`
+- Product/UI: frozen at the accepted M8 behavior
+- Candidate: `v0.1.0-beta.1` with bundle version `0.1.0 (1)`
+- Publication: prohibited in this Draft PR; no tag, GitHub Release, public artifact, or visibility change
 
-## Preserved contracts
+## Current evidence
 
-- Target hierarchy: Pet / explicitly shown calibrated Codex standard window / free-floating Halo; Pet loss hides Halo by default
-- Discovery: exact `com.openai.codex`; unique stable near-square `AXSystemDialog`, with near-square `AXDialog` only as a compatibility fallback; ambiguity fails closed
-- Placement: `panel.center = petFrame.center + PetVisualCenterOffset`; no M8 screen-space policy can move that center
-- Geometry: transparent `448×252` Pet Ring panel, 104/94/84-point radii, 6-point strokes, and `162`-point transparent center unchanged; fallback cards remain `176×176` Compact and `360×520` Expanded
-- Usage: Weekly remaining, optional exact-300-minute 5h remaining, and Codex UTC Today tokens versus nonzero historical peak; missing values are omitted/unavailable and never estimated
-- Bridge/freshness: one read-only owned app-server, independent rate and Account Usage freshness, exact supported CLI `0.145.0-alpha.18`, no Codex database access
-- Privacy: Accessibility geometry/structure only; no titles, content, screenshots/OCR, Screen Recording, analytics, telemetry, or new network/cloud service
+- CLI `0.145.0-alpha.18` remains the only supported protocol version. Current regenerated individual schemas are identical to retained evidence and the canonical aggregate hash matches.
+- The production registry now requires explicit review of initialize, account, rate limits, Usage, notifications, and JSON-RPC envelopes; decoding success alone cannot enable a version.
+- Desktop `26.715.31925 (5551)` remains supported. Current Desktop `26.715.52143 (5591)` passed the consolidated Route A and complete Pet-following gate.
+- User-facing bridge, following, and Pet failure states are concise and omit raw errors, payloads, identity, paths, and process details.
+- User-first README, public contribution/security policy, Code of Conduct, changelog, issue forms, versioning/release documentation, and privacy boundaries are implemented.
+- Source and every reachable Git blob pass the deterministic public-exposure audit. GitHub-hosted metadata/log/artifact review remains a separate manual visibility-change hold point.
+- Unsigned Release build, deterministic archive naming, manifest, SHA-256, extraction verification, and isolated clean-preferences launch/shutdown smoke pass. Release binaries contain no user-specific path and exclude schemas, fixtures, smoke/report assets, logs, and debug material.
+- Developer ID/notarization scripts and a manually gated pinned-action GitHub prerelease workflow are implemented. CI exports the imported certificate SHA-1 fingerprint and binds every codesign call to its temporary Keychain; credentialed execution has not occurred because this host has no valid signing identity.
 
-## M8 implementation
+## Validation state
 
-- Appearance: live light/dark, Increase Contrast, Differentiate Without Color, and Reduce Transparency inputs update system-based Pet Ring, capsule, connector, track, and fallback treatment; stale/unavailable use dash/glyph/text/accessibility semantics rather than color alone
-- Capsule identity: dots remain Weekly `#5865F2`, 5h `#00B8D9`, Today `#A855F7`; related key-text variants meet the deterministic 4.5:1 practical contrast floor; values remain system label text
-- Capsule side: dialog geometry chooses only arc opening; selected-display `visibleFrame` separately chooses the fully contained label side, supports negative/multi-display coordinates, adds an 8-point no-clipping settle inset, and persists no screen identity
-- Spacing: 24-point capsules, 30-point visible-metric stack, 6-point identity dots, 4-point text spacing, and 10-point Ring gap; optional 5h/Today omission recenters the remaining stack; fixed scaling keeps compact K/M/B values on one line
-- Motion: normal latest-value display-linked following is unchanged; Reduce Motion updates directly, starts no display link, and invalidates an active callback on a runtime setting change
-- Icons: original Core Graphics AppIcon sizes 16–1024 plus a separate 18/36-pixel monochrome template MenuBarIcon; no official/copied artwork or third-party font/library
-- Non-goals: no theme system, decorative animation, particles, glow, sound, packaging, signing, notarization, GitHub Release automation, protocol change, target change, or fallback change
+M5–M7 use one non-duplicated validation surface. `make pet-following-gate`
+runs the deterministic M7 superset once, then performs one live
+move → Tuck Away → Wake → Quit flow while collecting Route A, center-lock,
+Ring, fallback, recovery, non-activation, and owned-child shutdown evidence.
+Its `pet-following-tests` and `pet-following-smoke` components remain separately
+callable for focused reruns.
+The retained `make m7-tests` and `make m7-smoke` names are compatibility aliases;
+the duplicate M5/M6 commands were removed.
 
-## Validation
+- `make test`: PASS — 54 Core tests (one designed local-only skip) and 119 App tests.
+- M2 smoke: PASS — current read-only CLI bridge, default-hidden accessory app, and clean owned-child shutdown.
+- M3 smoke: PASS.
+- M4 smoke: deterministic PASS; current live standard-window target was unavailable during the probe.
+- Unified M5–M7 gate: PASS — 110 deterministic tests plus one direct movement/Tuck Away/Wake/Quit flow.
+- M8 smoke: deterministic PASS.
+- Unsigned release archive verification and extracted launch/quit: PASS.
+- Equivalent isolated-host unsigned launch/quit: PASS; signed/notarized clean-machine acceptance is blocked by external Developer ID credentials.
+- `make public-exposure-audit`: PASS — all reachable Git blobs, including deleted history, inspected with one exact synthetic fixture allowance.
 
-- Focused M8: PASS — 105 Swift tests and 2 deterministic asset checks
-- Covers: appearance policies, key-text contrast, safe left/right edges, visible-frame containment, negative displays, dialog/side separation, center invariance, hysteresis, Reduce Motion runtime changes, normal follower regression, optional metrics, large values/text, icon catalog, and template configuration
-- Full `make check`: PASS — source/privacy/bundle boundaries, Debug, universal `arm64+x86_64` Release, 51 Core tests with one designed local-only skip, 116 App tests, and 16 Python tests
-- Retained M2–M7 smoke: PASS — M7 harness follows the current default-hide contract rather than requiring an obsolete automatic fallback card
-- `make m8-smoke`: PASS — appearance, contrast, edge placement, motion, layout, and compiled icon checks
-- Manual: PASS — light/dark, Increase Contrast, Reduce Motion, both screen edges, menu/App icon surfaces, Pet movement, Tuck Away default hide, Wake, and Quit; current Today-present/5h-absent capability state observed without estimating unavailable combinations
-- Draft PR CI: PASS — Protocol evidence and macOS application jobs both passed on PR #9
+## Stop conditions
+
+Complete the manual GitHub-hosted metadata/log/artifact checklist before changing repository visibility. Do not report binary Public Beta readiness without credentialed Developer ID signing, Apple `Accepted`, stapling, Gatekeeper verification, and exact signed-artifact clean-machine acceptance. Do not publish from the M9 Draft PR.

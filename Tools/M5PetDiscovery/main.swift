@@ -313,7 +313,7 @@ private func observationDuration() -> TimeInterval? {
     else {
         return nil
     }
-    return min(max(requested, 1), 30)
+    return min(max(requested, 1), 60)
 }
 
 private func lifecycleObservationDuration() -> TimeInterval? {

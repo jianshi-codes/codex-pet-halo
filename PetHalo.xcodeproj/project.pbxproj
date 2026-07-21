@@ -19,6 +19,7 @@
 		2AB98848AF8FE93D35ABBB1F /* PetTargetModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31772BBC45025893478069C5 /* PetTargetModelsTests.swift */; };
 		2DF328ADE99FFFADADBBA921 /* CodexExecutableLocatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAF07A981EDA69C43A5C99A2 /* CodexExecutableLocatorTests.swift */; };
 		2E0AB5518FA0B350AD39B425 /* HaloView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88966A37DE9DA522A564D8C2 /* HaloView.swift */; };
+		303BF632B2A63CEA9FF6CBCF /* CodexProtocolCompatibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 733DFC4498520ABB83762BBE /* CodexProtocolCompatibilityTests.swift */; };
 		3573EF5FCC1C3EDEE9EC8DAB /* SystemMotionPreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = C112BE358820FE91C44D276C /* SystemMotionPreference.swift */; };
 		3D5DCA9A5E3DFAB51BE9D536 /* PetHaloCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 31E285D59ED6AC3404B469E7 /* PetHaloCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		44196C28F04B02B682757680 /* SystemPetTargetDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12DC814CFCAB6851D7A8D8AB /* SystemPetTargetDiscovery.swift */; };
@@ -150,6 +151,7 @@
 		6D91BC5FBCA2A93BA35D6400 /* JSONRPCClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONRPCClientTests.swift; sourceTree = "<group>"; };
 		6E15F4363FF1EFB921617997 /* WindowFollowingServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowFollowingServiceTests.swift; sourceTree = "<group>"; };
 		6F7170282579DD382F1DE12F /* AppVersionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppVersionTests.swift; sourceTree = "<group>"; };
+		733DFC4498520ABB83762BBE /* CodexProtocolCompatibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexProtocolCompatibilityTests.swift; sourceTree = "<group>"; };
 		79DB39BA2C79C7F61966EFC7 /* HaloExpandedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloExpandedView.swift; sourceTree = "<group>"; };
 		7AF1978CC2FC88E214BCA7F9 /* PetHaloCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PetHaloCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		86A525637B5693F3FDA11F32 /* HaloPresentationMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloPresentationMode.swift; sourceTree = "<group>"; };
@@ -289,6 +291,7 @@
 		5DD985D94E4A7165EBF7B022 /* PetHaloCoreTests */ = {
 			isa = PBXGroup;
 			children = (
+				DD8C30BD856814405D94B0B1 /* Compatibility */,
 				3299203395420D946012FF4A /* Domain */,
 				78AA7558B3C15D9B3AE5BE1F /* Executable */,
 				83207A563D2DEC8B0375B2CC /* Fixtures */,
@@ -423,6 +426,14 @@
 			isa = PBXGroup;
 			children = (
 				B336F289A511EC4583E9A267 /* CodexProtocolCompatibility.swift */,
+			);
+			path = Compatibility;
+			sourceTree = "<group>";
+		};
+		DD8C30BD856814405D94B0B1 /* Compatibility */ = {
+			isa = PBXGroup;
+			children = (
+				733DFC4498520ABB83762BBE /* CodexProtocolCompatibilityTests.swift */,
 			);
 			path = Compatibility;
 			sourceTree = "<group>";
@@ -607,6 +618,7 @@
 			files = (
 				6098B69858EB884122CECCC8 /* CodexAppServerProcessTests.swift in Sources */,
 				2DF328ADE99FFFADADBBA921 /* CodexExecutableLocatorTests.swift in Sources */,
+				303BF632B2A63CEA9FF6CBCF /* CodexProtocolCompatibilityTests.swift in Sources */,
 				ACBB2FC8FA0B41B6934FD0E5 /* CodexUsageServiceTests.swift in Sources */,
 				22F9A2E954B2016416E2BA64 /* JSONLFramerTests.swift in Sources */,
 				95C38E0BF2EAD5A51FF92659 /* JSONRPCClientTests.swift in Sources */,
@@ -926,6 +938,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -940,10 +953,12 @@
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				OTHER_SWIFT_FLAGS = "$(inherited) -file-compilation-dir . -file-prefix-map $(SRCROOT)=. -debug-prefix-map $(SRCROOT)=.";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_SERIALIZE_DEBUGGING_OPTIONS = NO;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
 			};
