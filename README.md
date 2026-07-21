@@ -64,24 +64,25 @@ Before downloading, confirm the installed CLI version:
 codex --version
 ```
 
-Only the exact reviewed CLI version in the compatibility table is currently accepted. Unsupported or unparseable versions fail closed before Pet Halo launches its owned app-server.
+The reviewed baseline remains the strongest evidence. Newer pre-1.0 CLI versions at or above the minimum may run provisionally after Pet Halo validates the required read-only capabilities for that session. Malformed, too-old, explicitly denied, and 1.x versions fail closed before app-server launch.
 
 ## Supported Codex versions
 
 | Component | Supported version | Scope |
 | --- | --- | --- |
-| Codex CLI | `0.145.0-alpha.18` | Read-only Usage bridge and reviewed production protocol semantics |
+| Codex CLI reviewed baseline | `0.145.0-alpha.18` | Exact schema and production-semantic review |
+| Codex CLI provisional range | `>= 0.145.0-alpha.18` and `< 1.0.0` | Session-only acceptance after required runtime capability validation; known-broken versions may be denied |
 | Codex Desktop | `26.715.31925 (5551)` | Previously validated Pet Accessibility geometry |
 | Codex Desktop | `26.715.52143 (5591)` | Current M9 Route A and complete Pet-following gate validated |
 
-A version is added only after initialize, account, rate-limit, Account Usage, notification, and JSON-RPC semantics have been reviewed—not merely because decoding succeeds. See [Compatibility](docs/COMPATIBILITY.md).
+Only exact registry entries carry reviewed semantic evidence. Provisional compatibility does not claim schema review: initialize/initialized, JSON-RPC envelopes, account behavior, rate-limit decoding, and a usable exact 10,080-minute Weekly window must succeed at runtime. See [Compatibility](docs/COMPATIBILITY.md).
 
 ### System requirements
 
 - macOS 14.0 or later;
 - Apple silicon or Intel Mac (`arm64` and `x86_64` are included in the ZIP);
 - Codex Desktop installed for Pet or window following;
-- the exact supported Codex CLI installed and signed in for Usage data;
+- a reviewed or provisionally accepted Codex CLI installed; sign-in is required for account-scoped Usage data;
 - Accessibility permission only if you enable following.
 
 ## Installation and first run
@@ -132,7 +133,8 @@ See [Privacy](docs/PRIVACY.md) and [Security](SECURITY.md).
 | Menu state | What it means | Safe next step |
 | --- | --- | --- |
 | `Usage: Codex CLI not found` | No supported executable was found | Install or repair the Codex CLI, then relaunch Pet Halo |
-| `Usage: Unsupported Codex CLI version` | The detected CLI has not passed semantic review | Check the compatibility table and file a sanitized compatibility report |
+| `Usage: Unsupported Codex CLI version` | The detected CLI is malformed, too old, explicitly denied, or at the 1.x boundary | Check the compatibility policy and file a sanitized compatibility report |
+| `Usage: CLI runtime incompatible` | A provisional CLI failed a required runtime capability | Use **Refresh Usage** to retry once, or restart after updating Codex/Pet Halo; automatic reconnect stays disabled for that version failure |
 | `Usage: Sign in to Codex` | Authentication is unavailable | Sign in through Codex, then refresh Usage |
 | `Usage: Rate limits temporarily unavailable` | The read-only rate snapshot failed | Wait and use **Refresh Usage**; no value is estimated |
 | `Usage: Today temporarily unavailable` | Account Usage is unsupported or temporarily failed | Weekly may remain current; Today stays omitted/unavailable |

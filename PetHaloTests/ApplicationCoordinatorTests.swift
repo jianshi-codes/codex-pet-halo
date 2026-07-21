@@ -209,7 +209,7 @@ private actor FakeUsageService: CodexUsageServing {
         continuation.yield(
             CodexUsageState(
                 connection: .connected,
-                compatibility: .supported(version: "test"),
+                compatibility: .reviewed(version: "test"),
                 snapshot: nil,
                 capabilities: .unavailable,
                 componentFreshness: .unavailable,
@@ -245,6 +245,7 @@ final class ApplicationCoordinatorTests: XCTestCase {
         let cases: [(SafeFailureReason, String)] = [
             (.executableMissing, "Usage: Codex CLI not found"),
             (.unsupportedProtocolVersion, "Usage: Unsupported Codex CLI version"),
+            (.runtimeIncompatible, "Usage: CLI runtime incompatible"),
             (.authenticationUnavailable, "Usage: Sign in to Codex"),
             (.rateLimitsUnavailable, "Usage: Rate limits temporarily unavailable"),
             (.accountUsageUnavailable, "Usage: Today temporarily unavailable"),
@@ -268,6 +269,28 @@ final class ApplicationCoordinatorTests: XCTestCase {
             XCTAssertFalse(message.contains("{"))
             XCTAssertFalse(message.contains("future"))
         }
+    }
+
+    @MainActor
+    func testCLIStatusDistinguishesReviewedProvisionalBlockedAndRuntimeIncompatible() {
+        XCTAssertEqual(
+            ApplicationCoordinator.cliStatusText(for: .reviewed(version: "0.145.0-alpha.18")),
+            "CLI: 0.145.0-alpha.18"
+        )
+        XCTAssertEqual(
+            ApplicationCoordinator.cliStatusText(for: .provisional(version: "0.145.0-alpha.27")),
+            "CLI: 0.145.0-alpha.27 · provisional"
+        )
+        XCTAssertEqual(
+            ApplicationCoordinator.cliStatusText(for: .blocked(version: nil)),
+            "CLI: blocked"
+        )
+        XCTAssertEqual(
+            ApplicationCoordinator.cliStatusText(
+                for: .runtimeIncompatible(version: "0.145.0-alpha.27")
+            ),
+            "CLI: 0.145.0-alpha.27 · incompatible"
+        )
     }
 
     @MainActor
@@ -391,7 +414,7 @@ final class ApplicationCoordinatorTests: XCTestCase {
     func testUnavailableBridgeDoesNotBlockQuit() async {
         let unavailable = CodexUsageState(
             connection: .unavailable,
-            compatibility: .unsupported(version: "future"),
+            compatibility: .blocked(version: "future"),
             snapshot: nil,
             capabilities: .unavailable,
             componentFreshness: .unavailable,
@@ -439,7 +462,7 @@ final class ApplicationCoordinatorTests: XCTestCase {
         await service.emit(
             CodexUsageState(
                 connection: .connected,
-                compatibility: .supported(version: "test"),
+                compatibility: .reviewed(version: "test"),
                 snapshot: UsageSnapshot(
                     rateLimitBuckets: [],
                     accountUsage: nil,
@@ -515,6 +538,39 @@ final class ApplicationCoordinatorTests: XCTestCase {
 
         XCTAssertEqual(panel.showCount, 2)
         XCTAssertEqual(panel.hideCount, 1)
+        let refreshCount = await service.refreshCount
+        XCTAssertEqual(refreshCount, 1)
+        coordinator.requestTermination()
+        await coordinator.waitForShutdown()
+    }
+
+    @MainActor
+    func testRuntimeIncompatibleStateKeepsManualRefreshAvailable() async {
+        let service = FakeUsageService()
+        let coordinator = ApplicationCoordinator(
+            usageService: service,
+            haloPanelController: FakeHaloPanelController(),
+            terminateApplication: {}
+        )
+        coordinator.start()
+        await service.emit(
+            CodexUsageState(
+                connection: .unavailable,
+                compatibility: .runtimeIncompatible(version: "0.145.0-alpha.27"),
+                snapshot: nil,
+                capabilities: .unavailable,
+                componentFreshness: .unavailable,
+                lastSuccessfulRefresh: nil,
+                failureReason: .runtimeIncompatible
+            )
+        )
+        for _ in 0 ..< 100 where coordinator.bridgeStatusText != "Usage: CLI runtime incompatible" {
+            await Task.yield()
+        }
+
+        XCTAssertTrue(coordinator.canRefreshUsage)
+        coordinator.refreshUsage()
+        await coordinator.waitForRefresh()
         let refreshCount = await service.refreshCount
         XCTAssertEqual(refreshCount, 1)
         coordinator.requestTermination()

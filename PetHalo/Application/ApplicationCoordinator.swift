@@ -42,6 +42,7 @@ final class ApplicationCoordinator: ObservableObject {
 
     private(set) var state: State = .initialized
     @Published private(set) var bridgeStatusText: String
+    @Published private(set) var cliStatusText: String
     @Published private(set) var latestUsageState: CodexUsageState
     @Published private(set) var haloPresentationModel: HaloPresentationModel
     @Published private(set) var petRingPresentationModel: PetRingPresentationModel
@@ -120,6 +121,7 @@ final class ApplicationCoordinator: ObservableObject {
         haloPresentationModel = presentationMapper.map(.stopped)
         petRingPresentationModel = petRingPresentationMapper.map(.stopped, date: currentDate())
         bridgeStatusText = "Usage: Connecting"
+        cliStatusText = "CLI: Detecting"
         self.haloPanelController = haloPanelController
             ?? HaloPanelController(model: haloPresentationModel)
     }
@@ -319,7 +321,9 @@ final class ApplicationCoordinator: ObservableObject {
     }
 
     var canRefreshUsage: Bool {
-        state == .running && latestUsageState.connection == .connected
+        state == .running
+            && (latestUsageState.connection == .connected
+                || latestUsageState.failureReason == .runtimeIncompatible)
     }
 
     func requestTermination() {
@@ -392,6 +396,7 @@ final class ApplicationCoordinator: ObservableObject {
                 date: self.currentDate()
             )
             self.bridgeStatusText = "Usage: Temporarily unavailable"
+            self.cliStatusText = "CLI: Detecting"
             self.haloPanelController = nil
             completion()
         }
@@ -506,11 +511,15 @@ final class ApplicationCoordinator: ObservableObject {
             petRingModel: petRingPresentationModel
         )
         bridgeStatusText = Self.usageStatusText(for: usageState)
+        cliStatusText = Self.cliStatusText(for: usageState.compatibility)
     }
 
     static func usageStatusText(for usageState: CodexUsageState) -> String {
         if usageState.failureReason == .unsupportedProtocolVersion {
             return "Usage: Unsupported Codex CLI version"
+        }
+        if usageState.failureReason == .runtimeIncompatible {
+            return "Usage: CLI runtime incompatible"
         }
         if usageState.failureReason == .executableMissing {
             return "Usage: Codex CLI not found"
@@ -534,6 +543,24 @@ final class ApplicationCoordinator: ObservableObject {
             return "Usage: Connecting"
         case .stopped, .unavailable:
             return "Usage: Temporarily unavailable"
+        }
+    }
+
+    static func cliStatusText(for compatibility: ProtocolCompatibilityState) -> String {
+        switch compatibility {
+        case .unknown:
+            return "CLI: Detecting"
+        case let .reviewed(version):
+            return "CLI: \(version)"
+        case let .provisional(version):
+            return "CLI: \(version) · provisional"
+        case let .blocked(version):
+            if let version {
+                return "CLI: \(version) · blocked"
+            }
+            return "CLI: blocked"
+        case let .runtimeIncompatible(version):
+            return "CLI: \(version) · incompatible"
         }
     }
 

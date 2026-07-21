@@ -19,6 +19,13 @@ final class RealCodexSmokeTests: XCTestCase {
             XCTFail(blocker)
             return
         }
+        guard case let .available(weekly) = state.capabilities.generalWeekly else {
+            await service.stop()
+            let blocker = "M2 smoke blocker: BLOCKED — REQUIRED WEEKLY CAPABILITY UNAVAILABLE"
+            try writeSmokeReport(blocker)
+            XCTFail(blocker)
+            return
+        }
 
         await service.stop()
         let stopped = await service.stateForTesting()
@@ -27,15 +34,48 @@ final class RealCodexSmokeTests: XCTestCase {
         try writeSmokeReport(
             [
                 "Codex located: yes",
-                "Protocol version: supported",
-                "Handshake: pass",
+                "CLI version: \(cliVersion(state.compatibility))",
+                "Protocol version: \(compatibilityDecision(state.compatibility))",
+                "Handshake: initialize and initialized pass",
+                "JSON-RPC envelopes: valid",
+                "Account read: \(state.failureReason == .authenticationUnavailable ? "authentication unavailable" : "pass")",
+                "Rate-limit read: pass",
                 "Rate-limit buckets: \(state.snapshot?.rateLimitBuckets.isEmpty == false ? "available" : "unavailable")",
-                "Weekly capability: \(availability(state.capabilities.generalWeekly))",
+                "Weekly capability: available",
+                "Weekly percentage: \(weekly.usedPercent.isFinite ? "valid" : "invalid")",
+                "Weekly resetsAt: \(weekly.resetsAt == nil ? "omitted" : "decoded")",
                 "Five-hour capability: \(availability(state.capabilities.generalFiveHour))",
                 "Account Usage capability: \(availability(state.capabilities.accountUsage))",
                 "Shutdown: clean",
             ].joined(separator: "\n")
         )
+    }
+
+    private func cliVersion(_ compatibility: ProtocolCompatibilityState) -> String {
+        switch compatibility {
+        case let .reviewed(version), let .provisional(version),
+             let .runtimeIncompatible(version):
+            return version
+        case let .blocked(version):
+            return version ?? "blocked"
+        case .unknown:
+            return "unavailable"
+        }
+    }
+
+    private func compatibilityDecision(_ compatibility: ProtocolCompatibilityState) -> String {
+        switch compatibility {
+        case .reviewed:
+            return "reviewed"
+        case .provisional:
+            return "provisional"
+        case .blocked:
+            return "blocked"
+        case .runtimeIncompatible:
+            return "runtime incompatible"
+        case .unknown:
+            return "unknown"
+        }
     }
 
     private func availability<Value: Equatable & Sendable>(_ capability: Capability<Value>) -> String {
@@ -51,6 +91,8 @@ final class RealCodexSmokeTests: XCTestCase {
             return "BLOCKED — CODEX EXECUTABLE NOT DISCOVERABLE"
         case .unsupportedProtocolVersion:
             return "BLOCKED — UNSUPPORTED CODEX PROTOCOL VERSION"
+        case .runtimeIncompatible:
+            return "BLOCKED — RUNTIME INCOMPATIBLE"
         case .authenticationUnavailable:
             return "BLOCKED — LOCAL AUTHENTICATION REQUIRED"
         default:

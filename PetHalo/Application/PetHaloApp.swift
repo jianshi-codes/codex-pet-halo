@@ -24,6 +24,7 @@ private struct ApplicationMenuContent: View {
     var body: some View {
         Text(menuModel.applicationName)
         Text(coordinator.bridgeStatusText)
+        Text(coordinator.cliStatusText)
         Divider()
         Button("Show Halo") {
             coordinator.showHalo()

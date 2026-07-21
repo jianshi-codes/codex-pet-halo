@@ -247,7 +247,7 @@ final class HaloPresentationMapperTests: XCTestCase {
         )
         return CodexUsageState(
             connection: connection,
-            compatibility: .supported(version: "test"),
+            compatibility: .reviewed(version: "test"),
             snapshot: snapshot,
             capabilities: UsageCapabilities(
                 generalWeekly: weekly,

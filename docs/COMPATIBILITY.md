@@ -1,8 +1,16 @@
 # Compatibility
 
-## M9 reviewed Public Beta registry
+## CLI compatibility policy and reviewed registry
 
-Pet Halo fails closed unless the detected CLI version has an explicit registry entry covering every production-used semantic. Successful JSON decoding alone is not evidence of compatibility.
+Pet Halo separates exact reviewed evidence from bounded provisional forward compatibility. `CodexCompatibilityRegistry` contains only versions whose production-used semantics were explicitly reviewed; successful provisional runtime validation never adds reviewed evidence.
+
+| Decision | Version boundary | Startup behavior |
+| --- | --- | --- |
+| Reviewed | Exact registry entry; currently `0.145.0-alpha.18` | Launch the owned app-server using the reviewed protocol semantics |
+| Provisional | `>= 0.145.0-alpha.18` and `< 1.0.0`, excluding a local known-incompatible denylist | Launch, then accept the version for this session only after required runtime capabilities succeed |
+| Blocked | Malformed, below the floor, explicitly denied, or major version 1 and newer | Fail closed before app-server launch |
+
+The known-incompatible denylist is initially empty. It is a safety override for confirmed broken versions, not a second reviewed-version registry. Newer pre-1.0 versions may therefore work without a Pet Halo update, but only the exact reviewed baseline has schema and semantic review evidence.
 
 | Component | Reviewed version | Status | Evidence boundary |
 | --- | --- | --- | --- |
@@ -17,6 +25,8 @@ M9 regenerated 341 JSON schema files from the current local CLI into a temporary
 For Desktop `26.715.52143 (5591)`, the consolidated M9 Pet-following gate directly observed one unique Route A Pet core moving while the resolved Codex standard window remained stationary, automatic visual-center attachment, Tuck Away fallback, Wake recovery, Pet Ring selection, non-activation, and complete Pet Halo/owned-child shutdown. M5–M7 use this one live flow rather than repeating the same interaction across milestone scripts.
 
 The M9 validation host is macOS 26.5.2 (Build 25F84), arm64, with Xcode 26.4.1 (17E202), Swift 6.3.1, Codex CLI 0.145.0-alpha.18, and Codex Desktop 26.715.52143 (5591). Host observations are evidence, not a broad compatibility promise.
+
+On 2026-07-21, installed CLI `0.145.0-alpha.27` passed the provisional runtime path: executable discovery; version parsing and provisional decision; initialize/initialized; valid JSON-RPC envelopes; account and rate-limit reads; a usable exact Weekly window with valid percentage and decoded reset timestamp; optional 5h omission; available Account Usage; and clean owned-child shutdown. This is session runtime evidence only. It does not add `0.145.0-alpha.27` to the reviewed registry or claim a schema review.
 
 ## Sanitized compatibility reports
 
@@ -63,7 +73,11 @@ Local M1 builds were validated with Xcode 26.4.1 (17E202) and Swift 6.3.1. The p
 
 ## M2 runtime gate
 
-Production runtime compatibility is intentionally fail-closed. `CodexCompatibilityRegistry` currently accepts exactly `0.145.0-alpha.18`; any other or unparseable version produces an unavailable state before a child process is launched. Adding a version requires regenerated local schemas, DTO comparison, fixture/test review, and an explicit registry entry.
+The version parser compares numeric major/minor/patch components and dot-separated prerelease identifiers without a third-party dependency. The minimum is `0.145.0-alpha.18`; malformed, older, denied, and 1.x versions produce an unavailable state before a child process is launched.
+
+For a provisional version, Pet Halo requires a valid initialize response, initialized notification send, valid JSON-RPC envelopes, decodable `account/read` behavior, decodable `account/rateLimits/read`, and one unambiguous exact 10,080-minute Weekly window using the existing `usedPercent` and nullable timestamp semantics. Unknown response fields remain tolerated. The exact 300-minute five-hour window and `account/usage/read` Today data remain optional; missing 5h is omitted, and unsupported or failed Account Usage cannot remove valid Weekly data. Authentication unavailable is a sign-in state, not protocol incompatibility.
+
+Required method-not-found errors, invalid required envelopes or response shapes, and rate-limit semantics without a usable Weekly capability make a provisional version runtime incompatible for the current connection. Pet Halo closes the owned child, cancels periodic/debounce/reconnect work, and does not automatically reconnect for that failure. A user-initiated **Refresh Usage** or application restart may retry. Transport closure, timeout, and process-start failures retain their existing transient reconnect treatment. Only safe state names and the parsed CLI version may be surfaced; raw errors, payloads, account data, environment values, and executable paths remain private.
 
 The executable locator accepts an injected URL for tests, absolute executable entries from inherited `PATH`, standard Homebrew prefixes, and the resource directories of installed Codex or ChatGPT applications. Relative entries such as `.` and `relative/bin` are ignored. Candidates are resolved and checked as executable files. Version detection and app-server launch use `Foundation.Process` directly with argument arrays and working directory `/`; no shell command is constructed. The version probe defaults to 5 seconds and 4 KiB stdout, discards stderr, and confirms child exit after termination or SIGKILL before returning.
 

@@ -85,6 +85,25 @@ public protocol CodexUsageServing: Sendable {
 
 public typealias JSONRPCClientFactory = @Sendable (URL) -> JSONRPCClient
 
+private enum ReleaseLaunchDiagnostic: String {
+    case childStarted = "child-started"
+    case executableUnavailable = "executable-unavailable"
+    case versionBlocked = "version-blocked"
+    case runtimeIncompatible = "runtime-incompatible"
+
+    static func publish(_ diagnostic: Self) {
+        guard let path = ProcessInfo.processInfo.environment["PET_HALO_RELEASE_SMOKE_DIAGNOSTIC_PATH"],
+              !path.isEmpty
+        else {
+            return
+        }
+        try? Data((diagnostic.rawValue + "\n").utf8).write(
+            to: URL(fileURLWithPath: path),
+            options: .atomic
+        )
+    }
+}
+
 public actor CodexUsageService: CodexUsageServing {
     private enum RefreshScope: Int {
         case rateLimitsOnly
@@ -181,6 +200,7 @@ public actor CodexUsageService: CodexUsageServing {
     public func start() async {
         guard !started, !stopping else { return }
         started = true
+        compatibility = .unknown
         clearAccountScopedState()
         publish(
             connection: .starting,
@@ -243,8 +263,15 @@ public actor CodexUsageService: CodexUsageServing {
     }
 
     public func refresh() async {
-        guard started, !stopping, client != nil else { return }
-        await enqueueRefresh(scope: .fullAccount, generation: connectionGeneration)
+        guard started, !stopping else { return }
+        if client != nil {
+            await enqueueRefresh(scope: .fullAccount, generation: connectionGeneration)
+            return
+        }
+        guard currentState.failureReason == .runtimeIncompatible else { return }
+        compatibility = .unknown
+        publish(connection: .starting, failure: nil)
+        await beginConnectionAttempt()
     }
 
     func stateForTesting() -> CodexUsageState {
@@ -285,6 +312,7 @@ public actor CodexUsageService: CodexUsageServing {
             executableURL = url
         case .unavailable:
             if connectionAttemptIsCurrent(epoch) {
+                ReleaseLaunchDiagnostic.publish(.executableUnavailable)
                 publishUnavailable(failure: .executableMissing)
             }
             return
@@ -303,14 +331,17 @@ public actor CodexUsageService: CodexUsageServing {
         }
         guard connectionAttemptIsCurrent(epoch) else { return }
 
-        guard let compatibilityEntry = CodexCompatibilityRegistry.compatibility(for: version),
-              compatibilityEntry.supportsProductionSemantics
-        else {
-            compatibility = .unsupported(version: version)
+        switch CodexCompatibilityPolicy.current.decision(for: version) {
+        case let .reviewed(reviewed):
+            compatibility = .reviewed(version: reviewed.cliVersion)
+        case let .provisional(provisionalVersion):
+            compatibility = .provisional(version: provisionalVersion)
+        case let .blocked(blockedVersion, _):
+            compatibility = .blocked(version: blockedVersion)
+            ReleaseLaunchDiagnostic.publish(.versionBlocked)
             publishUnavailable(failure: .unsupportedProtocolVersion)
             return
         }
-        compatibility = .supported(version: version)
 
         let newClient = clientFactory(executableURL)
         guard connectionAttemptIsCurrent(epoch) else {
@@ -323,6 +354,7 @@ public actor CodexUsageService: CodexUsageServing {
 
         do {
             try await newClient.start()
+            ReleaseLaunchDiagnostic.publish(.childStarted)
         } catch {
             await connectionFailed(
                 generation: generation,
@@ -454,6 +486,12 @@ public actor CodexUsageService: CodexUsageServing {
                     refreshedUsageReason = .authenticationUnavailable
                 }
             } catch {
+                if isProvisional,
+                   isRequiredProtocolIncompatibility(error)
+                {
+                    await runtimeIncompatible(generation: generation, client: activeClient)
+                    return
+                }
                 if shouldReconnect(for: error, timeoutIsFatal: false) {
                     await connectionFailed(
                         generation: generation,
@@ -473,6 +511,12 @@ public actor CodexUsageService: CodexUsageServing {
             }
             let response = try CodexDTOCodec.decode(RateLimitsResponseDTO.self, from: value)
             refreshedBuckets = CodexUsageNormalizer.rateLimitBuckets(from: response)
+            if isProvisional,
+               !hasRequiredWeeklyCapability(refreshedBuckets ?? [])
+            {
+                await runtimeIncompatible(generation: generation, client: activeClient)
+                return
+            }
             successfulComponent = true
         } catch {
             if shouldReconnect(for: error) {
@@ -481,6 +525,10 @@ public actor CodexUsageService: CodexUsageServing {
                     client: activeClient,
                     failure: safeFailure(for: error)
                 )
+                return
+            }
+            if isProvisional {
+                await runtimeIncompatible(generation: generation, client: activeClient)
                 return
             }
             rateLimitReadFailed = true
@@ -691,6 +739,10 @@ public actor CodexUsageService: CodexUsageServing {
         failure: SafeFailureReason
     ) async {
         guard generation == connectionGeneration, !stopping else { return }
+        if isProvisional, failure == .protocolViolation {
+            await runtimeIncompatible(generation: generation, client: failedClient)
+            return
+        }
         if let connectedAtNanoseconds,
            clock.monotonicNanoseconds() &- connectedAtNanoseconds >= reconnectPolicy.stableConnectionNanoseconds
         {
@@ -720,6 +772,45 @@ public actor CodexUsageService: CodexUsageServing {
             failure: failure
         )
         scheduleReconnect()
+    }
+
+    private func runtimeIncompatible(
+        generation: Int,
+        client failedClient: JSONRPCClient?
+    ) async {
+        guard generation == connectionGeneration,
+              !stopping,
+              case let .provisional(version) = compatibility
+        else {
+            return
+        }
+
+        connectionAttemptEpoch += 1
+        connectionGeneration += 1
+        connectedAtNanoseconds = nil
+        reconnectTask?.cancel()
+        reconnectTask = nil
+        periodicTask?.cancel()
+        periodicTask = nil
+        debounceTask?.cancel()
+        debounceTask = nil
+        pendingNotificationScope = nil
+        pendingRefreshScope = nil
+        pendingRefreshGeneration = nil
+        eventTask?.cancel()
+        eventTask = nil
+        client = nil
+        if let failedClient {
+            await failedClient.close()
+        }
+        guard started, !stopping else { return }
+        clearAccountScopedState()
+        compatibility = .runtimeIncompatible(version: version)
+        ReleaseLaunchDiagnostic.publish(.runtimeIncompatible)
+        publish(connection: .unavailable, failure: .runtimeIncompatible)
+        logger.info(
+            "Codex bridge runtime incompatible, CLI: \(version, privacy: .public)"
+        )
     }
 
     private func scheduleReconnect() {
@@ -834,6 +925,39 @@ public actor CodexUsageService: CodexUsageServing {
         accountUsageFailureReason = nil
         authenticationAvailable = nil
         lastSuccessfulRefresh = nil
+    }
+
+    private var isProvisional: Bool {
+        if case .provisional = compatibility {
+            return true
+        }
+        return false
+    }
+
+    private func isRequiredProtocolIncompatibility(_ error: Error) -> Bool {
+        if error is CodexProtocolDecodingError {
+            return true
+        }
+        guard let rpcError = error as? JSONRPCClientError else { return false }
+        switch rpcError {
+        case .invalidMessage, .duplicateResponse:
+            return true
+        case .remoteError(code: -32_601):
+            return true
+        case .notStarted, .alreadyStarted, .encodingFailed, .requestTimedOut,
+             .transportClosed, .cancelled, .remoteError:
+            return false
+        }
+    }
+
+    private func hasRequiredWeeklyCapability(_ buckets: [RateLimitBucket]) -> Bool {
+        if case .available = UsageSemantics.window(
+            durationMinutes: UsageSemantics.weeklyMinutes,
+            in: buckets
+        ) {
+            return true
+        }
+        return false
     }
 
     private func shouldReconnect(for error: Error, timeoutIsFatal: Bool = true) -> Bool {

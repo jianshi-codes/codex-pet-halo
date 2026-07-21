@@ -33,7 +33,7 @@ if ! /usr/bin/env PET_HALO_RUN_REAL_SMOKE=1 PET_HALO_SMOKE_REPORT_PATH="$smoke_r
     fi
     exit 1
 fi
-rg '^(Codex located:|Protocol version:|Handshake:|Rate-limit buckets:|Weekly capability:|Five-hour capability:|Account Usage capability:|Shutdown:)' "$smoke_report"
+rg '^(Codex located:|CLI version:|Protocol version:|Handshake:|JSON-RPC envelopes:|Account read:|Rate-limit read:|Rate-limit buckets:|Weekly capability:|Weekly percentage:|Weekly resetsAt:|Five-hour capability:|Account Usage capability:|Shutdown:)' "$smoke_report"
 
 DERIVED_DATA_PATH="$derived_data_path" ./Scripts/m2-app-smoke.sh
 trap - EXIT

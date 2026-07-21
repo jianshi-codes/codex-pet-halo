@@ -11,8 +11,10 @@
 ## Current evidence
 
 - PRs #8, #9, #10, and #11 are merged into `main`.
-- CLI `0.145.0-alpha.18` remains the only supported protocol version. Current regenerated individual schemas are identical to retained evidence and the canonical aggregate hash matches.
-- The production registry requires explicit review of initialize, account, rate limits, Usage, notifications, and JSON-RPC envelopes; decoding success alone cannot enable a version.
+- CLI `0.145.0-alpha.18` remains the exact reviewed baseline. Current regenerated individual schemas are identical to retained evidence and the canonical aggregate hash matches.
+- Newer CLI versions from the reviewed floor through pre-1.0 may run provisionally after required runtime capability validation. The production registry remains reviewed-only; provisional success does not create schema or semantic-review evidence.
+- Installed CLI `0.145.0-alpha.27` passes the provisional runtime path, including required Weekly percentage/reset decoding and clean owned-child shutdown; optional 5h is absent and Account Usage is available on the validation host.
+- Malformed, too-old, explicitly denied, and 1.x versions remain blocked before child launch. Required provisional protocol breakage closes the owned child and suppresses automatic reconnect until user Refresh or restart.
 - Desktop `26.715.31925 (5551)` and `26.715.52143 (5591)` have the compatibility evidence recorded in `docs/COMPATIBILITY.md`.
 - User-facing bridge, following, and Pet failure states are concise and omit raw errors, payloads, identity, paths, and process details.
 - Source and every reachable Git blob pass the deterministic public-exposure audit. The repository is public; hosted metadata remains an ongoing operator audit surface documented in `docs/PUBLIC_EXPOSURE_AUDIT.md`.
@@ -32,7 +34,7 @@ callable for focused reruns. The retained `make m7-tests` and `make m7-smoke`
 names are compatibility aliases; the duplicate M5/M6 commands were removed.
 
 - `make test`: PASS — 54 Core tests (one designed local-only skip) and 119 App tests at M9 implementation closeout.
-- M2 smoke: PASS — current read-only CLI bridge, default-hidden accessory app, and clean owned-child shutdown.
+- M2 smoke: PASS — CLI `0.145.0-alpha.27` selected provisional, passed required read-only runtime capabilities, launched the accessory app, and completed clean owned-child shutdown.
 - M3 smoke: PASS.
 - M4 smoke: deterministic PASS; current live standard-window target was unavailable during the probe.
 - Unified M5–M7 gate: PASS — 110 deterministic tests plus one direct movement/Tuck Away/Wake/Quit flow.

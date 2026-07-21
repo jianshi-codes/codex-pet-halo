@@ -45,7 +45,10 @@ def write(payload: dict, *, partial: bool = False) -> None:
 
 
 def result(request_id: int, value: object) -> None:
-    write({"id": request_id, "result": value}, partial=SCENARIO == "partial")
+    envelope = {"id": request_id, "result": value}
+    if SCENARIO == "unknown-fields":
+        envelope["futureEnvelopeField"] = {"ignored": True}
+    write(envelope, partial=SCENARIO == "partial")
 
 
 for raw_line in sys.stdin:
@@ -55,6 +58,9 @@ for raw_line in sys.stdin:
     observe(method)
 
     if method == "initialize":
+        if SCENARIO == "initialize-method-not-found":
+            write({"id": request_id, "error": {"code": -32601, "message": "unsupported"}})
+            continue
         if SCENARIO in {"malformed", "invalid-delayed-termination"}:
             sys.stdout.write("{bad json\n")
             sys.stdout.flush()
@@ -87,12 +93,17 @@ for raw_line in sys.stdin:
         authentication_unavailable = SCENARIO == "auth-unavailable" or (
             SCENARIO == "account-logout" and account_request_count > 1
         )
-        result(
-            request_id,
+        account_response = (
             {
                 "account": None if authentication_unavailable else {"identity": "discarded"},
                 "requiresOpenaiAuth": authentication_unavailable,
-            },
+            }
+        )
+        if SCENARIO == "unknown-fields":
+            account_response["futureAccountField"] = ["ignored"]
+        result(
+            request_id,
+            account_response,
         )
     elif method == "account/rateLimits/read":
         rate_request_count += 1
@@ -115,12 +126,20 @@ for raw_line in sys.stdin:
             "primary": {"usedPercent": 25, "windowDurationMins": 10080, "resetsAt": None},
             "secondary": None,
         }
+        if SCENARIO == "rate-invalid-decoding":
+            result(request_id, {"rateLimits": "invalid"})
+            continue
+        if SCENARIO == "rate-missing-weekly":
+            snapshot["primary"]["windowDurationMins"] = 300
+        if SCENARIO == "unknown-fields":
+            snapshot["futureSnapshotField"] = {"ignored": True}
         result(
             request_id,
             {
                 "rateLimits": snapshot,
                 "rateLimitsByLimitId": {"codex": snapshot},
                 "rateLimitResetCredits": None,
+                **({"futureRateLimitField": "ignored"} if SCENARIO == "unknown-fields" else {}),
             },
         )
         if SCENARIO in {"sparse", "burst"} and not notification_sent:
