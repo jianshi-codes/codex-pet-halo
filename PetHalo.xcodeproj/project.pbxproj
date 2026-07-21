@@ -22,6 +22,7 @@
 		303BF632B2A63CEA9FF6CBCF /* CodexProtocolCompatibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 733DFC4498520ABB83762BBE /* CodexProtocolCompatibilityTests.swift */; };
 		3573EF5FCC1C3EDEE9EC8DAB /* SystemMotionPreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = C112BE358820FE91C44D276C /* SystemMotionPreference.swift */; };
 		3D5DCA9A5E3DFAB51BE9D536 /* PetHaloCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 31E285D59ED6AC3404B469E7 /* PetHaloCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		42ADCE9FA0702DE9E8D2C668 /* WeeklyResetDateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 855096DAF93540BC5F96CD20 /* WeeklyResetDateFormatter.swift */; };
 		44196C28F04B02B682757680 /* SystemPetTargetDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12DC814CFCAB6851D7A8D8AB /* SystemPetTargetDiscovery.swift */; };
 		5059C97F0934FB6D1E3EDAFD /* HaloPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF530A39D0726A73894FBBCD /* HaloPanel.swift */; };
 		56C0090D0694F70E7A0A0235 /* JSONRPCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44D0290C78C6A5EE7675F17E /* JSONRPCClient.swift */; };
@@ -154,6 +155,7 @@
 		733DFC4498520ABB83762BBE /* CodexProtocolCompatibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexProtocolCompatibilityTests.swift; sourceTree = "<group>"; };
 		79DB39BA2C79C7F61966EFC7 /* HaloExpandedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloExpandedView.swift; sourceTree = "<group>"; };
 		7AF1978CC2FC88E214BCA7F9 /* PetHaloCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PetHaloCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		855096DAF93540BC5F96CD20 /* WeeklyResetDateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyResetDateFormatter.swift; sourceTree = "<group>"; };
 		86A525637B5693F3FDA11F32 /* HaloPresentationMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloPresentationMode.swift; sourceTree = "<group>"; };
 		88966A37DE9DA522A564D8C2 /* HaloView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaloView.swift; sourceTree = "<group>"; };
 		8DB3589D81C683D19586393F /* PetRingPresentationPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetRingPresentationPolicy.swift; sourceTree = "<group>"; };
@@ -276,6 +278,7 @@
 				E3DE089ABE75DFCA70172888 /* PetRingPresentationModel.swift */,
 				8DB3589D81C683D19586393F /* PetRingPresentationPolicy.swift */,
 				C50A89738AFE522C295D68FB /* PetRingView.swift */,
+				855096DAF93540BC5F96CD20 /* WeeklyResetDateFormatter.swift */,
 			);
 			path = Halo;
 			sourceTree = "<group>";
@@ -675,6 +678,7 @@
 				3573EF5FCC1C3EDEE9EC8DAB /* SystemMotionPreference.swift in Sources */,
 				44196C28F04B02B682757680 /* SystemPetTargetDiscovery.swift in Sources */,
 				BDB8F8E7A3D150F459B932D9 /* SystemWindowFollowing.swift in Sources */,
+				42ADCE9FA0702DE9E8D2C668 /* WeeklyResetDateFormatter.swift in Sources */,
 				ED0211E6E8C738879E6036A0 /* WindowFollowingModels.swift in Sources */,
 				0324F3721AAE50650FAA2130 /* WindowFollowingPreferences.swift in Sources */,
 				F5DC611B834CA8FE1E64014D /* WindowFollowingService.swift in Sources */,
@@ -726,7 +730,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Config/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -871,7 +875,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Config/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (

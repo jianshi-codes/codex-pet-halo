@@ -181,9 +181,10 @@ class ReleaseReadinessTests(unittest.TestCase):
         info = (ROOT / "Config/Info.plist").read_text(encoding="utf-8")
         common = (ROOT / "Scripts/release-common.sh").read_text(encoding="utf-8")
         self.assertIn("MARKETING_VERSION: 0.1.0", project)
-        self.assertIn("CURRENT_PROJECT_VERSION: 1", project)
+        self.assertIn("CURRENT_PROJECT_VERSION: 2", project)
         self.assertNotIn("beta", info.lower())
-        self.assertIn("v0.1.0-beta.1", common)
+        self.assertIn('BUILD_NUMBER:-2', common)
+        self.assertIn("v0.1.0-beta.2", common)
 
     def test_public_preview_screenshots_are_metadata_free_png_files(self) -> None:
         signature = b"\x89PNG\r\n\x1a\n"
@@ -321,6 +322,21 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("Do not treat this artifact as a signed or notarized release", notes)
         self.assertIn("will use a new Beta version", notes)
 
+    def test_beta_two_is_prepared_without_rewriting_beta_one_release_links(self) -> None:
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        notes = (ROOT / "docs/release-notes/v0.1.0-beta.2.md").read_text(
+            encoding="utf-8"
+        )
+        changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+        self.assertIn("CURRENT_PROJECT_VERSION: 2", (ROOT / "project.yml").read_text())
+        self.assertIn("W 39% · Jul 27", readme)
+        self.assertIn("v0.1.0-beta.1", readme)
+        self.assertIn("Pet-Halo-0.1.0-beta.2-unsigned-universal.zip", notes)
+        self.assertIn("Beta 2 release identity is prepared but not published", notes)
+        self.assertIn("No Usage semantics", notes)
+        self.assertIn("exact supported Codex CLI and Desktop versions remain unchanged", notes)
+        self.assertIn("Weekly Ring capsules display", changelog)
+
     def test_unsigned_preview_artifact_name_and_make_path_are_explicit(self) -> None:
         environment = os.environ.copy()
         environment["RELEASE_ARTIFACT_QUALIFIER"] = "unsigned"
@@ -338,7 +354,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         )
         self.assertEqual(
             Path(result.stdout.strip()).name,
-            "Pet-Halo-0.1.0-beta.1-unsigned-universal.zip",
+            "Pet-Halo-0.1.0-beta.2-unsigned-universal.zip",
         )
         environment.pop("RELEASE_ARTIFACT_QUALIFIER")
         default_result = subprocess.run(
@@ -355,7 +371,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         )
         self.assertEqual(
             Path(default_result.stdout.strip()).name,
-            "Pet-Halo-0.1.0-beta.1-universal.zip",
+            "Pet-Halo-0.1.0-beta.2-universal.zip",
         )
         makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
         target = makefile.split("release-unsigned-preview:", maxsplit=1)[1]

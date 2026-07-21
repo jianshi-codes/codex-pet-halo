@@ -14,6 +14,19 @@ struct RingMetricValue: Equatable, Sendable {
     let remainingPercent: Double
     let displayedPercent: Int
     let semanticLevel: PetRingSemanticLevel
+    let resetsAt: Date?
+
+    init(
+        remainingPercent: Double,
+        displayedPercent: Int,
+        semanticLevel: PetRingSemanticLevel,
+        resetsAt: Date? = nil
+    ) {
+        self.remainingPercent = remainingPercent
+        self.displayedPercent = displayedPercent
+        self.semanticLevel = semanticLevel
+        self.resetsAt = resetsAt
+    }
 
     var progress: Double {
         min(max(remainingPercent / 100, 0), 1)

@@ -5,21 +5,24 @@ struct PetRingPresentationMapper {
     private var calendar: Calendar
     private let locale: Locale
     private let compactTokenFormatter: CompactTokenFormatter
+    private let weeklyResetDateFormatter: WeeklyResetDateFormatter
 
     init(
         calendar: Calendar = .autoupdatingCurrent,
         locale: Locale = .autoupdatingCurrent,
-        timeZone: TimeZone = TimeZone(secondsFromGMT: 0)!
+        timeZone: TimeZone = TimeZone(secondsFromGMT: 0)!,
+        weeklyResetDateFormatter: WeeklyResetDateFormatter = WeeklyResetDateFormatter()
     ) {
         var calendar = calendar
         calendar.timeZone = timeZone
         self.calendar = calendar
         self.locale = locale
         compactTokenFormatter = CompactTokenFormatter(locale: locale)
+        self.weeklyResetDateFormatter = weeklyResetDateFormatter
     }
 
     func map(_ state: CodexUsageState, date: Date) -> PetRingPresentationModel {
-        let weekly = ringMetric(
+        let weekly = weeklyMetric(
             capability: state.capabilities.generalWeekly,
             freshness: state.componentFreshness.rateLimits
         )
@@ -44,6 +47,18 @@ struct PetRingPresentationMapper {
         )
     }
 
+    private func weeklyMetric(
+        capability: Capability<QuotaWindow>,
+        freshness: DataFreshness
+    ) -> RingMetricPresentation {
+        guard case let .available(window) = capability else { return .unavailable }
+        return ringMetric(
+            window: window,
+            freshness: freshness,
+            resetsAt: window.resetsAt
+        )
+    }
+
     private func fiveHourMetric(
         capability: Capability<QuotaWindow>,
         freshness: DataFreshness
@@ -53,27 +68,21 @@ struct PetRingPresentationMapper {
         else {
             return nil
         }
-        return ringMetric(window: window, freshness: freshness)
-    }
-
-    private func ringMetric(
-        capability: Capability<QuotaWindow>,
-        freshness: DataFreshness
-    ) -> RingMetricPresentation {
-        guard case let .available(window) = capability else { return .unavailable }
-        return ringMetric(window: window, freshness: freshness)
+        return ringMetric(window: window, freshness: freshness, resetsAt: nil)
     }
 
     private func ringMetric(
         window: QuotaWindow,
-        freshness: DataFreshness
+        freshness: DataFreshness,
+        resetsAt: Date?
     ) -> RingMetricPresentation {
         let value = RingMetricValue(
             remainingPercent: window.remainingPercent,
             displayedPercent: Int(window.remainingPercent.rounded(.toNearestOrAwayFromZero)),
             semanticLevel: PetRingPresentationPolicy.remainingLevel(
                 for: window.remainingPercent
-            )
+            ),
+            resetsAt: resetsAt
         )
         switch freshness {
         case .current:
@@ -141,7 +150,10 @@ struct PetRingPresentationMapper {
         metric: RingMetricPresentation
     ) -> String {
         guard let value = metric.value else { return "\(name), unavailable" }
-        return "\(name), \(value.percentText) remaining, "
+        let resetValue = value.resetsAt.map {
+            ", resets \(weeklyResetDateFormatter.accessibilityReset($0))"
+        } ?? ""
+        return "\(name), \(value.percentText) remaining\(resetValue), "
             + "\(metric.freshnessText.lowercased()), \(value.semanticLevel.text.lowercased())"
     }
 

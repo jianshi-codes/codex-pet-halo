@@ -3,8 +3,8 @@ set -euo pipefail
 
 readonly release_repository_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 readonly release_marketing_version="${MARKETING_VERSION:-0.1.0}"
-readonly release_build_number="${BUILD_NUMBER:-1}"
-readonly release_tag="${RELEASE_TAG:-v0.1.0-beta.1}"
+readonly release_build_number="${BUILD_NUMBER:-2}"
+readonly release_tag="${RELEASE_TAG:-v0.1.0-beta.2}"
 readonly release_label="${release_tag#v}"
 readonly release_output_root="${RELEASE_OUTPUT_ROOT:-$release_repository_root/dist/$release_tag}"
 readonly release_derived_data="${RELEASE_DERIVED_DATA:-$release_repository_root/DerivedData/PublicBeta}"

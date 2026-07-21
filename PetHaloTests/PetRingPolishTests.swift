@@ -142,19 +142,30 @@ final class PetRingPolishTests: XCTestCase {
             [.weekly, .fiveHour, .today],
         ]
         for metrics in combinations {
-            let frames = metrics.map {
-                geometry.labelFrame(for: $0, side: .right, visibleMetrics: metrics)
-            }
-            XCTAssertTrue(frames.allSatisfy { CGRect(origin: .zero, size: geometry.panelSize).contains($0) })
-            for first in frames.indices {
-                for second in frames.indices where first < second {
-                    XCTAssertFalse(frames[first].intersects(frames[second]))
+            for side in [PetRingLabelSide.left, .right] {
+                let frames = metrics.map {
+                    geometry.labelFrame(for: $0, side: side, visibleMetrics: metrics)
+                }
+                XCTAssertTrue(frames.allSatisfy {
+                    CGRect(origin: .zero, size: geometry.panelSize).contains($0)
+                })
+                for first in frames.indices {
+                    for second in frames.indices where first < second {
+                        XCTAssertFalse(frames[first].intersects(frames[second]))
+                    }
                 }
             }
         }
 
+        XCTAssertEqual(geometry.labelSize(for: .weekly), CGSize(width: 106, height: 24))
+        XCTAssertEqual(geometry.panelSize, CGSize(width: 448, height: 252))
+        XCTAssertEqual(geometry.ringCenter(in: geometry.panelSize), CGPoint(x: 224, y: 126))
+
         let maximumModel = PetRingPresentationModel(
-            weekly: .current(metric(remaining: 100)),
+            weekly: .current(metric(
+                remaining: 100,
+                resetsAt: Date(timeIntervalSince1970: 1_790_726_400)
+            )),
             fiveHour: .current(metric(remaining: 100)),
             todayTokens: .current(TodayTokenValue(
                 tokenCount: UInt64.max,
@@ -167,7 +178,14 @@ final class PetRingPolishTests: XCTestCase {
             )),
             accessibilityValue: "Maximum values"
         )
-        let hosting = NSHostingView(rootView: PetRingView(model: maximumModel)
+        let hosting = NSHostingView(rootView: PetRingView(
+            model: maximumModel,
+            weeklyResetDateFormatter: WeeklyResetDateFormatter(
+                visibleLocale: Locale(identifier: "en_US_POSIX"),
+                accessibilityLocale: Locale(identifier: "en_US_POSIX"),
+                timeZone: TimeZone(secondsFromGMT: 0)!
+            )
+        )
             .environment(\.dynamicTypeSize, .accessibility5))
         hosting.frame = CGRect(origin: .zero, size: geometry.panelSize)
         hosting.layoutSubtreeIfNeeded()
@@ -192,11 +210,15 @@ final class PetRingPolishTests: XCTestCase {
         )
     }
 
-    private func metric(remaining: Double) -> RingMetricValue {
+    private func metric(
+        remaining: Double,
+        resetsAt: Date? = nil
+    ) -> RingMetricValue {
         RingMetricValue(
             remainingPercent: remaining,
             displayedPercent: Int(remaining),
-            semanticLevel: .healthy
+            semanticLevel: .healthy,
+            resetsAt: resetsAt
         )
     }
 }
