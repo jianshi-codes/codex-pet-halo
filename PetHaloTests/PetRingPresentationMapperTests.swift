@@ -7,6 +7,156 @@ final class PetRingPresentationMapperTests: XCTestCase {
     private let locale = Locale(identifier: "en_US_POSIX")
     private let timeZone = TimeZone(secondsFromGMT: 0)!
 
+    func testWeeklyResetFlowsAsDateWhileFiveHourPresentationStaysUnchanged() throws {
+        let reset = try instant("2026-07-27T00:00:00Z")
+        let model = mapper().map(
+            state(
+                weekly: .available(quota(
+                    usedPercent: 61,
+                    minutes: 10_080,
+                    resetsAt: reset
+                )),
+                fiveHour: .available(quota(
+                    usedPercent: 42,
+                    minutes: 300,
+                    resetsAt: reset
+                )),
+                rateFreshness: .current
+            ),
+            date: date
+        )
+
+        XCTAssertEqual(model.weekly.value?.resetsAt, reset)
+        XCTAssertNil(model.fiveHour?.value?.resetsAt)
+        XCTAssertEqual(model.fiveHour?.value?.percentText, "58%")
+    }
+
+    func testNilWeeklyResetPreservesOriginalVisibleAndAccessibilityText() {
+        let formatter = resetFormatter(timeZone: timeZone)
+        let model = mapper().map(
+            state(
+                weekly: .available(quota(usedPercent: 61, minutes: 10_080)),
+                rateFreshness: .current
+            ),
+            date: date
+        )
+
+        XCTAssertNil(model.weekly.value?.resetsAt)
+        XCTAssertEqual(
+            formatter.visibleValue(
+                percentText: model.weekly.value?.percentText ?? "",
+                resetsAt: model.weekly.value?.resetsAt
+            ),
+            "39%"
+        )
+        XCTAssertEqual(
+            model.accessibilityValue,
+            "Weekly quota, 39% remaining, current, warning"
+        )
+    }
+
+    func testCompactWeeklyResetUsesInjectedLocalTimeZoneAcrossDateBoundaries() throws {
+        let formatter = resetFormatter(
+            timeZone: try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
+        )
+
+        XCTAssertEqual(
+            formatter.visibleValue(
+                percentText: "39%",
+                resetsAt: try instant("2026-07-27T00:00:00Z")
+            ),
+            "39% · Jul 27"
+        )
+        XCTAssertEqual(
+            formatter.visibleValue(
+                percentText: "39%",
+                resetsAt: try instant("2026-07-31T17:00:00Z")
+            ),
+            "39% · Aug 1"
+        )
+        XCTAssertEqual(
+            formatter.visibleValue(
+                percentText: "100%",
+                resetsAt: try instant("2026-09-29T16:00:00Z")
+            ),
+            "100% · Sep 30"
+        )
+        XCTAssertEqual(
+            formatter.visibleValue(
+                percentText: "39%",
+                resetsAt: try instant("2026-12-31T17:00:00Z")
+            ),
+            "39% · Jan 1"
+        )
+
+        let localizedAccessibility = WeeklyResetDateFormatter(
+            accessibilityLocale: Locale(identifier: "fr_FR"),
+            timeZone: timeZone
+        )
+        XCTAssertEqual(
+            localizedAccessibility.visibleValue(
+                percentText: "39%",
+                resetsAt: try instant("2026-07-27T00:00:00Z")
+            ),
+            "39% · Jul 27"
+        )
+    }
+
+    func testWeeklyAccessibilityIncludesExactLocalResetAndPreservesStaleSemantics() throws {
+        let resetTimeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
+        let reset = try instant("2026-07-27T00:00:00Z")
+        let current = mapper(resetTimeZone: resetTimeZone).map(
+            state(
+                weekly: .available(quota(
+                    usedPercent: 61,
+                    minutes: 10_080,
+                    resetsAt: reset
+                )),
+                rateFreshness: .current
+            ),
+            date: date
+        )
+        let stale = mapper(resetTimeZone: resetTimeZone).map(
+            state(
+                weekly: .available(quota(
+                    usedPercent: 61,
+                    minutes: 10_080,
+                    resetsAt: reset
+                )),
+                rateFreshness: .stale
+            ),
+            date: date
+        )
+
+        XCTAssertEqual(
+            current.accessibilityValue,
+            "Weekly quota, 39% remaining, resets July 27, 2026 at 8:00\u{202F}AM GMT+8, "
+                + "current, warning"
+        )
+        XCTAssertEqual(stale.weekly.value?.resetsAt, reset)
+        XCTAssertTrue(stale.accessibilityValue.contains("resets July 27, 2026 at 8:00\u{202F}AM GMT+8"))
+        XCTAssertTrue(stale.accessibilityValue.hasSuffix("stale, warning"))
+    }
+
+    func testPastWeeklyResetIsRenderedWithoutInferringQuotaState() throws {
+        let pastReset = try instant("2024-01-01T00:00:00Z")
+        let model = mapper().map(
+            state(
+                weekly: .available(quota(
+                    usedPercent: 10,
+                    minutes: 10_080,
+                    resetsAt: pastReset
+                )),
+                rateFreshness: .current
+            ),
+            date: date
+        )
+
+        XCTAssertEqual(model.weekly.value?.resetsAt, pastReset)
+        XCTAssertEqual(model.weekly.freshnessText, "Current")
+        XCTAssertEqual(model.weekly.value?.remainingPercent, 90)
+    }
+
     func testWeeklyUsesDomainRemainingPercentAndComponentFreshness() {
         let weekly = quota(usedPercent: 18.6, minutes: 10_080)
         let current = mapper().map(
@@ -418,20 +568,39 @@ final class PetRingPresentationMapperTests: XCTestCase {
     }
     #endif
 
-    private func mapper() -> PetRingPresentationMapper {
+    private func mapper(resetTimeZone: TimeZone? = nil) -> PetRingPresentationMapper {
         PetRingPresentationMapper(
             calendar: Calendar(identifier: .gregorian),
             locale: locale,
+            timeZone: timeZone,
+            weeklyResetDateFormatter: resetFormatter(
+                timeZone: resetTimeZone ?? timeZone
+            )
+        )
+    }
+
+    private func resetFormatter(timeZone: TimeZone) -> WeeklyResetDateFormatter {
+        WeeklyResetDateFormatter(
+            visibleLocale: locale,
+            accessibilityLocale: locale,
             timeZone: timeZone
         )
     }
 
-    private func quota(usedPercent: Double, minutes: Int) -> QuotaWindow {
+    private func instant(_ value: String) throws -> Date {
+        try XCTUnwrap(ISO8601DateFormatter().date(from: value))
+    }
+
+    private func quota(
+        usedPercent: Double,
+        minutes: Int,
+        resetsAt: Date? = nil
+    ) -> QuotaWindow {
         QuotaWindow(
             source: .primary,
             usedPercent: usedPercent,
             durationMinutes: minutes,
-            resetsAt: nil
+            resetsAt: resetsAt
         )
     }
 

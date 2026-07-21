@@ -11,8 +11,6 @@ Pet Halo is a macOS menu-bar companion that places a transparent Usage ring arou
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-black)
 
-> **Unofficial project:** Pet Halo is independent and is not affiliated with, endorsed by, or supported by OpenAI. Codex and Codex Pet are OpenAI products.
-
 ## Preview
 
 <table>
@@ -34,7 +32,7 @@ Codex Pet is shown only to demonstrate integration. It is not Pet Halo project b
 
 ## What the rings mean
 
-- **Outer ring — Weekly remaining:** the remaining percentage for the exact 10,080-minute Codex rate-limit window.
+- **Outer ring — Weekly remaining:** the remaining percentage for the exact 10,080-minute Codex rate-limit window. When Codex provides its reset timestamp, the capsule also shows that date in the user's local timezone, for example `W 39% · Jul 27`.
 - **Middle ring — optional 5h remaining:** the remaining percentage for an exact 300-minute window. It is omitted when Codex does not provide one.
 - **Inner ring — Today versus historical peak:** tokens in the current Codex UTC account day divided by the highest nonzero historical daily token count supplied by Codex. Missing or ambiguous data is omitted, never estimated as zero.
 
@@ -166,10 +164,10 @@ Xcode 26.4.1, Swift 6.3.1, and XcodeGen 2.46.0 are the current reviewed toolchai
 ```sh
 make bootstrap
 make check
-make release-unsigned-preview MARKETING_VERSION=0.1.0 BUILD_NUMBER=1 RELEASE_TAG=v0.1.0-beta.1
+make release-unsigned-preview MARKETING_VERSION=0.1.0 BUILD_NUMBER=2 RELEASE_TAG=v0.1.0-beta.2
 ```
 
-The unsigned preview target requires a clean source tree and produces `Pet-Halo-0.1.0-beta.1-unsigned-universal.zip`. Developer ID signing and Apple notarization remain separate credentialed steps described in the [Release checklist](docs/RELEASE_CHECKLIST.md).
+The unsigned preview target requires a clean source tree and produces `Pet-Halo-0.1.0-beta.2-unsigned-universal.zip`. Developer ID signing and Apple notarization remain separate credentialed steps described in the [Release checklist](docs/RELEASE_CHECKLIST.md). The Download section continues to point to the currently published Beta 1 release until Beta 2 is separately reviewed and published.
 
 ## Contributing and security
 

@@ -4,7 +4,9 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 
 ## [Unreleased]
 
-No changes yet.
+### Added
+
+- Weekly Ring capsules display the verified Weekly reset date in the user's local timezone when Codex provides one.
 
 ## [0.1.0-beta.1] - 2026-07-21
 

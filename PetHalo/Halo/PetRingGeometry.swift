@@ -156,7 +156,7 @@ struct PetRingGeometry: Equatable, Sendable {
     func labelSize(for metric: PetRingMetricKind) -> CGSize {
         switch metric {
         case .weekly:
-            CGSize(width: 64, height: 24)
+            CGSize(width: 106, height: 24)
         case .fiveHour:
             CGSize(width: 72, height: 24)
         case .today:

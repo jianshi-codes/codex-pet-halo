@@ -62,7 +62,7 @@ targets:
         PRODUCT_MODULE_NAME: PetHalo
         PRODUCT_BUNDLE_IDENTIFIER: io.github.jianshicodes.PetHalo
         MARKETING_VERSION: 0.1.0
-        CURRENT_PROJECT_VERSION: 1
+        CURRENT_PROJECT_VERSION: 2
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         INFOPLIST_FILE: Config/Info.plist
         GENERATE_INFOPLIST_FILE: NO

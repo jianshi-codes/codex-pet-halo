@@ -27,6 +27,7 @@ struct PetRingView: View {
     let orientation: PetRingOrientation
     let labelSide: PetRingLabelSide
     let isCalibrating: Bool
+    let weeklyResetDateFormatter: WeeklyResetDateFormatter
 
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
@@ -38,13 +39,15 @@ struct PetRingView: View {
         geometry: PetRingGeometry = .standard,
         orientation: PetRingOrientation = .fixedDefault,
         labelSide: PetRingLabelSide = .right,
-        isCalibrating: Bool = false
+        isCalibrating: Bool = false,
+        weeklyResetDateFormatter: WeeklyResetDateFormatter = WeeklyResetDateFormatter()
     ) {
         self.model = model
         self.geometry = geometry
         self.orientation = orientation
         self.labelSide = labelSide
         self.isCalibrating = isCalibrating
+        self.weeklyResetDateFormatter = weeklyResetDateFormatter
     }
 
     var body: some View {
@@ -235,7 +238,14 @@ struct PetRingView: View {
         metric: RingMetricPresentation,
         kind: PetRingMetricKind
     ) -> some View {
-        let valueText = metric.value?.percentText ?? "—"
+        let valueText = metric.value.map {
+            kind == .weekly
+                ? weeklyResetDateFormatter.visibleValue(
+                    percentText: $0.percentText,
+                    resetsAt: $0.resetsAt
+                )
+                : $0.percentText
+        } ?? "—"
         return capsuleLabel(
             key: prefix,
             value: valueText,
@@ -318,7 +328,10 @@ struct PetRingView: View {
 
     private func remainingAccessibilityValue(_ metric: RingMetricPresentation) -> String {
         guard let value = metric.value else { return "Unavailable" }
-        return "\(value.percentText), \(metric.freshnessText.lowercased()), "
+        let resetValue = value.resetsAt.map {
+            ", resets \(weeklyResetDateFormatter.accessibilityReset($0))"
+        } ?? ""
+        return "\(value.percentText)\(resetValue), \(metric.freshnessText.lowercased()), "
             + value.semanticLevel.text.lowercased()
     }
 
