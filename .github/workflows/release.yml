@@ -11,12 +11,10 @@ on:
       build_number:
         description: Positive integer bundle build number
         required: true
-        default: "1"
         type: string
       release_tag:
         description: Beta tag matching the marketing version
         required: true
-        default: v0.1.0-beta.1
         type: string
       publish:
         description: Create the tag and GitHub prerelease after credentialed validation
@@ -47,6 +45,40 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      - name: Reject an existing release identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          set +e
+          git ls-remote --exit-code --refs origin "refs/tags/$RELEASE_TAG" >/dev/null 2>&1
+          tag_status=$?
+          set -e
+          case "$tag_status" in
+            0)
+              echo "Release tag already exists: $RELEASE_TAG" >&2
+              exit 1
+              ;;
+            2) ;;
+            *)
+              echo "Unable to prove release tag is unused: $RELEASE_TAG" >&2
+              exit 1
+              ;;
+          esac
+
+          set +e
+          release_response=$(gh api --include \
+            "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" 2>&1)
+          release_status=$?
+          set -e
+          if [[ "$release_status" -eq 0 ]]; then
+            echo "GitHub Release already exists: $RELEASE_TAG" >&2
+            exit 1
+          fi
+          if ! grep -Eq 'HTTP/[0-9.]+ 404|\(HTTP 404\)' <<<"$release_response"; then
+            echo "Unable to prove GitHub Release is unused: $RELEASE_TAG" >&2
+            exit 1
+          fi
       - name: Install pinned XcodeGen
         run: |
           set -euo pipefail
@@ -83,6 +115,40 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      - name: Reject an existing release identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          set +e
+          git ls-remote --exit-code --refs origin "refs/tags/$RELEASE_TAG" >/dev/null 2>&1
+          tag_status=$?
+          set -e
+          case "$tag_status" in
+            0)
+              echo "Release tag already exists: $RELEASE_TAG" >&2
+              exit 1
+              ;;
+            2) ;;
+            *)
+              echo "Unable to prove release tag is unused: $RELEASE_TAG" >&2
+              exit 1
+              ;;
+          esac
+
+          set +e
+          release_response=$(gh api --include \
+            "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" 2>&1)
+          release_status=$?
+          set -e
+          if [[ "$release_status" -eq 0 ]]; then
+            echo "GitHub Release already exists: $RELEASE_TAG" >&2
+            exit 1
+          fi
+          if ! grep -Eq 'HTTP/[0-9.]+ 404|\(HTTP 404\)' <<<"$release_response"; then
+            echo "Unable to prove GitHub Release is unused: $RELEASE_TAG" >&2
+            exit 1
+          fi
       - name: Install pinned XcodeGen
         run: |
           set -euo pipefail

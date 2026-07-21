@@ -3,7 +3,9 @@
 - Branch: `m8/release-ui-polish`
 - Scope: system appearance and accessibility polish, capsule contrast, visible-frame-safe label placement, Reduce Motion behavior, original icon assets, spacing, tests, smoke tooling, and current-state documentation
 - Status: **PASS**
-- Gate: M8 is closed; Draft PR #9 remains open and unmerged, and M9 requires separate authorization
+- Gate: M8 is closed; PR #9 merged on 2026-07-20
+
+This is the historical M8 implementation record. Its original M9 authorization boundary is retained as milestone evidence; M9 was subsequently authorized, merged, and closed with a partial signed-binary gate.
 
 ## Outcome
 
@@ -47,6 +49,6 @@ M8 adds no theme system, user-selectable palette, decorative motion, particles, 
 | M8 visual/accessibility smoke | PASS — deterministic policy/bundle checks plus direct observer acceptance |
 | Direct appearance and edge matrix | PASS — light/dark, Increase Contrast, Reduce Motion, left/right screen edges, menu icon, Finder/Get Info icon, Pet movement, Tuck Away default hide, Wake, and Quit |
 | Optional data matrix | PASS — current Today-present/5h-absent state observed directly; other supported omission/presence combinations covered deterministically without synthesizing data |
-| Draft PR CI | PASS — Protocol evidence and macOS application jobs both passed on PR #9 |
+| PR CI | PASS — Protocol evidence and macOS application jobs both passed before PR #9 merged |
 
-M9 — Public Beta Release Readiness is the next milestone. It is not authorized by completion of M8.
+M8 completion did not itself authorize M9. M9 was subsequently authorized; PRs #10 and #11 merged, and the public `v0.1.0-beta.1` unsigned source release was published on 2026-07-21.
