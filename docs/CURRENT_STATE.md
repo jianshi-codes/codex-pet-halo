@@ -63,9 +63,8 @@
 - Equivalent isolated-host unsigned launch/quit: PASS; signed/notarized clean-machine acceptance remains incomplete.
 - `make public-exposure-audit`: PASS — all reachable Git blobs inspected with one exact synthetic fixture allowance.
 - Fresh published Beta 2 download, checksums, manifest source commit, bundle metadata, Universal architectures, and release-note identity: PASS.
-- Draft PR #17 CI: PASS on the implementation plus refreshed current-source
-  Preview head before this release-preparation update; the final documentation
-  head requires a fresh CI pass.
+- Draft PR #17 CI: PASS on the active implementation and release-preparation
+  documentation head observed on 2026-07-25.
 
 ## Remaining release gate
 
