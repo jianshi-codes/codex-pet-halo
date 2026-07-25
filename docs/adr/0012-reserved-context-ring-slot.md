@@ -1,4 +1,10 @@
-# ADR 0011: Reserved Context Ring Slot
+# ADR 0012: Reserved Context Ring Slot
+
+## Status
+
+Accepted on the active maintenance branch. This decision supersedes the Today
+metric and inner-ring data contract in ADR 0009 without changing its target,
+surface, geometry, or fallback decisions.
 
 ## Context
 

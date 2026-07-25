@@ -12,15 +12,17 @@ Pet Halo separates exact reviewed evidence from bounded provisional forward comp
 
 The known-incompatible denylist is initially empty. It is a safety override for confirmed broken versions, not a second reviewed-version registry. Newer pre-1.0 versions may therefore work without a Pet Halo update, but only the exact reviewed baseline has schema and semantic review evidence.
 
-| Component | Reviewed version | Status | Evidence boundary |
+| Component | Version | Status | Evidence boundary |
 | --- | --- | --- | --- |
-| Codex CLI | `0.145.0-alpha.18` | Supported | Current local CLI; all production-used schemas and semantics reviewed |
+| Codex CLI | `0.145.0-alpha.18` | Supported | Exact reviewed baseline; all production-used schemas and semantics reviewed |
+| Codex CLI | `0.146.0-alpha.3.1` | Provisional session PASS | Current installed CLI passed required read-only runtime capabilities and clean shutdown on 2026-07-25; no schema-review claim |
 | Codex Desktop | `26.715.31925 (5551)` | Supported | Route A Pet/window Accessibility behavior previously validated |
 | Codex Desktop | `26.715.52143 (5591)` | Supported | Current M9 Route A and complete Pet-following gate validated |
+| Codex Desktop | `26.721.41059 (5848)` | Validated candidate | Active-branch structural policy, direct Hide/Wake/center interaction, deterministic tests, and CI passed; not included in published Beta 2 |
 
 The CLI registry covers these semantic groups: initialize/initialized; `account/read`; `account/rateLimits/read`; `account/rateLimits/updated`; `account/usage/read`; and JSON-RPC request, response, error, and notification envelopes. It also covers exact rate-limit window durations, sparse update behavior, Account Usage summary/daily buckets, independent component freshness, and account-data clearing boundaries.
 
-M9 regenerated 341 JSON schema files from the current local CLI into a temporary directory. All 340 individual schema files were byte-identical to the retained `0.145.0-alpha.18` evidence. The aggregate v2 schema differed only in object ordering; both canonical sorted documents had SHA-256 `d7da14579e98011d40ad9c97a376cccfd69d0da5b2eb174b32d5bb6bd9159b6b`. This confirms schema stability for the already-supported CLI version but does not replace semantic review.
+M9 regenerated 341 JSON schema files from its then-current local CLI into a temporary directory. All 340 individual schema files were byte-identical to the retained `0.145.0-alpha.18` evidence. The aggregate v2 schema differed only in object ordering; both canonical sorted documents had SHA-256 `d7da14579e98011d40ad9c97a376cccfd69d0da5b2eb174b32d5bb6bd9159b6b`. This confirms schema stability for the already-supported CLI version but does not replace semantic review.
 
 For Desktop `26.715.52143 (5591)`, the consolidated M9 Pet-following gate directly observed one unique Route A Pet core moving while the resolved Codex standard window remained stationary, automatic visual-center attachment, Tuck Away fallback, Wake recovery, Pet Ring selection, non-activation, and complete Pet Halo/owned-child shutdown. M5–M7 use this one live flow rather than repeating the same interaction across milestone scripts.
 
@@ -35,12 +37,22 @@ area is tied. If no eligible SystemDialog exists, exactly one corroborated Dialo
 frame wins, followed by the existing unique-Dialog compatibility fallback.
 The production selector, Route A probe, and center-lock smoke compile the same
 pure selection policy. A sanitized read-only structural probe resolves the
-current topology uniquely; complete interaction validation remains a separate
-local gate before this Desktop build is added to the supported registry.
+current topology uniquely. Direct active-branch interaction then confirmed
+calibrated placement, immediate center restoration across Hide/Wake, stable
+centering after a new task message, and fail-closed removal of the unverified
+Live Activity ring. This is candidate evidence for a future release, not a claim
+that published Beta 2 supports this Desktop topology.
 
 The M9 validation host is macOS 26.5.2 (Build 25F84), arm64, with Xcode 26.4.1 (17E202), Swift 6.3.1, Codex CLI 0.145.0-alpha.18, and Codex Desktop 26.715.52143 (5591). Host observations are evidence, not a broad compatibility promise.
 
 On 2026-07-21, installed CLI `0.145.0-alpha.27` passed the provisional runtime path: executable discovery; version parsing and provisional decision; initialize/initialized; valid JSON-RPC envelopes; account and rate-limit reads; a usable exact Weekly window with valid percentage and decoded reset timestamp; optional 5h omission; available Account Usage; and clean owned-child shutdown. This is session runtime evidence only. It does not add `0.145.0-alpha.27` to the reviewed registry or claim a schema review.
+
+On 2026-07-25, the same sanitized read-only smoke passed for installed CLI
+`0.146.0-alpha.3.1`: provisional version decision, initialize/initialized,
+JSON-RPC envelopes, account and rate-limit reads, a usable Weekly percentage and
+decoded reset timestamp, optional 5h omission, available Account Usage, and clean
+owned-child shutdown. This is also session-only evidence and does not add the
+version to the reviewed registry.
 
 ## Sanitized compatibility reports
 
@@ -89,7 +101,7 @@ Local M1 builds were validated with Xcode 26.4.1 (17E202) and Swift 6.3.1. The p
 
 The version parser compares numeric major/minor/patch components and dot-separated prerelease identifiers without a third-party dependency. The minimum is `0.145.0-alpha.18`; malformed, older, denied, and 1.x versions produce an unavailable state before a child process is launched.
 
-For a provisional version, Pet Halo requires a valid initialize response, initialized notification send, valid JSON-RPC envelopes, decodable `account/read` behavior, decodable `account/rateLimits/read`, and one unambiguous exact 10,080-minute Weekly window using the existing `usedPercent` and nullable timestamp semantics. Unknown response fields remain tolerated. The exact 300-minute five-hour window and `account/usage/read` Today data remain optional; missing 5h is omitted, and unsupported or failed Account Usage cannot remove valid Weekly data. Authentication unavailable is a sign-in state, not protocol incompatibility.
+For a provisional version, Pet Halo requires a valid initialize response, initialized notification send, valid JSON-RPC envelopes, decodable `account/read` behavior, decodable `account/rateLimits/read`, and one unambiguous exact 10,080-minute Weekly window using the existing `usedPercent` and nullable timestamp semantics. Unknown response fields remain tolerated. The exact 300-minute five-hour window and `account/usage/read` remain optional; missing 5h is omitted, and unsupported or failed Account Usage cannot remove valid Weekly data. Account Usage is confined to fallback cards and no longer supplies a Pet Ring Today metric. Authentication unavailable is a sign-in state, not protocol incompatibility.
 
 Required method-not-found errors, invalid required envelopes or response shapes, and rate-limit semantics without a usable Weekly capability make a provisional version runtime incompatible for the current connection. Pet Halo closes the owned child, cancels periodic/debounce/reconnect work, and does not automatically reconnect for that failure. A user-initiated **Refresh Usage** or application restart may retry. Transport closure, timeout, and process-start failures retain their existing transient reconnect treatment. Only safe state names and the parsed CLI version may be surfaced; raw errors, payloads, account data, environment values, and executable paths remain private.
 
@@ -148,7 +160,16 @@ Activity orientation is derived only after the near-square Pet core has been sel
 | Reduce Motion | New positions apply directly without interpolation; an active display-link callback is invalidated; normal mode retains latest-value following |
 | Icons | Complete original AppIcon catalog plus separate monochrome template menu asset; no official artwork or generic `circle.dashed` symbol |
 
-The active maintenance branch does not alter Route A discovery, Pet core selection, panel midpoint, visual-center persistence, bridge behavior, fallback hierarchy, or M7 ring radii. It removes the former Today presentation and leaves the reserved inner slot empty. When either capsule side fits, every visible capsule is contained in `visibleFrame`; if neither fits, the smaller-overflow side is selected without clamping the Ring center. M9 remains the separately gated compatibility-hardening and public-beta milestone.
+The active maintenance branch updates Route A Pet core selection for the current
+multi-surface Desktop topology and restores saved center placement immediately
+after Wake. It preserves the Pet → calibrated-window → free-floating hierarchy,
+panel midpoint, visual-center persistence, bridge behavior, and M7 ring radii.
+It removes the former Today presentation and leaves the reserved inner slot
+empty. When either capsule side fits, every visible capsule is contained in
+`visibleFrame`; if neither fits, the smaller-overflow side is selected without
+clamping the Ring center. M9 remains complete with its signed-binary gate blocked;
+the Beta 3 candidate uses the existing release machinery under separate merge,
+credential, notarization, clean-machine, and publication hold points.
 
 ## M4 window-following contract
 

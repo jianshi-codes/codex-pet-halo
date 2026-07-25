@@ -41,7 +41,19 @@ Generate schemas from the installed Codex CLI, build a read-only protocol probe,
 
 ### M7 — Pet Ring Surface & Target-aware Presentation
 
-**Complete — PASS.** Pet uses only a transparent, click-through vector surface centered on the stable AX Pet frame plus a persisted visual-center offset. Three concentric partial rings independently present Weekly remaining, an optional exact 300-minute 5h remaining value, and Today tokens versus nonzero historical peak, with fixed-identity capsule labels and semantic status colors. Dialog-aware orientation, latest-value following, restart recovery, explicit fallback visibility, UTC Today mapping, and calibrated center persistence are complete while Compact/Expanded fallbacks remain intact and are rejected on Pet. Focused M7 tests pass 106/106; the complete Swift suite executed 160 tests with 159 passed and one designed local authenticated integration smoke skipped; all 14 retained M0 tests, CI, live M7 smoke, visible-Pet containment, final capsule screenshot acceptance, and independent review passed. PR #8 merged on 2026-07-20. See [the M7 report](milestones/m7-pet-ring-presentation.md).
+**Complete — PASS (historical gate).** M7 established the transparent,
+click-through vector Pet surface, fixed concentric geometry, Weekly and optional
+exact 300-minute 5h rings, the original Today ring, dialog-aware opening,
+latest-value following, restart recovery, fallback preservation, and calibrated
+center persistence. Its focused and complete validation, CI, live smoke, visual
+acceptance, and independent review passed before PR #8 merged on 2026-07-20.
+
+Current source preserves the M7 surface, geometry, Weekly/5h semantics, and
+fallbacks but supersedes the Today data contract through
+[ADR 0012](adr/0012-reserved-context-ring-slot.md). The inner slot is now hidden
+and reserved for a future exact Context Remaining source; Accessibility geometry
+chooses only the arc opening and is never exposed as idle/working state. See the
+[historical M7 report](milestones/m7-pet-ring-presentation.md).
 
 ### M8 — Release UI Polish
 
@@ -50,3 +62,7 @@ Generate schemas from the installed Codex CLI, build a read-only protocol probe,
 ### M9 — Public Beta Release Readiness
 
 **Complete with partial gate — `PARTIAL — SOURCE RELEASE READY, SIGNED BINARY BLOCKED`.** PRs #10 and #11 merged on 2026-07-21. The repository is public, and Beta 1 plus its unsigned Universal ZIP and checksum metadata were published on 2026-07-21. PRs #14 and #15 subsequently merged, and `v0.1.0-beta.2` plus its unsigned Universal ZIP and checksum metadata were published on 2026-07-21. Compatibility hardening, onboarding, privacy/security/legal evidence, reproducible packaging, sanitized issue forms, and collision-safe future release automation are in place. Developer ID signing, Apple notarization, stapling, Gatekeeper verification, and signed clean-machine acceptance remain incomplete and require a new release identity. See [the M9 report](milestones/m9-public-beta-readiness.md).
+
+The active maintenance branch prepares `v0.1.0-beta.3` / build `3` as the next
+unused identity. Preparation does not authorize merging PR #17, creating a tag,
+adding release credentials, signing, notarizing, or publishing.

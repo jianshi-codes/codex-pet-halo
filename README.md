@@ -74,6 +74,7 @@ The reviewed baseline remains the strongest evidence. Newer pre-1.0 CLI versions
 | Codex CLI provisional range | `>= 0.145.0-alpha.18` and `< 1.0.0` | Session-only acceptance after required runtime capability validation; known-broken versions may be denied |
 | Codex Desktop | `26.715.31925 (5551)` | Previously validated Pet Accessibility geometry |
 | Codex Desktop | `26.715.52143 (5591)` | Current M9 Route A and complete Pet-following gate validated |
+| Codex Desktop | `26.721.41059 (5848)` | Active-source candidate validated for the current multi-surface topology; not included in published Beta 2 |
 
 Only exact registry entries carry reviewed semantic evidence. Provisional compatibility does not claim schema review: initialize/initialized, JSON-RPC envelopes, account behavior, rate-limit decoding, and a usable exact 10,080-minute Weekly window must succeed at runtime. See [Compatibility](docs/COMPATIBILITY.md).
 
@@ -166,14 +167,20 @@ Xcode 26.4.1, Swift 6.3.1, and XcodeGen 2.46.0 are the current reviewed toolchai
 ```sh
 make bootstrap
 make check
-make release-unsigned-preview MARKETING_VERSION=0.1.0 BUILD_NUMBER=2 RELEASE_TAG=v0.1.0-beta.2
+make release-unsigned-preview MARKETING_VERSION=0.1.0 BUILD_NUMBER=3 RELEASE_TAG=v0.1.0-beta.3
 ```
 
-The unsigned preview target requires a clean source tree and produces `Pet-Halo-0.1.0-beta.2-unsigned-universal.zip`. Developer ID signing and Apple notarization remain separate credentialed steps described in the [Release checklist](docs/RELEASE_CHECKLIST.md). The Download section points to the published Beta 2 unsigned preview.
+The unsigned preview target requires a clean source tree and produces a local
+`Pet-Halo-0.1.0-beta.3-unsigned-universal.zip` candidate. It does not create a
+tag or GitHub Release. Developer ID signing, Apple notarization, clean-machine
+acceptance, and publication remain separate hold points described in the
+[Release checklist](docs/RELEASE_CHECKLIST.md). The Download section continues
+to point to the immutable published Beta 2 artifact until a later release is
+actually published.
 
 ## Contributing and security
 
-Read [Contributing](CONTRIBUTING.md), the [Code of Conduct](CODE_OF_CONDUCT.md), and the [Security Policy](SECURITY.md). Contributor/operator references include [GitHub settings](docs/GITHUB_SETTINGS.md), the [public-exposure audit](docs/PUBLIC_EXPOSURE_AUDIT.md), and the [release checklist](docs/RELEASE_CHECKLIST.md). Architecture decisions, compatibility evidence, and milestone reports remain under [`docs/`](docs/).
+Read [Contributing](CONTRIBUTING.md), the [Code of Conduct](CODE_OF_CONDUCT.md), and the [Security Policy](SECURITY.md). Contributor/operator references include [GitHub settings](docs/GITHUB_SETTINGS.md), the [public-exposure audit](docs/PUBLIC_EXPOSURE_AUDIT.md), the [release runbook](docs/RELEASE_RUNBOOK.md), and the [release checklist](docs/RELEASE_CHECKLIST.md). Architecture decisions, compatibility evidence, and milestone reports remain under [`docs/`](docs/).
 
 ## License
 

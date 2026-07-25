@@ -4,7 +4,17 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 
 ## [Unreleased]
 
-No changes yet.
+### Changed
+
+- Updated Pet target selection for the current Codex Desktop multi-surface
+  topology while continuing to fail closed when the largest eligible Pet targets
+  are tied.
+- Restored the saved visual-center placement immediately after Hide/Wake instead
+  of waiting for the first new task activity.
+- Removed Today tokens and unverified geometry-derived Live Activity from the Pet
+  Ring. Weekly and the optional exact 5h window remain; the inner slot is reserved
+  for a future exact Context Remaining source.
+- Refreshed the public README Preview to show the current Weekly-only Pet Ring.
 
 ## [0.1.0-beta.2] - 2026-07-21
 
