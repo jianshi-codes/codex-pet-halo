@@ -4,8 +4,9 @@
 - Status: **PARTIAL — SOURCE RELEASE READY, SIGNED BINARY BLOCKED**
 - Closeout branch: `docs/beta2-release-closeout`
 - Active maintenance branch: `codex/fix-pet-target-ambiguity`, Draft PR #17
-- Product/UI on the active branch: Beta 2 Ring geometry plus the conditional Live
-  Activity inner ring; this source behavior is not part of the published Beta 2 artifact
+- Product/UI on the active branch: Beta 2 Ring geometry with Today removed and the
+  inner context slot intentionally empty; this source behavior is not part of the
+  published Beta 2 artifact
 - Published release: `v0.1.0-beta.2`, product version `0.1.0`, bundle build `2`
 - Repository: public at `jianshi-codes/codex-pet-halo`
 - Artifact: unsigned Universal ZIP; Developer ID signing and Apple notarization are not complete

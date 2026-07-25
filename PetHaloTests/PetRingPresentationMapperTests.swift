@@ -195,28 +195,17 @@ final class PetRingPresentationMapperTests: XCTestCase {
         XCTAssertNil(wrongDuration.fiveHour)
     }
 
-    func testLiveActivityIsConditionalAndIndependentFromUsageFreshness() {
-        let inactive = mapper().map(
+    func testPetModelDoesNotInferLiveActivityFromUsageState() {
+        let model = mapper().map(
             state(
                 weekly: .available(quota(usedPercent: 20, minutes: 10_080)),
                 rateFreshness: .current,
                 usageFreshness: .stale
             )
         )
-        let active = mapper().map(
-            state(
-                weekly: .available(quota(usedPercent: 20, minutes: 10_080)),
-                rateFreshness: .current,
-                usageFreshness: .stale
-            ),
-            isLiveActivityActive: true
-        )
 
-        XCTAssertFalse(inactive.isLiveActivityActive)
-        XCTAssertFalse(inactive.accessibilityValue.contains("Live activity"))
-        XCTAssertTrue(active.isLiveActivityActive)
-        XCTAssertTrue(active.accessibilityValue.contains("Live activity, Codex working"))
-        XCTAssertEqual(active.weekly.freshnessText, "Current")
+        XCTAssertFalse(model.accessibilityValue.contains("Live activity"))
+        XCTAssertEqual(model.weekly.freshnessText, "Current")
     }
 
     func testPetModelContainsNoDetailedAccountUsageFields() {
@@ -225,8 +214,9 @@ final class PetRingPresentationMapperTests: XCTestCase {
 
         XCTAssertEqual(
             labels,
-            ["weekly", "fiveHour", "isLiveActivityActive", "accessibilityValue"]
+            ["weekly", "fiveHour", "accessibilityValue"]
         )
+        XCTAssertFalse(labels.contains("isLiveActivityActive"))
         XCTAssertFalse(labels.contains("accountUsage"))
         XCTAssertFalse(labels.contains("summaryRows"))
         XCTAssertFalse(labels.contains("dailyRows"))
@@ -246,19 +236,17 @@ final class PetRingPresentationMapperTests: XCTestCase {
         XCTAssertFalse(HaloSurfaceMode.petRing.hasPanelShadow)
     }
 
-    func testQuotaProgressAndLiveActivityAreIndependent() {
+    func testQuotaProgressRemainsIndependentAcrossSupportedWindows() {
         let model = mapper().map(
             state(
                 weekly: .available(quota(usedPercent: 25, minutes: 10_080)),
                 fiveHour: .available(quota(usedPercent: 60, minutes: 300)),
                 rateFreshness: .current
-            ),
-            isLiveActivityActive: true
+            )
         )
 
         XCTAssertEqual(model.weekly.value?.progress, 0.75)
         XCTAssertEqual(model.fiveHour?.value?.progress, 0.4)
-        XCTAssertTrue(model.isLiveActivityActive)
     }
 
     func testIdentityDotPaletteIsFixedAndIndependentFromSharedStatusColor() {
@@ -269,8 +257,7 @@ final class PetRingPresentationMapperTests: XCTestCase {
                 weekly: .available(quota(usedPercent: 25, minutes: 10_080)),
                 fiveHour: .available(quota(usedPercent: 25, minutes: 300)),
                 rateFreshness: .current
-            ),
-            isLiveActivityActive: true
+            )
         )
 
         XCTAssertEqual(identityColors.map(\.hex), ["#5865F2", "#00B8D9", "#A855F7"])
@@ -282,7 +269,6 @@ final class PetRingPresentationMapperTests: XCTestCase {
             ],
             [.healthy, .healthy]
         )
-        XCTAssertTrue(model.isLiveActivityActive)
     }
 
     func testLabelsAndOrientationDoNotChangeRingCenterGeometry() {

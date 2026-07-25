@@ -13,7 +13,6 @@ enum HaloWindowFollowingEvent: Equatable, Sendable {
     case targetSourceChanged(HaloFollowingTargetSource)
     case petPlacementStatusChanged(PetPlacementStatus)
     case petRingOrientationChanged(PetRingOrientation)
-    case petLiveActivityChanged(Bool)
     case setCalibrationEnabled(Bool)
     case placeReferencePoint(CGPoint)
     case activatePetAttachment(PetAttachmentLayout)
@@ -70,7 +69,6 @@ final class WindowFollowingService: HaloWindowFollowing {
     private var preCalibrationPetFollowingSuppressed: Bool?
     private var calibrationTarget: CalibrationTarget?
     private var petRingOrientation: PetRingOrientation = .fixedDefault
-    private var isPetLiveActivityActive = false
     private var pendingPetRingOrientation: PetRingOrientation?
     private var petProcessIdentifier: Int32?
     private var petGeneration = 0
@@ -718,13 +716,6 @@ final class WindowFollowingService: HaloWindowFollowing {
     }
 
     private func schedulePetRingOrientation(for snapshot: PetTargetSnapshot) {
-        switch snapshot.activityGeometryHint {
-        case .above, .below:
-            transitionPetLiveActivity(to: true)
-        case .none, .ambiguous:
-            transitionPetLiveActivity(to: false)
-        }
-
         let desired: PetRingOrientation
         switch snapshot.activityGeometryHint {
         case .none:
@@ -832,16 +823,9 @@ final class WindowFollowingService: HaloWindowFollowing {
         targetSource = newSource
         eventContinuation.yield(.targetSourceChanged(newSource))
         if newSource != .pet {
-            transitionPetLiveActivity(to: false)
             lastPetLayout = nil
             transitionPlacementStatus(.unavailable)
         }
-    }
-
-    private func transitionPetLiveActivity(to isActive: Bool) {
-        guard isPetLiveActivityActive != isActive else { return }
-        isPetLiveActivityActive = isActive
-        eventContinuation.yield(.petLiveActivityChanged(isActive))
     }
 
     private func transitionPlacementStatus(_ newStatus: PetPlacementStatus) {

@@ -232,7 +232,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("Download v0.1.0-beta.2", readme)
         self.assertIn("Pet-Halo-0.1.0-beta.2-unsigned-universal.zip", readme)
 
-    def test_readme_release_link_ring_meanings_and_live_activity_are_explicit(self) -> None:
+    def test_readme_release_link_ring_meanings_and_reserved_slot_are_explicit(self) -> None:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         release_url = (
             "https://github.com/jianshi-codes/codex-pet-halo/releases/tag/"
@@ -246,7 +246,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         for metric in (
             "Outer ring — Weekly remaining",
             "Middle ring — optional 5h remaining",
-            "Inner ring — conditional Live Activity",
+            "Inner slot — reserved",
         ):
             self.assertIn(metric, readme)
         for threshold in (
@@ -255,9 +255,8 @@ class ReleaseReadinessTests(unittest.TestCase):
             "critical: `< 20%`",
         ):
             self.assertIn(threshold, readme)
-        self.assertIn("does not claim a completion percentage", readme)
-        self.assertIn("Reduce Motion keeps the indicator static", readme)
-        self.assertIn("missing, or ambiguous activity geometry", readme)
+        self.assertIn("cannot truthfully infer Live Activity from geometry", readme)
+        self.assertIn("not treated as an idle/working signal", readme)
         self.assertIn("reserved for a future exact Context Remaining metric", readme)
         self.assertIn("codex --version", readme)
         self.assertIn("The reviewed baseline remains the strongest evidence", readme)

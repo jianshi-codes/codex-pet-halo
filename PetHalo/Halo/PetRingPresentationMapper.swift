@@ -10,10 +10,7 @@ struct PetRingPresentationMapper {
         self.weeklyResetDateFormatter = weeklyResetDateFormatter
     }
 
-    func map(
-        _ state: CodexUsageState,
-        isLiveActivityActive: Bool = false
-    ) -> PetRingPresentationModel {
+    func map(_ state: CodexUsageState) -> PetRingPresentationModel {
         let weekly = weeklyMetric(
             capability: state.capabilities.generalWeekly,
             freshness: state.componentFreshness.rateLimits
@@ -25,11 +22,9 @@ struct PetRingPresentationMapper {
         return PetRingPresentationModel(
             weekly: weekly,
             fiveHour: fiveHour,
-            isLiveActivityActive: isLiveActivityActive,
             accessibilityValue: accessibilityValue(
                 weekly: weekly,
-                fiveHour: fiveHour,
-                isLiveActivityActive: isLiveActivityActive
+                fiveHour: fiveHour
             )
         )
     }
@@ -83,15 +78,11 @@ struct PetRingPresentationMapper {
 
     private func accessibilityValue(
         weekly: RingMetricPresentation,
-        fiveHour: RingMetricPresentation?,
-        isLiveActivityActive: Bool
+        fiveHour: RingMetricPresentation?
     ) -> String {
         var values = [ringAccessibilityValue(name: "Weekly quota", metric: weekly)]
         if let fiveHour {
             values.append(ringAccessibilityValue(name: "Five-hour quota", metric: fiveHour))
-        }
-        if isLiveActivityActive {
-            values.append("Live activity, Codex working")
         }
         return values.joined(separator: "; ")
     }

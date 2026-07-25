@@ -127,10 +127,10 @@ The M3 panel itself does not discover or inspect Codex. M4 through M6 own the se
 | Card fallback | Compact/Expanded, Account Usage, scrolling, and non-activation remain unchanged outside Pet |
 | Weekly | Domain `remainingPercent` with rate-limit component freshness |
 | Five-hour | Present only for an available exact 300-minute capability |
-| Live Activity | The reserved inner slot shows an indeterminate arc only for one confirmed wide activity surface; missing or ambiguous geometry hides it, and it never represents percent complete |
-| Semantic policy | Weekly and five-hour remaining: healthy ≥50%, warning 20–49%, critical <20%; Live Activity has identity color only and no quota status |
-| Orientation | Fixed 260-degree partial arcs; activity above the calibrated visual Pet center opens top, activity below opens bottom, no activity uses the default, ambiguous retains prior orientation after debounce while hiding Live Activity |
-| Accessibility | Every visible ring owns its label/value; stale quota metrics also use opacity/dash/text and an explicit stale accessibility state; Live Activity exposes `Codex working` |
+| Reserved context slot | The inner 84-point slot remains hidden. Current wide AX surfaces persist across idle and working states, so geometry cannot truthfully supply Live Activity |
+| Semantic policy | Weekly and five-hour remaining: healthy ≥50%, warning 20–49%, critical <20% |
+| Orientation | Fixed 260-degree partial arcs; a wide surface above the calibrated visual Pet center opens top, one below opens bottom, no surface uses the default, and ambiguous geometry retains the prior orientation after debounce |
+| Accessibility | Every visible quota ring owns its label/value; stale quota metrics also use opacity/dash/text and an explicit stale accessibility state |
 
 `ApplicationCoordinator` remains the single owner of target, Usage, and presentation state. It records both the fallback card choice and non-Pet reference before entering Pet. On Pet loss, a delivered M4 reference is retained; otherwise the pre-Pet free-floating reference is restored before the card is resized. A direct Compact/Expanded command cannot change the Pet Ring, and `360×520` can never be applied at the Pet midpoint.
 
@@ -148,7 +148,7 @@ Activity orientation is derived only after the near-square Pet core has been sel
 | Reduce Motion | New positions apply directly without interpolation; an active display-link callback is invalidated; normal mode retains latest-value following |
 | Icons | Complete original AppIcon catalog plus separate monochrome template menu asset; no official artwork or generic `circle.dashed` symbol |
 
-The active maintenance branch does not alter Route A discovery, Pet core selection, panel midpoint, visual-center persistence, bridge behavior, fallback hierarchy, or M7 ring radii. It replaces only the former Today presentation in the reserved inner slot. When either capsule side fits, every visible capsule is contained in `visibleFrame`; if neither fits, the smaller-overflow side is selected without clamping the Ring center. M9 remains the separately gated compatibility-hardening and public-beta milestone.
+The active maintenance branch does not alter Route A discovery, Pet core selection, panel midpoint, visual-center persistence, bridge behavior, fallback hierarchy, or M7 ring radii. It removes the former Today presentation and leaves the reserved inner slot empty. When either capsule side fits, every visible capsule is contained in `visibleFrame`; if neither fits, the smaller-overflow side is selected without clamping the Ring center. M9 remains the separately gated compatibility-hardening and public-beta milestone.
 
 ## M4 window-following contract
 

@@ -32,7 +32,6 @@ struct PetRingView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     init(
@@ -56,9 +55,6 @@ struct PetRingView: View {
             remainingRing(name: "Weekly", metric: model.weekly, kind: .weekly)
             if let fiveHour = model.fiveHour {
                 remainingRing(name: "5 hour", metric: fiveHour, kind: .fiveHour)
-            }
-            if model.isLiveActivityActive {
-                liveActivityRing
             }
             labels
             if isCalibrating {
@@ -113,40 +109,6 @@ struct PetRingView: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(name) remaining")
         .accessibilityValue(remainingAccessibilityValue(metric))
-    }
-
-    private var liveActivityRing: some View {
-        TimelineView(.animation(minimumInterval: 1 / 30, paused: reduceMotion)) { context in
-            let phase = reduceMotion
-                ? 0.5
-                : context.date.timeIntervalSinceReferenceDate
-                    .truncatingRemainder(dividingBy: 1.6) / 1.6
-            let angles = geometry.angles(for: orientation)
-            let segmentFraction = 0.24
-            let segmentSweep = angles.sweepAngleDegrees * segmentFraction
-            let travelSweep = angles.sweepAngleDegrees - segmentSweep
-            ZStack {
-                track(kind: .contextSlot)
-                PetRingArc(
-                    center: geometry.ringCenter(in: geometry.panelSize),
-                    startAngleDegrees: angles.startAngleDegrees + travelSweep * phase,
-                    sweepAngleDegrees: segmentSweep,
-                    radius: geometry.radius(for: .contextSlot),
-                    progress: 1
-                )
-                .stroke(
-                    identityColor(for: .contextSlot).opacity(0.95),
-                    style: StrokeStyle(
-                        lineWidth: geometry.lineWidth,
-                        lineCap: .round
-                    )
-                )
-                .accessibilityHidden(true)
-            }
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Live activity")
-        .accessibilityValue("Codex working")
     }
 
     private func track(kind: PetRingMetricKind) -> some View {
@@ -212,16 +174,6 @@ struct PetRingView: View {
                     .position(labelPosition(for: .fiveHour))
             }
 
-            if model.isLiveActivityActive {
-                connector(for: .contextSlot, isStale: false)
-
-                liveActivityLabel
-                    .frame(
-                        width: geometry.labelSize(for: .contextSlot).width,
-                        height: geometry.labelSize(for: .contextSlot).height
-                    )
-                    .position(labelPosition(for: .contextSlot))
-            }
         }
         .accessibilityHidden(true)
     }
@@ -268,17 +220,6 @@ struct PetRingView: View {
             isStale: metric.isStale,
             isUnavailable: metric.value == nil,
             semanticLevel: metric.value?.semanticLevel
-        )
-    }
-
-    private var liveActivityLabel: some View {
-        capsuleLabel(
-            key: "Live",
-            value: "Working",
-            kind: .contextSlot,
-            isStale: false,
-            isUnavailable: false,
-            semanticLevel: nil
         )
     }
 
@@ -395,7 +336,6 @@ struct PetRingView: View {
     private var visibleMetrics: [PetRingMetricKind] {
         var metrics: [PetRingMetricKind] = [.weekly]
         if model.fiveHour != nil { metrics.append(.fiveHour) }
-        if model.isLiveActivityActive { metrics.append(.contextSlot) }
         return metrics
     }
 

@@ -30,14 +30,15 @@ Pet Halo is a macOS menu-bar companion that places a transparent Usage ring arou
 
 Codex Pet is shown only to demonstrate integration. It is not Pet Halo project branding.
 
-> The screenshots show the published Beta 2 surface. Current source replaces its
-> Today ring with the conditional Live Activity ring described below.
+> The screenshots show the published Beta 2 surface. Current source removes its
+> Today ring and keeps the inner layout slot empty for a future exact Context
+> Remaining metric.
 
 ## What the rings mean
 
 - **Outer ring — Weekly remaining:** the remaining percentage for the exact 10,080-minute Codex rate-limit window. When Codex provides its reset timestamp, the capsule also shows that date in the user's local timezone, for example `W 39% · Jul 27`.
 - **Middle ring — optional 5h remaining:** the remaining percentage for an exact 300-minute window. It is omitted when Codex does not provide one.
-- **Inner ring — conditional Live Activity:** an indeterminate arc appears only while Pet Halo can confirm one eligible Codex activity surface. It hides for idle, missing, or ambiguous activity geometry and does not claim a completion percentage. Reduce Motion keeps the indicator static.
+- **Inner slot — reserved:** current Codex Accessibility surfaces persist across both idle and working states, so Pet Halo cannot truthfully infer Live Activity from geometry. The slot stays hidden rather than showing a false positive.
 
 Weekly and 5h remaining use these status thresholds:
 
@@ -45,11 +46,11 @@ Weekly and 5h remaining use these status thresholds:
 - warning: `20%` through `49%`;
 - critical: `< 20%`.
 
-The `W`, `5h`, and `Live` capsule text and fixed identity dots identify each ring.
-Weekly and 5h use rate-limit freshness. Live Activity comes only from the existing
-read-only Accessibility geometry path; it does not use token counts or Account Usage.
-The inner layout slot is reserved for a future exact Context Remaining metric if
-Codex exposes the selected task safely to Pet Halo.
+The `W` and `5h` capsule text and fixed identity dots identify each visible ring.
+Weekly and 5h use rate-limit freshness. Wide Accessibility geometry may still choose
+the shared arc opening, but it is not treated as an idle/working signal. The inner
+layout slot is reserved for a future exact Context Remaining metric if Codex exposes
+the selected task safely to Pet Halo.
 
 ## Download
 

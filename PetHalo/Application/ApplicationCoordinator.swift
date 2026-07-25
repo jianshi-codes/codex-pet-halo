@@ -81,7 +81,6 @@ final class ApplicationCoordinator: ObservableObject {
     private var haloVisibilityRequested = true
     private var codexFallbackExplicitlyVisible = false
     private var productionPetRingOrientation: PetRingOrientation = .fixedDefault
-    private var isPetLiveActivityActive = false
 
     init(
         usageService: (any CodexUsageServing)? = nil,
@@ -389,7 +388,6 @@ final class ApplicationCoordinator: ObservableObject {
             self.shutdownComplete = true
             self.latestUsageState = .stopped
             self.haloPresentationModel = self.presentationMapper.map(.stopped)
-            self.isPetLiveActivityActive = false
             self.petRingPresentationModel = self.petRingPresentationMapper.map(.stopped)
             self.bridgeStatusText = "Usage: Temporarily unavailable"
             self.cliStatusText = "CLI: Detecting"
@@ -415,9 +413,6 @@ final class ApplicationCoordinator: ObservableObject {
         case let .petRingOrientationChanged(newOrientation):
             productionPetRingOrientation = newOrientation
             applyEffectivePetRingOrientation()
-        case let .petLiveActivityChanged(isActive):
-            isPetLiveActivityActive = isActive
-            updatePetRingPresentationModel()
         case let .setCalibrationEnabled(enabled):
             haloPanelController?.setCalibrationEnabled(enabled)
         case let .placeReferencePoint(referencePoint):
@@ -463,10 +458,6 @@ final class ApplicationCoordinator: ObservableObject {
             haloPanelController?.setSurfaceMode(.petRing)
             haloSurfaceMode = .petRing
         } else {
-            if isPetLiveActivityActive {
-                isPetLiveActivityActive = false
-                updatePetRingPresentationModel()
-            }
             if previousSource == .pet,
                let mode = previousNonPetHaloMode
             {
@@ -513,10 +504,7 @@ final class ApplicationCoordinator: ObservableObject {
     }
 
     private func updatePetRingPresentationModel() {
-        petRingPresentationModel = petRingPresentationMapper.map(
-            latestUsageState,
-            isLiveActivityActive: isPetLiveActivityActive
-        )
+        petRingPresentationModel = petRingPresentationMapper.map(latestUsageState)
         haloPanelController?.update(
             cardModel: haloPresentationModel,
             petRingModel: petRingPresentationModel

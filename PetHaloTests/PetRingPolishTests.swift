@@ -167,7 +167,6 @@ final class PetRingPolishTests: XCTestCase {
                 resetsAt: Date(timeIntervalSince1970: 1_790_726_400)
             )),
             fiveHour: .current(metric(remaining: 100)),
-            isLiveActivityActive: true,
             accessibilityValue: "Maximum values"
         )
         let hosting = NSHostingView(rootView: PetRingView(

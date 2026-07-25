@@ -71,13 +71,11 @@ enum RingMetricPresentation: Equatable, Sendable {
 struct PetRingPresentationModel: Equatable, Sendable {
     let weekly: RingMetricPresentation
     let fiveHour: RingMetricPresentation?
-    let isLiveActivityActive: Bool
     let accessibilityValue: String
 
     static let starting = PetRingPresentationModel(
         weekly: .unavailable,
         fiveHour: nil,
-        isLiveActivityActive: false,
         accessibilityValue: "Weekly quota, unavailable"
     )
 }
