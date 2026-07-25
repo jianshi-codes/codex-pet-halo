@@ -120,8 +120,11 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("workflow_dispatch:", trigger)
         self.assertNotRegex(trigger, r"(?m)^\s+(push|pull_request):")
         self.assertIn("inputs.publish && github.ref == 'refs/heads/main'", workflow)
+        self.assertIn("inputs.distribution == 'unsigned'", workflow)
+        self.assertIn("inputs.distribution == 'signed-notarized'", workflow)
         self.assertIn("environment: public-beta", workflow)
         self.assertIn("--prerelease", workflow)
+        self.assertIn("--latest=false", workflow)
         all_workflows = "\n".join(
             path.read_text(encoding="utf-8")
             for path in sorted((ROOT / ".github/workflows").glob("*.yml"))
@@ -141,11 +144,11 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("default: false", trigger)
         self.assertNotIn("default: v0.1.0-beta.1", trigger)
         self.assertNotIn('default: "1"', trigger)
-        self.assertEqual(workflow.count("Reject an existing release identity"), 2)
-        self.assertEqual(workflow.count("git ls-remote --exit-code --refs"), 2)
-        self.assertEqual(workflow.count("gh api --include"), 2)
-        self.assertEqual(workflow.count("GitHub Release already exists"), 2)
-        self.assertEqual(workflow.count("Unable to prove release tag is unused"), 2)
+        self.assertEqual(workflow.count("Reject an existing release identity"), 3)
+        self.assertEqual(workflow.count("git ls-remote --exit-code --refs"), 3)
+        self.assertEqual(workflow.count("gh api --include"), 3)
+        self.assertEqual(workflow.count("GitHub Release already exists"), 3)
+        self.assertEqual(workflow.count("Unable to prove release tag is unused"), 3)
         publish_job = workflow.split("  publish:", maxsplit=1)[1]
         self.assertLess(
             publish_job.index("Reject an existing release identity"),
@@ -415,7 +418,7 @@ class ReleaseReadinessTests(unittest.TestCase):
             "f6fb65e7cfe06376824f58f9c5a35994089cdeeeb0e269a2b505cb6e93a9ec5c",
         )
 
-    def test_beta_three_candidate_is_prepared_without_publication_claims(self) -> None:
+    def test_beta_three_candidate_notes_define_unsigned_distribution(self) -> None:
         notes = (ROOT / "docs/release-notes/v0.1.0-beta.3.md").read_text(
             encoding="utf-8"
         )
@@ -427,8 +430,10 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertRegex(notes, r"not\s+exposed as Live Activity")
         self.assertIn("future exact Context", notes)
         self.assertIn("reviewed `main`", notes)
-        self.assertIn("public-beta", notes)
-        self.assertIn("development evidence only", notes)
+        self.assertIn("Unsigned Developer Preview", notes)
+        self.assertIn("not signed with a Developer ID", notes)
+        self.assertIn("not notarized by Apple", notes)
+        self.assertIn("new tag and build number", notes)
         self.assertNotIn("Beta 3 was published", notes)
         self.assertNotIn("Beta 3 is published", notes)
         self.assertIn("no tag or Release has been created", checklist)
@@ -453,6 +458,8 @@ class ReleaseReadinessTests(unittest.TestCase):
             self.assertRegex(runbook, rf"(?m)^## R{phase} ")
         for command in (
             "make release-unsigned-preview",
+            "distribution=unsigned",
+            "distribution=signed-notarized",
             "publish=false",
             "publish=true",
             "gh release download",
@@ -477,6 +484,19 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("Do not delete, retag, clobber", runbook)
         self.assertIn("docs/RELEASE_RUNBOOK.md", readme)
         self.assertIn("[Release runbook](RELEASE_RUNBOOK.md)", checklist)
+
+    def test_unsigned_publish_job_is_explicit_and_never_uses_credentials(self) -> None:
+        workflow = (ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
+        unsigned_job = workflow.split("  publish_unsigned:", maxsplit=1)[1]
+        unsigned_job = unsigned_job.split("\n  publish:", maxsplit=1)[0]
+        self.assertIn("RELEASE_ARTIFACT_QUALIFIER=unsigned", unsigned_job)
+        self.assertIn("RELEASE_MODE=unsigned", unsigned_job)
+        self.assertIn("Unsigned Developer Preview", unsigned_job)
+        self.assertIn("Pet-Halo-$label-unsigned-universal.zip", unsigned_job)
+        self.assertIn('"$output/RELEASE_NOTES.md"', unsigned_job)
+        self.assertNotIn("secrets.", unsigned_job)
+        self.assertNotIn("release-sign", unsigned_job)
+        self.assertNotIn("release-notarize", unsigned_job)
 
     def test_current_documents_have_no_stale_beta_two_prepublication_claim(self) -> None:
         current_documents = "\n".join(

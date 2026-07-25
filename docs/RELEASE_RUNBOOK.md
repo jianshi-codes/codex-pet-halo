@@ -11,6 +11,7 @@ The current candidate inputs are:
 | Product version | `0.1.0` |
 | Bundle build | `3` |
 | Tag | `v0.1.0-beta.3` |
+| Distribution | `unsigned` |
 | Release notes | `docs/release-notes/v0.1.0-beta.3.md` |
 | Signed artifact | `Pet-Halo-0.1.0-beta.3-universal.zip` |
 | Local unsigned evidence | `Pet-Halo-0.1.0-beta.3-unsigned-universal.zip` |
@@ -41,8 +42,8 @@ Codex must record one state at a time:
 
 1. `PREPARED` — candidate source and notes exist; no release state created.
 2. `VALIDATED` — local gates, unsigned artifact, and `publish=false` workflow pass.
-3. `APPROVED` — exact source/tag publication authority and protected environment
-   approval are present.
+3. `APPROVED` — exact source/tag/distribution publication authority and every
+   gate required by that distribution are present.
 4. `PUBLISHED` — workflow created the new tag and prerelease.
 5. `VERIFIED` — downloaded public assets, tag/source identity, signatures,
    notarization, checksums, launch, and clean-machine acceptance pass.
@@ -55,9 +56,10 @@ Any failed requirement leaves the process at its last completed state and stops.
 Inputs required from the user:
 
 - exact product version, build number, and tag;
+- exact distribution mode: `unsigned` or `signed-notarized`;
 - whether the requested endpoint is validation only or publication;
 - the intended source branch/commit;
-- confirmation that signed/notarized distribution is required;
+- confirmation that the selected trust level is intentional;
 - authorization for any GitHub settings or credential changes.
 
 Record the scope, prohibited actions, stop condition, and current Draft/merge
@@ -169,6 +171,7 @@ gh workflow run release.yml \
   -f marketing_version=0.1.0 \
   -f build_number=3 \
   -f release_tag=v0.1.0-beta.3 \
+  -f distribution=unsigned \
   -f publish=false
 ```
 
@@ -178,27 +181,38 @@ source SHA, inputs, and conclusion without copying sensitive logs.
 
 Completion of R1–R5 reaches `VALIDATED`; it does not authorize R6.
 
-## R6 — Credential and environment gate
+## R6 — Distribution gate
 
-Before a credentialed run:
+For every publication:
 
-- `public-beta` exists and has required reviewers;
 - repository rules require the intended review/check policy;
-- release secrets exist only as encrypted environment/repository secrets;
-- no secret value is copied into a variable, file, chat, PR, or log;
-- Developer ID, Keychain, and notary inputs match the workflow contract;
 - the exact `main` SHA still matches the `VALIDATED` SHA;
 - a clean-machine acceptance host and operator are ready;
-- the user explicitly authorizes `publish=true`.
+- the user explicitly authorizes `publish=true` for the exact distribution mode;
+- release notes and artifact names state the actual trust level.
 
-If the environment or credentials are unavailable, report `VALIDATED —
-PUBLICATION BLOCKED` and stop. Creating/configuring the environment or secrets is
+For `unsigned`, confirm the user accepts an **Unsigned Developer Preview**,
+`signing: unsigned`, `notarization: not-submitted`, and possible Gatekeeper
+blocking. This path requires no Developer ID or Apple credentials and must never
+claim Apple trust.
+
+For `signed-notarized`, also require:
+
+- `public-beta` exists and has required reviewers;
+- release secrets exist only as encrypted environment/repository secrets;
+- no secret value is copied into a variable, file, chat, PR, or log;
+- Developer ID, Keychain, and notary inputs match the workflow contract.
+
+If the selected mode's requirements are unavailable, report `VALIDATED —
+PUBLICATION BLOCKED` and stop. Creating/configuring an environment or secrets is
 a separate GitHub administration action and requires explicit authority.
 
-## R7 — Sign, notarize, and publish
+## R7 — Publish the selected distribution
 
 Recheck the unused identity, source SHA, and release-note path immediately before
-dispatch. Then run:
+dispatch.
+
+For an unsigned developer preview:
 
 ```sh
 gh workflow run release.yml \
@@ -206,10 +220,27 @@ gh workflow run release.yml \
   -f marketing_version=0.1.0 \
   -f build_number=3 \
   -f release_tag=v0.1.0-beta.3 \
+  -f distribution=unsigned \
   -f publish=true
 ```
 
-Wait for completion. Require evidence that:
+Require the unsigned publish job to rebuild and verify the unsigned Universal
+ZIP, create a prerelease at the approved source SHA, and publish exactly the
+unsigned ZIP, manifest, release notes, and checksums.
+
+For a signed and notarized prerelease:
+
+```sh
+gh workflow run release.yml \
+  --ref main \
+  -f marketing_version=0.1.0 \
+  -f build_number=3 \
+  -f release_tag=v0.1.0-beta.3 \
+  -f distribution=signed-notarized \
+  -f publish=true
+```
+
+Wait for completion. For the signed path, require evidence that:
 
 - the protected `public-beta` environment approved the job;
 - exactly one Developer ID identity fingerprint was selected;
@@ -221,7 +252,7 @@ Wait for completion. Require evidence that:
 - only the signed Universal ZIP, manifest, release notes, and checksums were
   published.
 
-Do not claim `PUBLISHED` from a workflow dispatch alone.
+For either path, do not claim `PUBLISHED` from a workflow dispatch alone.
 
 ## R8 — Public postflight and clean-machine acceptance
 
@@ -243,11 +274,18 @@ Verify:
 - asset names and count are exact;
 - manifest version/build/tag/identifier/minimum macOS/architectures are exact;
 - the extracted executable is Universal;
-- `codesign --verify --deep --strict` passes with Developer ID;
-- `spctl --assess --type execute` passes;
-- `xcrun stapler validate` passes;
 - the downloaded `RELEASE_NOTES.md` is byte-identical to the tagged source;
 - launch/quit and owned-child cleanup pass.
+
+For `signed-notarized`, additionally require:
+
+- `codesign --verify --deep --strict` passes with Developer ID;
+- `spctl --assess --type execute` passes;
+- `xcrun stapler validate` passes.
+
+For `unsigned`, require that strict Developer ID verification does not pass,
+manifest states `signing: unsigned` and `notarization: not-submitted`, and the
+release is visibly labeled **Unsigned Developer Preview**.
 
 Then perform clean-machine acceptance using only sanitized PASS/FAIL results:
 first launch, Gatekeeper, bundle metadata/architectures/icons, CLI states,
