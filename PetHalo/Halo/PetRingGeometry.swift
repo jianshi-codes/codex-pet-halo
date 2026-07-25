@@ -73,7 +73,7 @@ enum PetRingOrientationPreview: String, CaseIterable, Equatable, Sendable {
 enum PetRingMetricKind: Equatable, Sendable {
     case weekly
     case fiveHour
-    case today
+    case contextSlot
 }
 
 struct PetRingArcAngles: Equatable, Sendable {
@@ -98,7 +98,7 @@ struct PetRingGeometry: Equatable, Sendable {
     }
 
     var transparentCenterDiameter: Double {
-        2 * (radius(for: .today) - lineWidth / 2)
+        2 * (radius(for: .contextSlot) - lineWidth / 2)
     }
 
     func radius(for metric: PetRingMetricKind) -> Double {
@@ -107,7 +107,7 @@ struct PetRingGeometry: Equatable, Sendable {
             outerRadius
         case .fiveHour:
             outerRadius - ringSpacing
-        case .today:
+        case .contextSlot:
             outerRadius - 2 * ringSpacing
         }
     }
@@ -159,7 +159,7 @@ struct PetRingGeometry: Equatable, Sendable {
             CGSize(width: 106, height: 24)
         case .fiveHour:
             CGSize(width: 72, height: 24)
-        case .today:
+        case .contextSlot:
             CGSize(width: 106, height: 24)
         }
     }

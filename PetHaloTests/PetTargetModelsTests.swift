@@ -143,6 +143,46 @@ final class PetTargetModelsTests: XCTestCase {
         )
     }
 
+    func testLargestSystemDialogCoreWinsOverStaleCorroboratedDialog() {
+        let staleDialogFrame = CGRect(x: 100, y: 500, width: 120, height: 110)
+        let petFrame = CGRect(x: 140, y: 260, width: 108, height: 112)
+        let candidates = [
+            candidate(1, frame: staleDialogFrame),
+            candidate(2, frame: staleDialogFrame),
+            candidate(
+                3,
+                subrole: "AXSystemDialog",
+                frame: petFrame
+            ),
+            candidate(
+                4,
+                subrole: "AXSystemDialog",
+                frame: CGRect(x: 155, y: 350, width: 92, height: 96)
+            ),
+        ]
+
+        XCTAssertEqual(
+            PetWindowSelector.select(from: candidates),
+            .selected(memberIdentities: [3], frame: petFrame)
+        )
+    }
+
+    func testEqualLargestSystemDialogCoreFramesRemainAmbiguous() {
+        let staleDialogFrame = CGRect(x: 100, y: 500, width: 120, height: 110)
+        let firstFrame = CGRect(x: 100, y: 200, width: 118, height: 112)
+        let secondFrame = CGRect(x: 500, y: 200, width: 112, height: 118)
+
+        XCTAssertEqual(
+            PetWindowSelector.select(from: [
+                candidate(1, frame: staleDialogFrame),
+                candidate(2, frame: staleDialogFrame),
+                candidate(3, subrole: "AXSystemDialog", frame: firstFrame),
+                candidate(4, subrole: "AXSystemDialog", frame: secondFrame),
+            ]),
+            .ambiguous
+        )
+    }
+
     func testSubpointOverlapUsesDeterministicAveragedFrame() {
         let firstFrame = CGRect(x: 100, y: 200, width: 120, height: 110)
         let secondFrame = CGRect(x: 100.2, y: 199.8, width: 120.2, height: 109.8)

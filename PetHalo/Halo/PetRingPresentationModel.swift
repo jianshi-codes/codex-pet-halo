@@ -68,60 +68,14 @@ enum RingMetricPresentation: Equatable, Sendable {
     }
 }
 
-struct TodayTokenValue: Equatable, Sendable {
-    let tokenCount: UInt64
-    let tokenText: String
-    let compactTokenText: String
-    let peakDailyTokenCount: UInt64
-    let peakTokenText: String
-    let consumptionRatio: Double
-    let semanticLevel: PetRingSemanticLevel
-
-    var progress: Double {
-        min(max(consumptionRatio, 0), 1)
-    }
-
-    var percentOfPeakText: String {
-        "\(Int((consumptionRatio * 100).rounded(.toNearestOrAwayFromZero)))%"
-    }
-}
-
-enum TodayTokenPresentation: Equatable, Sendable {
-    case current(TodayTokenValue)
-    case stale(TodayTokenValue)
-
-    var value: TodayTokenValue {
-        switch self {
-        case let .current(value), let .stale(value):
-            value
-        }
-    }
-
-    var freshnessText: String {
-        switch self {
-        case .current:
-            "Current"
-        case .stale:
-            "Stale"
-        }
-    }
-
-    var isStale: Bool {
-        if case .stale = self { return true }
-        return false
-    }
-}
-
 struct PetRingPresentationModel: Equatable, Sendable {
     let weekly: RingMetricPresentation
     let fiveHour: RingMetricPresentation?
-    let todayTokens: TodayTokenPresentation?
     let accessibilityValue: String
 
     static let starting = PetRingPresentationModel(
         weekly: .unavailable,
         fiveHour: nil,
-        todayTokens: nil,
         accessibilityValue: "Weekly quota, unavailable"
     )
 }

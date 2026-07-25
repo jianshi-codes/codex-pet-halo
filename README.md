@@ -16,25 +16,29 @@ Pet Halo is a macOS menu-bar companion that places a transparent Usage ring arou
 <table>
   <tr>
     <td width="50%" align="center">
-      <img src="docs/assets/screenshots/pet-halo-activity-above.png" width="100%" alt="Pet Halo with Codex activity above and Usage labels on the right">
+      <img src="docs/assets/screenshots/pet-halo-activity-above.png" width="100%" alt="Pet Halo current source with the Codex task card above and Weekly label on the right">
     </td>
     <td width="50%" align="center">
-      <img src="docs/assets/screenshots/pet-halo-activity-below.png" width="100%" alt="Pet Halo with Codex activity below and Usage labels on the left">
+      <img src="docs/assets/screenshots/pet-halo-activity-below.png" width="100%" alt="Pet Halo current source with the Codex task card below and Weekly label on the left">
     </td>
   </tr>
   <tr>
-    <td align="center">Activity above · labels on the right</td>
-    <td align="center">Activity below · labels on the left</td>
+    <td align="center">Task card above · Weekly label on the right</td>
+    <td align="center">Task card below · Weekly label on the left</td>
   </tr>
 </table>
 
 Codex Pet is shown only to demonstrate integration. It is not Pet Halo project branding.
 
+> These screenshots show current source behavior: Weekly is visible, the optional
+> 5h ring is omitted when unavailable, and the inner layout slot stays hidden for
+> a future exact Context Remaining metric.
+
 ## What the rings mean
 
 - **Outer ring — Weekly remaining:** the remaining percentage for the exact 10,080-minute Codex rate-limit window. When Codex provides its reset timestamp, the capsule also shows that date in the user's local timezone, for example `W 39% · Jul 27`.
 - **Middle ring — optional 5h remaining:** the remaining percentage for an exact 300-minute window. It is omitted when Codex does not provide one.
-- **Inner ring — Today versus historical peak:** tokens in the current Codex UTC account day divided by the highest nonzero historical daily token count supplied by Codex. Missing or ambiguous data is omitted, never estimated as zero.
+- **Inner slot — reserved:** current Codex Accessibility surfaces persist across both idle and working states, so Pet Halo cannot truthfully infer Live Activity from geometry. The slot stays hidden rather than showing a false positive.
 
 Weekly and 5h remaining use these status thresholds:
 
@@ -42,15 +46,11 @@ Weekly and 5h remaining use these status thresholds:
 - warning: `20%` through `49%`;
 - critical: `< 20%`.
 
-Today versus historical peak uses the opposite direction:
-
-- healthy: `<= 50%`;
-- warning: `> 50%` through `80%`;
-- critical: `> 80%`.
-
-**Status color does not identify the metric.** The `W`, `5h`, and `T` capsule text and their fixed identity dots identify Weekly, five-hour, and Today. Today is not a quota: `T 10%` means today’s usage is 10% of the historical peak day, not 90% remaining.
-
-Weekly and 5h use independent rate-limit freshness. Today uses independent Account Usage freshness, so a successful rate-only refresh cannot make stale Today data current.
+The `W` and `5h` capsule text and fixed identity dots identify each visible ring.
+Weekly and 5h use rate-limit freshness. Wide Accessibility geometry may still choose
+the shared arc opening, but it is not treated as an idle/working signal. The inner
+layout slot is reserved for a future exact Context Remaining metric if Codex exposes
+the selected task safely to Pet Halo.
 
 ## Download
 
@@ -74,6 +74,7 @@ The reviewed baseline remains the strongest evidence. Newer pre-1.0 CLI versions
 | Codex CLI provisional range | `>= 0.145.0-alpha.18` and `< 1.0.0` | Session-only acceptance after required runtime capability validation; known-broken versions may be denied |
 | Codex Desktop | `26.715.31925 (5551)` | Previously validated Pet Accessibility geometry |
 | Codex Desktop | `26.715.52143 (5591)` | Current M9 Route A and complete Pet-following gate validated |
+| Codex Desktop | `26.721.41059 (5848)` | Active-source candidate validated for the current multi-surface topology; not included in published Beta 2 |
 
 Only exact registry entries carry reviewed semantic evidence. Provisional compatibility does not claim schema review: initialize/initialized, JSON-RPC envelopes, account behavior, rate-limit decoding, and a usable exact 10,080-minute Weekly window must succeed at runtime. See [Compatibility](docs/COMPATIBILITY.md).
 
@@ -166,14 +167,20 @@ Xcode 26.4.1, Swift 6.3.1, and XcodeGen 2.46.0 are the current reviewed toolchai
 ```sh
 make bootstrap
 make check
-make release-unsigned-preview MARKETING_VERSION=0.1.0 BUILD_NUMBER=2 RELEASE_TAG=v0.1.0-beta.2
+make release-unsigned-preview MARKETING_VERSION=0.1.0 BUILD_NUMBER=3 RELEASE_TAG=v0.1.0-beta.3
 ```
 
-The unsigned preview target requires a clean source tree and produces `Pet-Halo-0.1.0-beta.2-unsigned-universal.zip`. Developer ID signing and Apple notarization remain separate credentialed steps described in the [Release checklist](docs/RELEASE_CHECKLIST.md). The Download section points to the published Beta 2 unsigned preview.
+The unsigned preview target requires a clean source tree and produces a local
+`Pet-Halo-0.1.0-beta.3-unsigned-universal.zip` candidate. It does not create a
+tag or GitHub Release. Developer ID signing, Apple notarization, clean-machine
+acceptance, and publication remain separate hold points described in the
+[Release checklist](docs/RELEASE_CHECKLIST.md). The Download section continues
+to point to the immutable published Beta 2 artifact until a later release is
+actually published.
 
 ## Contributing and security
 
-Read [Contributing](CONTRIBUTING.md), the [Code of Conduct](CODE_OF_CONDUCT.md), and the [Security Policy](SECURITY.md). Contributor/operator references include [GitHub settings](docs/GITHUB_SETTINGS.md), the [public-exposure audit](docs/PUBLIC_EXPOSURE_AUDIT.md), and the [release checklist](docs/RELEASE_CHECKLIST.md). Architecture decisions, compatibility evidence, and milestone reports remain under [`docs/`](docs/).
+Read [Contributing](CONTRIBUTING.md), the [Code of Conduct](CODE_OF_CONDUCT.md), and the [Security Policy](SECURITY.md). Contributor/operator references include [GitHub settings](docs/GITHUB_SETTINGS.md), the [public-exposure audit](docs/PUBLIC_EXPOSURE_AUDIT.md), the [release runbook](docs/RELEASE_RUNBOOK.md), and the [release checklist](docs/RELEASE_CHECKLIST.md). Architecture decisions, compatibility evidence, and milestone reports remain under [`docs/`](docs/).
 
 ## License
 

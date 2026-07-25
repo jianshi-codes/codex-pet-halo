@@ -79,28 +79,20 @@ private func windows(from application: AXUIElement) -> [WindowGeometry] {
 }
 
 private func petCore(from candidates: [WindowGeometry]) -> CGRect? {
-    let balanced = candidates.filter {
-        !$0.minimized && !$0.hidden
-            && $0.role == "AXWindow"
-            && ($0.subrole == "AXDialog" || $0.subrole == "AXSystemDialog")
-            && (0.8 ... 1.5).contains($0.frame.width / $0.frame.height)
+    let selectionCandidates = candidates.enumerated().map { index, candidate in
+        PetWindowCandidate(
+            identity: index,
+            frame: candidate.frame,
+            isMinimized: candidate.minimized,
+            isHidden: candidate.hidden,
+            role: candidate.role,
+            subrole: candidate.subrole
+        )
     }
-    let preferred = balanced.filter { $0.subrole == "AXSystemDialog" }
-    let eligible = preferred.isEmpty
-        ? balanced.filter { $0.subrole == "AXDialog" }
-        : preferred
-    let groups = Dictionary(grouping: eligible) {
-        [$0.frame.minX, $0.frame.minY, $0.frame.width, $0.frame.height]
-            .map { Int(($0 * 2).rounded()) }
-    }
-    guard groups.count == 1, let group = groups.values.first else { return nil }
-    let count = CGFloat(group.count)
-    return CGRect(
-        x: group.map(\.frame.minX).reduce(0, +) / count,
-        y: group.map(\.frame.minY).reduce(0, +) / count,
-        width: group.map(\.frame.width).reduce(0, +) / count,
-        height: group.map(\.frame.height).reduce(0, +) / count
-    )
+    guard case let .selected(_, frame) = PetWindowSelector.select(
+        from: selectionCandidates
+    ) else { return nil }
+    return frame
 }
 
 private func appKitFrame(_ accessibilityFrame: CGRect) -> CGRect? {

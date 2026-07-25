@@ -35,7 +35,7 @@ enum PetRingPresentationPolicy {
             PetRingIdentityColor(red: 0x58, green: 0x65, blue: 0xF2)
         case .fiveHour:
             PetRingIdentityColor(red: 0x00, green: 0xB8, blue: 0xD9)
-        case .today:
+        case .contextSlot:
             PetRingIdentityColor(red: 0xA8, green: 0x55, blue: 0xF7)
         }
     }
@@ -49,13 +49,13 @@ enum PetRingPresentationPolicy {
             PetRingIdentityColor(red: 0x44, green: 0x52, blue: 0xD6)
         case (.fiveHour, .light):
             PetRingIdentityColor(red: 0x00, green: 0x67, blue: 0x7A)
-        case (.today, .light):
+        case (.contextSlot, .light):
             PetRingIdentityColor(red: 0x7E, green: 0x22, blue: 0xCE)
         case (.weekly, .dark):
             PetRingIdentityColor(red: 0x8B, green: 0x94, blue: 0xFF)
         case (.fiveHour, .dark):
             identityColor(for: .fiveHour)
-        case (.today, .dark):
+        case (.contextSlot, .dark):
             PetRingIdentityColor(red: 0xD1, green: 0xA6, blue: 0xFF)
         }
     }
@@ -70,13 +70,4 @@ enum PetRingPresentationPolicy {
         return .critical
     }
 
-    static func todayLevel(for consumptionRatio: Double) -> PetRingSemanticLevel {
-        if consumptionRatio <= 0.5 {
-            return .healthy
-        }
-        if consumptionRatio <= 0.8 {
-            return .warning
-        }
-        return .critical
-    }
 }

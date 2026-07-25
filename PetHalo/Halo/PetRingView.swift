@@ -56,9 +56,6 @@ struct PetRingView: View {
             if let fiveHour = model.fiveHour {
                 remainingRing(name: "5 hour", metric: fiveHour, kind: .fiveHour)
             }
-            if let todayTokens = model.todayTokens {
-                todayRing(todayTokens)
-            }
             labels
             if isCalibrating {
                 calibrationOverlay
@@ -112,26 +109,6 @@ struct PetRingView: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(name) remaining")
         .accessibilityValue(remainingAccessibilityValue(metric))
-    }
-
-    private func todayRing(_ metric: TodayTokenPresentation) -> some View {
-        let value = metric.value
-        return ZStack {
-            track(kind: .today)
-            progressArc(
-                kind: .today,
-                progress: value.progress,
-                level: value.semanticLevel,
-                isStale: metric.isStale
-            )
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Today tokens")
-        .accessibilityValue(
-            "\(value.tokenText), \(value.percentOfPeakText) of historical peak, "
-                + "\(metric.freshnessText.lowercased()), "
-                + value.semanticLevel.text.lowercased()
-        )
     }
 
     private func track(kind: PetRingMetricKind) -> some View {
@@ -197,16 +174,6 @@ struct PetRingView: View {
                     .position(labelPosition(for: .fiveHour))
             }
 
-            if let todayTokens = model.todayTokens {
-                connector(for: .today, isStale: todayTokens.isStale)
-
-                todayLabel(todayTokens, kind: .today)
-                    .frame(
-                        width: geometry.labelSize(for: .today).width,
-                        height: geometry.labelSize(for: .today).height
-                    )
-                    .position(labelPosition(for: .today))
-            }
         }
         .accessibilityHidden(true)
     }
@@ -256,20 +223,6 @@ struct PetRingView: View {
         )
     }
 
-    private func todayLabel(
-        _ metric: TodayTokenPresentation,
-        kind: PetRingMetricKind
-    ) -> some View {
-        capsuleLabel(
-            key: "T",
-            value: "\(metric.value.compactTokenText) · \(metric.value.percentOfPeakText)",
-            kind: kind,
-            isStale: metric.isStale,
-            isUnavailable: false,
-            semanticLevel: metric.value.semanticLevel
-        )
-    }
-
     private func capsuleLabel(
         key: String,
         value: String,
@@ -300,7 +253,7 @@ struct PetRingView: View {
         }
         .font(.caption2.monospacedDigit().weight(.semibold))
         .lineLimit(1)
-        .minimumScaleFactor(kind == .today ? 0.72 : 0.82)
+        .minimumScaleFactor(kind == .contextSlot ? 0.72 : 0.82)
         .padding(.horizontal, 6)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(
@@ -383,7 +336,6 @@ struct PetRingView: View {
     private var visibleMetrics: [PetRingMetricKind] {
         var metrics: [PetRingMetricKind] = [.weekly]
         if model.fiveHour != nil { metrics.append(.fiveHour) }
-        if model.todayTokens != nil { metrics.append(.today) }
         return metrics
     }
 

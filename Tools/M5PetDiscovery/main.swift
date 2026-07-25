@@ -167,23 +167,24 @@ private func routeAWindowCandidates(
 }
 
 private func resolvePetCore(from nodes: [AXGeometryNode]) -> PetCoreResolution {
-    let eligible = nodes.filter { node in
-        guard node.role == kAXWindowRole,
-              node.subrole == kAXDialogSubrole
-        else {
-            return false
-        }
-        let ratio = node.frame.width / node.frame.height
-        return (0.8 ... 1.5).contains(ratio)
+    let candidates = nodes.enumerated().map { index, node in
+        PetWindowCandidate(
+            identity: index,
+            frame: node.frame,
+            isMinimized: false,
+            isHidden: node.isHidden,
+            role: node.role,
+            subrole: node.subrole
+        )
     }
-    let groups = Dictionary(grouping: eligible) { node in
-        [node.frame.minX, node.frame.minY, node.frame.width, node.frame.height]
-            .map { Int(($0 * 2).rounded()) }
+    switch PetWindowSelector.select(from: candidates) {
+    case let .selected(memberIdentities, frame):
+        return .found(frame: frame, memberCount: memberIdentities.count)
+    case .unavailable:
+        return .unavailable
+    case .ambiguous:
+        return .ambiguous
     }
-    guard groups.count == 1, let group = groups.values.first, let first = group.first else {
-        return groups.isEmpty ? .unavailable : .ambiguous
-    }
-    return .found(frame: first.frame, memberCount: group.count)
 }
 
 private func printPetCoreResolution(prefix: String, nodes: [AXGeometryNode]) {

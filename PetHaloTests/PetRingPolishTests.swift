@@ -34,7 +34,7 @@ final class PetRingPolishTests: XCTestCase {
     }
 
     func testIdentityDotsStayFixedAndTextVariantsMeetPracticalContrast() {
-        let metrics: [PetRingMetricKind] = [.weekly, .fiveHour, .today]
+        let metrics: [PetRingMetricKind] = [.weekly, .fiveHour, .contextSlot]
         XCTAssertEqual(
             metrics.map { PetRingPresentationPolicy.identityColor(for: $0).hex },
             ["#5865F2", "#00B8D9", "#A855F7"]
@@ -61,7 +61,7 @@ final class PetRingPolishTests: XCTestCase {
 
     func testSafeSideUsesVisibleFrameAtLeftAndRightEdgesWithoutMovingCenter() {
         let visibleFrame = CGRect(x: 0, y: 24, width: 1_440, height: 860)
-        let metrics: [PetRingMetricKind] = [.weekly, .fiveHour, .today]
+        let metrics: [PetRingMetricKind] = [.weekly, .fiveHour, .contextSlot]
         let leftEdgePanel = panelFrame(centerX: 32)
         let rightEdgePanel = panelFrame(centerX: 1_408)
 
@@ -90,7 +90,7 @@ final class PetRingPolishTests: XCTestCase {
 
     func testNegativeCoordinateDisplayAndDialogOpeningAreIndependent() {
         let visibleFrame = CGRect(x: -1_440, y: 24, width: 1_440, height: 860)
-        let metrics: [PetRingMetricKind] = [.weekly, .fiveHour, .today]
+        let metrics: [PetRingMetricKind] = [.weekly, .fiveHour, .contextSlot]
         let panel = panelFrame(centerX: -1_408)
         let orientation = PetRingOrientation.openingBottom
         let side = PetRingLabelPlacementPolicy.side(
@@ -110,7 +110,7 @@ final class PetRingPolishTests: XCTestCase {
 
     func testSafeSideHysteresisNeverPermitsClipping() {
         let visibleFrame = CGRect(x: 0, y: 0, width: 1_440, height: 900)
-        let metrics: [PetRingMetricKind] = [.weekly, .fiveHour, .today]
+        let metrics: [PetRingMetricKind] = [.weekly, .fiveHour, .contextSlot]
         let nearBoundary = panelFrame(centerX: 1_218)
         let settled = panelFrame(centerX: 1_210)
 
@@ -138,8 +138,8 @@ final class PetRingPolishTests: XCTestCase {
         let combinations: [[PetRingMetricKind]] = [
             [.weekly],
             [.weekly, .fiveHour],
-            [.weekly, .today],
-            [.weekly, .fiveHour, .today],
+            [.weekly, .contextSlot],
+            [.weekly, .fiveHour, .contextSlot],
         ]
         for metrics in combinations {
             for side in [PetRingLabelSide.left, .right] {
@@ -167,15 +167,6 @@ final class PetRingPolishTests: XCTestCase {
                 resetsAt: Date(timeIntervalSince1970: 1_790_726_400)
             )),
             fiveHour: .current(metric(remaining: 100)),
-            todayTokens: .current(TodayTokenValue(
-                tokenCount: UInt64.max,
-                tokenText: "18,446,744,073,709,551,615 tokens",
-                compactTokenText: "18.4B",
-                peakDailyTokenCount: UInt64.max,
-                peakTokenText: "18,446,744,073,709,551,615 tokens",
-                consumptionRatio: 1,
-                semanticLevel: .critical
-            )),
             accessibilityValue: "Maximum values"
         )
         let hosting = NSHostingView(rootView: PetRingView(
@@ -206,7 +197,7 @@ final class PetRingPolishTests: XCTestCase {
         PetRingLabelPlacementPolicy.globalLabelFrame(
             side: side,
             panelFrame: panel,
-            visibleMetrics: [.weekly, .fiveHour, .today]
+            visibleMetrics: [.weekly, .fiveHour, .contextSlot]
         )
     }
 

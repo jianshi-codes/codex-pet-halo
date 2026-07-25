@@ -1,6 +1,7 @@
 # ADR 0009: Target-aware Halo surface
 
-- Status: Accepted for M7
+- Status: Accepted for M7; Today and the inner-ring data contract are superseded
+  by [ADR 0012](0012-reserved-context-ring-slot.md)
 - Date: 2026-07-20
 
 ## Context
@@ -31,6 +32,12 @@ Pet geometry callbacks have no fixed coalescing sleep. When a callback races an 
 
 ## Consequences
 
-Fallback cards and their full Account Usage presentation remain intact. The Pet model uses historical peak only as the Today denominator and cannot expose lifetime, streak, longest-turn, or recent-history fields. No screenshots, OCR, visual detection, official artwork, settings window, network request, telemetry, decorative animation, or announcement loop is added.
+Fallback cards and their full Account Usage presentation remain intact. The
+original M7 Pet model used historical peak only as the Today denominator and
+could not expose lifetime, streak, longest-turn, or recent-history fields. ADR
+0012 later removed Today from the Pet Ring and reserved that inner slot rather
+than changing the fallback card. No screenshots, OCR, visual detection, official
+artwork, settings window, network request, telemetry, decorative animation, or
+announcement loop is added.
 
 M8 exclusively owns advanced visual polish beyond this fixed functional policy, themes, decorative low-usage styling, glow, motion preferences, and animations. M9 remains separately gated.

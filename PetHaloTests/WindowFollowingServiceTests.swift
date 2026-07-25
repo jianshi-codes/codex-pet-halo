@@ -693,7 +693,6 @@ final class WindowFollowingServiceTests: XCTestCase {
         }
         let layoutCount = recorder.layouts.count
         XCTAssertEqual(recorder.orientations.last, .openingBottom)
-
         let generation = try XCTUnwrap(context.petAccessor.snapshot?.generation)
         context.petAccessor.snapshot = PetTargetSnapshot(
             generation: generation,
@@ -701,7 +700,6 @@ final class WindowFollowingServiceTests: XCTestCase {
             activityGeometryHint: .ambiguous
         )
         context.petAccessor.emit(.activityGeometryChanged)
-        try await Task.sleep(for: .milliseconds(5))
         XCTAssertEqual(recorder.orientations, [.openingBottom])
 
         context.petAccessor.snapshot = PetTargetSnapshot(
@@ -749,7 +747,11 @@ final class WindowFollowingServiceTests: XCTestCase {
         let petFrame = CGRect(x: 500, y: 600, width: 120, height: 110)
         let offset = PetVisualCenterOffset(horizontal: -8, vertical: 32)
         let context = makeContext(
-            petAccessResult: .selected(PetTargetSnapshot(generation: 0, frame: petFrame)),
+            petAccessResult: .selected(PetTargetSnapshot(
+                generation: 0,
+                frame: petFrame,
+                activityGeometryHint: .above
+            )),
             enabled: true,
             anchor: windowAnchor(),
             petVisualCenterOffset: offset

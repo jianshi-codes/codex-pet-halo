@@ -189,15 +189,15 @@ class ReleaseReadinessTests(unittest.TestCase):
         ):
             self.assertIn(forbidden, warning)
 
-    def test_release_metadata_is_numeric_and_beta_is_tag_only(self) -> None:
+    def test_release_metadata_is_numeric_and_next_beta_is_tag_only(self) -> None:
         project = (ROOT / "project.yml").read_text(encoding="utf-8")
         info = (ROOT / "Config/Info.plist").read_text(encoding="utf-8")
         common = (ROOT / "Scripts/release-common.sh").read_text(encoding="utf-8")
         self.assertIn("MARKETING_VERSION: 0.1.0", project)
         self.assertIn("CURRENT_PROJECT_VERSION: 2", project)
         self.assertNotIn("beta", info.lower())
-        self.assertIn('BUILD_NUMBER:-2', common)
-        self.assertIn("v0.1.0-beta.2", common)
+        self.assertIn('BUILD_NUMBER:-3', common)
+        self.assertIn("v0.1.0-beta.3", common)
 
     def test_public_preview_screenshots_are_metadata_free_png_files(self) -> None:
         signature = b"\x89PNG\r\n\x1a\n"
@@ -232,7 +232,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("Download v0.1.0-beta.2", readme)
         self.assertIn("Pet-Halo-0.1.0-beta.2-unsigned-universal.zip", readme)
 
-    def test_readme_release_link_metric_meanings_and_thresholds_are_explicit(self) -> None:
+    def test_readme_release_link_ring_meanings_and_reserved_slot_are_explicit(self) -> None:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         release_url = (
             "https://github.com/jianshi-codes/codex-pet-halo/releases/tag/"
@@ -246,25 +246,18 @@ class ReleaseReadinessTests(unittest.TestCase):
         for metric in (
             "Outer ring — Weekly remaining",
             "Middle ring — optional 5h remaining",
-            "Inner ring — Today versus historical peak",
+            "Inner slot — reserved",
         ):
             self.assertIn(metric, readme)
         for threshold in (
             "healthy: `>= 50%`",
             "warning: `20%` through `49%`",
             "critical: `< 20%`",
-            "healthy: `<= 50%`",
-            "warning: `> 50%` through `80%`",
-            "critical: `> 80%`",
         ):
             self.assertIn(threshold, readme)
-        self.assertIn("Status color does not identify the metric", readme)
-        self.assertIn("Today is not a quota", readme)
-        self.assertIn(
-            "`T 10%` means today’s usage is 10% of the historical peak day, "
-            "not 90% remaining",
-            readme,
-        )
+        self.assertIn("cannot truthfully infer Live Activity from geometry", readme)
+        self.assertIn("not treated as an idle/working signal", readme)
+        self.assertIn("reserved for a future exact Context Remaining metric", readme)
         self.assertIn("codex --version", readme)
         self.assertIn("The reviewed baseline remains the strongest evidence", readme)
         self.assertIn("Session-only acceptance after required runtime capability validation", readme)
@@ -363,7 +356,13 @@ class ReleaseReadinessTests(unittest.TestCase):
 
         unreleased = changelog.split("## [Unreleased]", maxsplit=1)[1]
         unreleased = unreleased.split("## [0.1.0-beta.2]", maxsplit=1)[0]
-        self.assertEqual(unreleased.strip(), "No changes yet.")
+        for current_change in (
+            "Codex Desktop multi-surface",
+            "Hide/Wake",
+            "unverified geometry-derived Live Activity",
+            "future exact Context Remaining source",
+        ):
+            self.assertIn(current_change, unreleased)
         beta_two = changelog.split("## [0.1.0-beta.2]", maxsplit=1)[1]
         beta_two = beta_two.split("## [0.1.0-beta.1]", maxsplit=1)[0]
         self.assertTrue(beta_two.lstrip().startswith("- 2026-07-21"))
@@ -388,6 +387,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("## Published Beta 2 record — 2026-07-21", checklist)
         self.assertIn("- [x] PR #14 and PR #15 merged", checklist)
         self.assertIn("- [x] Release owned-child launch/shutdown smoke", checklist)
+        self.assertIn("## Beta 3 candidate preparation — 2026-07-25", checklist)
         future = checklist.split("## Source and compatibility for a future Beta", maxsplit=1)[1]
         self.assertIn("v0.1.0-beta.3", future)
         self.assertIn("BUILD_NUMBER=3", future)
@@ -414,6 +414,69 @@ class ReleaseReadinessTests(unittest.TestCase):
             hashlib.sha256(notes_bytes).hexdigest(),
             "f6fb65e7cfe06376824f58f9c5a35994089cdeeeb0e269a2b505cb6e93a9ec5c",
         )
+
+    def test_beta_three_candidate_is_prepared_without_publication_claims(self) -> None:
+        notes = (ROOT / "docs/release-notes/v0.1.0-beta.3.md").read_text(
+            encoding="utf-8"
+        )
+        checklist = (ROOT / "docs/RELEASE_CHECKLIST.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("# Pet Halo 0.1.0 Beta 3", notes)
+        self.assertIn("former Today ring is removed", notes)
+        self.assertRegex(notes, r"not\s+exposed as Live Activity")
+        self.assertIn("future exact Context", notes)
+        self.assertIn("reviewed `main`", notes)
+        self.assertIn("public-beta", notes)
+        self.assertIn("development evidence only", notes)
+        self.assertNotIn("Beta 3 was published", notes)
+        self.assertNotIn("Beta 3 is published", notes)
+        self.assertIn("no tag or Release has been created", checklist)
+        self.assertIn("environment does not exist", checklist)
+
+    def test_release_runbook_covers_automation_and_post_release_truth(self) -> None:
+        runbook = (ROOT / "docs/RELEASE_RUNBOOK.md").read_text(encoding="utf-8")
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        checklist = (ROOT / "docs/RELEASE_CHECKLIST.md").read_text(
+            encoding="utf-8"
+        )
+        for state in (
+            "PREPARED",
+            "VALIDATED",
+            "APPROVED",
+            "PUBLISHED",
+            "VERIFIED",
+            "DOCS_PR_OPEN",
+        ):
+            self.assertIn(state, runbook)
+        for phase in range(11):
+            self.assertRegex(runbook, rf"(?m)^## R{phase} ")
+        for command in (
+            "make release-unsigned-preview",
+            "publish=false",
+            "publish=true",
+            "gh release download",
+            "shasum -a 256 -c SHA256SUMS",
+            "codesign --verify --deep --strict",
+            "spctl --assess --type execute",
+            "xcrun stapler validate",
+        ):
+            self.assertIn(command, runbook)
+        for post_release_document in (
+            "README.md",
+            "CHANGELOG.md",
+            "docs/CURRENT_STATE.md",
+            "docs/RELEASE_CHECKLIST.md",
+            "docs/GITHUB_SETTINGS.md",
+            "docs/COMPATIBILITY.md",
+            "project.yml",
+            "Scripts/release-common.sh",
+        ):
+            self.assertIn(post_release_document, runbook)
+        self.assertRegex(runbook, r"explicitly\s+authorizes publication")
+        self.assertIn("Do not delete, retag, clobber", runbook)
+        self.assertIn("docs/RELEASE_RUNBOOK.md", readme)
+        self.assertIn("[Release runbook](RELEASE_RUNBOOK.md)", checklist)
 
     def test_current_documents_have_no_stale_beta_two_prepublication_claim(self) -> None:
         current_documents = "\n".join(
@@ -454,7 +517,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         )
         self.assertEqual(
             Path(result.stdout.strip()).name,
-            "Pet-Halo-0.1.0-beta.2-unsigned-universal.zip",
+            "Pet-Halo-0.1.0-beta.3-unsigned-universal.zip",
         )
         environment.pop("RELEASE_ARTIFACT_QUALIFIER")
         default_result = subprocess.run(
@@ -471,7 +534,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         )
         self.assertEqual(
             Path(default_result.stdout.strip()).name,
-            "Pet-Halo-0.1.0-beta.2-universal.zip",
+            "Pet-Halo-0.1.0-beta.3-universal.zip",
         )
         makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
         target = makefile.split("release-unsigned-preview:", maxsplit=1)[1]

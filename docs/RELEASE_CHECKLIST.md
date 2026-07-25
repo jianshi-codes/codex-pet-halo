@@ -1,6 +1,8 @@
 # Public Beta Release Checklist
 
-This is the operator procedure for published and future Beta releases. Never overwrite, retag, or upload with `--clobber` to an existing release identity.
+This checklist records release state. Execute the ordered automation and
+post-release closeout through the [Release runbook](RELEASE_RUNBOOK.md). Never
+overwrite, retag, or upload with `--clobber` to an existing release identity.
 
 ## Published Beta 1 record — 2026-07-21
 
@@ -31,16 +33,39 @@ This is the operator procedure for published and future Beta releases. Never ove
 - [ ] Gatekeeper signed verification — not completed for Beta 2.
 - [ ] Signed clean-machine acceptance — not completed for Beta 2.
 
+## Beta 3 candidate preparation — 2026-07-25
+
+The candidate identity is product version `0.1.0`, bundle build `3`, and tag
+`v0.1.0-beta.3`. Preparation is read-only with respect to GitHub publication:
+no tag or Release has been created.
+
+- [x] `git ls-remote` returned the documented unused-tag result for
+  `v0.1.0-beta.3`.
+- [x] `gh release view v0.1.0-beta.3` returned not found.
+- [x] `docs/release-notes/v0.1.0-beta.3.md` exists at the path consumed by the
+  release scripts.
+- [x] Release script defaults no longer reuse the immutable Beta 2 identity.
+- [ ] Draft PR #17 receives required review and merges to `main`.
+- [ ] Final `main` commit passes all source, compatibility, smoke, exposure, and
+  unsigned artifact gates below.
+- [ ] Create the `public-beta` environment and configure required reviewers
+  before adding or using release secrets. The API still reports that this
+  environment does not exist.
+- [ ] Obtain explicit authorization before signing, notarizing, creating the
+  tag, or publishing the GitHub prerelease.
+
 ## Source and compatibility for a future Beta
 
-- [ ] Use a new tag and build number, such as `v0.1.0-beta.3` and build `3`.
+- [x] Prepare the next unused identity as `v0.1.0-beta.3` and build `3`.
 - [ ] Start from a reviewed, clean `main` commit.
 - [ ] Confirm the exact CLI and Desktop versions in `docs/COMPATIBILITY.md`.
 - [ ] Regenerate current CLI schemas into a temporary directory and review every production semantic.
 - [ ] Run `make check`, M2–M4 smoke, the single `make pet-following-gate`, and M8 smoke.
 - [ ] Run `make public-exposure-audit` from a full clone containing every branch and tag.
 - [ ] Complete the ongoing [GitHub-hosted metadata and log audit](PUBLIC_EXPOSURE_AUDIT.md#ongoing-github-hosted-metadata-and-log-audit).
-- [ ] Confirm `git ls-remote` and `gh release view` both show that the requested tag/release identity is unused; abort if the check cannot be completed.
+- [ ] Reconfirm immediately before release that `git ls-remote` and
+  `gh release view` both show the requested identity is unused; the 2026-07-25
+  preparation observation is not sufficient for publication.
 
 ## Unsigned preview build
 
@@ -76,9 +101,16 @@ On a clean macOS user account or equivalent isolated host, verify and record onl
 
 Beta 1 and Beta 2 are immutable publication identities: never overwrite, retag, reclassify, or upload to either with `--clobber`. A future signed release must use a new tag and build number.
 
-- [ ] Confirm the `public-beta` environment exists and has required reviewers before providing release secrets.
+- [ ] Confirm the `public-beta` environment exists and has required reviewers
+  before providing release secrets; it was absent at the 2026-07-25 preparation
+  check.
 - [ ] Recheck README, LICENSE, SECURITY, CONTRIBUTING, Code of Conduct, issue forms, and release notes.
-- [ ] Run the manual workflow from reviewed `main` with explicit version, build number, new tag, and `publish=true`.
+- [ ] First run the manual workflow from reviewed `main` with product version
+  `0.1.0`, build `3`, tag `v0.1.0-beta.3`, and `publish=false`; retain the
+  validation result without creating release state.
+- [ ] Only after the validation run, credentials, environment approval,
+  clean-machine plan, and explicit publication authorization are ready, rerun
+  from the same reviewed `main` commit with `publish=true`.
 - [ ] Confirm the workflow rejects any existing tag or GitHub Release before signing and publication.
 - [ ] Confirm the new signed GitHub Release is a prerelease and contains only the signed/notarized ZIP, `SHA256SUMS`, release notes, and manifest.
 - [ ] Download the published files and repeat checksum, codesign, notarization, stapling, and Gatekeeper verification.

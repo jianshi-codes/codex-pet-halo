@@ -39,3 +39,8 @@ The complete observed label list includes the `bug` and `compatibility` labels r
 - Keep Pages unconfigured unless a separately reviewed Pages publication is intended.
 
 No branch-protection/ruleset, environment, vulnerability-reporting, Pages, visibility, tag, or Release setting was changed automatically in this closeout.
+
+Release-preparation recheck on 2026-07-25 confirmed that the classic
+branch-protection endpoint still reports no classic protection and
+`public-beta` still returns not found. The active ruleset details above were not
+re-audited in that narrower check. No setting was changed.

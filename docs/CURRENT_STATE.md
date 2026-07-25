@@ -3,8 +3,15 @@
 - Milestone: M9 — Public Beta Release Readiness
 - Status: **PARTIAL — SOURCE RELEASE READY, SIGNED BINARY BLOCKED**
 - Closeout branch: `docs/beta2-release-closeout`
-- Product/UI: frozen at the accepted M8 behavior
+- Active maintenance branch: `codex/fix-pet-target-ambiguity`, Draft PR #17
+- Product/UI on the active branch: current Desktop multi-surface Pet selection,
+  immediate saved-center restoration after Hide/Wake, Beta 2 Ring geometry with
+  Today and unverified Live Activity removed, and an intentionally empty inner
+  context slot; this behavior is not part of the published Beta 2 artifact
 - Published release: `v0.1.0-beta.2`, product version `0.1.0`, bundle build `2`
+- Next candidate identity: `v0.1.0-beta.3`, product version `0.1.0`, bundle build
+  `3`; the tag and GitHub Release were confirmed unused on 2026-07-25 but have
+  not been created
 - Repository: public at `jianshi-codes/codex-pet-halo`
 - Artifact: unsigned Universal ZIP; Developer ID signing and Apple notarization are not complete
 
@@ -28,15 +35,26 @@
 
 - CLI `0.145.0-alpha.18` remains the exact reviewed baseline. Exact registry entries carry the schema and production-semantic review evidence.
 - Newer versions at or above `0.145.0-alpha.18` and below `1.0.0` may run provisionally. Provisional sessions must pass initialize/initialized, account behavior, rate-limit decoding, and a usable exact 10,080-minute Weekly window at runtime.
-- The optional 5h window and Account Usage/Today remain capability-gated and may be absent; missing data is not estimated.
+- The optional 5h window and Account Usage remain capability-gated and may be absent;
+  missing data is not estimated. Account Usage remains available only to fallback cards,
+  not the Pet Ring.
 - Malformed, too-old, explicitly denied, 1.x, and runtime-incompatible versions fail closed. Required provisional runtime failure closes the owned child and disables automatic reconnect until manual Refresh or application restart.
 - Installed CLI `0.145.0-alpha.27` passed the sanitized provisional real smoke, including required Weekly percentage/reset decoding and clean owned-child shutdown. Optional 5h was absent and Account Usage was available on the validation host.
+- Installed CLI `0.146.0-alpha.3.1` passed the same sanitized provisional
+  read-only smoke on 2026-07-25: handshake, JSON-RPC envelopes, account/rate
+  reads, valid Weekly percentage/reset decoding, optional 5h omission, available
+  Account Usage, and clean shutdown.
 - Provisional runtime success is session evidence only; it is not formal schema-review evidence and does not add the installed version to the reviewed registry.
 
 ## Retained validation state
 
-- `make check`: PASS at Beta 2 release closeout, including generated-project drift, boundary/privacy scans, Debug and Universal Release builds, Swift tests, and deterministic Python tests.
-- M2 smoke: PASS — CLI `0.145.0-alpha.27` passed the required provisional read-only capabilities and completed clean release-owned-child launch/shutdown.
+- `make check`: PASS on the active release-preparation working tree on
+  2026-07-25, including generated-project drift, boundary/privacy scans, Debug
+  and Universal Release builds, 73 core Swift tests with one local-only smoke
+  skipped, 121 application Swift tests, and 43 deterministic Python tests.
+- M2 smoke: PASS — current CLI `0.146.0-alpha.3.1` passed the required
+  provisional read-only capabilities and completed clean owned-child
+  launch/shutdown.
 - M3 smoke: PASS.
 - M4 smoke: deterministic PASS; the standard-window target was unavailable during the retained live probe.
 - Unified M5–M7 gate: PASS — 110 deterministic tests plus one direct movement/Tuck Away/Wake/Quit flow.
@@ -45,10 +63,19 @@
 - Equivalent isolated-host unsigned launch/quit: PASS; signed/notarized clean-machine acceptance remains incomplete.
 - `make public-exposure-audit`: PASS — all reachable Git blobs inspected with one exact synthetic fixture allowance.
 - Fresh published Beta 2 download, checksums, manifest source commit, bundle metadata, Universal architectures, and release-note identity: PASS.
+- Draft PR #17 CI: PASS on the active implementation and release-preparation
+  documentation head observed on 2026-07-25.
 
 ## Remaining release gate
 
 - Source and unsigned Beta 2 publication: complete.
+- PR #17 remains Draft and unmerged; Beta 3 must start from its reviewed, clean
+  merge commit on `main`.
+- `public-beta` does not currently exist, so required reviewers and release
+  secrets are not configured behind the workflow environment.
+- The Beta 3 candidate notes and unused identity do not create or
+  authorize a tag, GitHub Release, signing operation, notarization submission,
+  or publication.
 - Developer ID signing: not complete.
 - Apple notarization: not complete.
 - Stapling and Gatekeeper signed verification: not complete.
