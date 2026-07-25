@@ -18,7 +18,7 @@ The known-incompatible denylist is initially empty. It is a safety override for 
 | Codex CLI | `0.146.0-alpha.3.1` | Provisional session PASS | Current installed CLI passed required read-only runtime capabilities and clean shutdown on 2026-07-25; no schema-review claim |
 | Codex Desktop | `26.715.31925 (5551)` | Supported | Route A Pet/window Accessibility behavior previously validated |
 | Codex Desktop | `26.715.52143 (5591)` | Supported | Current M9 Route A and complete Pet-following gate validated |
-| Codex Desktop | `26.721.41059 (5848)` | Validated candidate | Active-branch structural policy, direct Hide/Wake/center interaction, deterministic tests, and CI passed; not included in published Beta 2 |
+| Codex Desktop | `26.721.41059 (5848)` | Supported in Beta 3 | Published structural policy plus direct Hide/Wake/center interaction, deterministic tests, final-main smoke, and CI evidence |
 
 The CLI registry covers these semantic groups: initialize/initialized; `account/read`; `account/rateLimits/read`; `account/rateLimits/updated`; `account/usage/read`; and JSON-RPC request, response, error, and notification envelopes. It also covers exact rate-limit window durations, sparse update behavior, Account Usage summary/daily buckets, independent component freshness, and account-data clearing boundaries.
 
@@ -40,8 +40,8 @@ pure selection policy. A sanitized read-only structural probe resolves the
 current topology uniquely. Direct active-branch interaction then confirmed
 calibrated placement, immediate center restoration across Hide/Wake, stable
 centering after a new task message, and fail-closed removal of the unverified
-Live Activity ring. This is candidate evidence for a future release, not a claim
-that published Beta 2 supports this Desktop topology.
+Live Activity ring. The final source and user-confirmed observation are included
+in published Beta 3.
 
 The M9 validation host is macOS 26.5.2 (Build 25F84), arm64, with Xcode 26.4.1 (17E202), Swift 6.3.1, Codex CLI 0.145.0-alpha.18, and Codex Desktop 26.715.52143 (5591). Host observations are evidence, not a broad compatibility promise.
 
@@ -160,16 +160,14 @@ Activity orientation is derived only after the near-square Pet core has been sel
 | Reduce Motion | New positions apply directly without interpolation; an active display-link callback is invalidated; normal mode retains latest-value following |
 | Icons | Complete original AppIcon catalog plus separate monochrome template menu asset; no official artwork or generic `circle.dashed` symbol |
 
-The active maintenance branch updates Route A Pet core selection for the current
-multi-surface Desktop topology and restores saved center placement immediately
-after Wake. It preserves the Pet → calibrated-window → free-floating hierarchy,
-panel midpoint, visual-center persistence, bridge behavior, and M7 ring radii.
-It removes the former Today presentation and leaves the reserved inner slot
-empty. When either capsule side fits, every visible capsule is contained in
-`visibleFrame`; if neither fits, the smaller-overflow side is selected without
-clamping the Ring center. M9 remains complete with its signed-binary gate blocked;
-the Beta 3 candidate uses the existing release machinery under separate merge,
-credential, notarization, clean-machine, and publication hold points.
+Published Beta 3 updates Route A Pet core selection for the current multi-surface
+Desktop topology and restores saved center placement immediately after Wake. It
+preserves the Pet → calibrated-window → free-floating hierarchy, panel midpoint,
+visual-center persistence, bridge behavior, and M7 ring radii. It removes the
+former Today presentation and leaves the reserved inner slot empty. When either
+capsule side fits, every visible capsule is contained in `visibleFrame`; if
+neither fits, the smaller-overflow side is selected without clamping the Ring
+center. M9 remains complete with its signed-binary gate blocked.
 
 ## M4 window-following contract
 

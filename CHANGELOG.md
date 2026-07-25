@@ -4,6 +4,10 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 
 ## [Unreleased]
 
+No changes yet.
+
+## [0.1.0-beta.3] - 2026-07-25
+
 ### Changed
 
 - Updated Pet target selection for the current Codex Desktop multi-surface
@@ -15,6 +19,18 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
   Ring. Weekly and the optional exact 5h window remain; the inner slot is reserved
   for a future exact Context Remaining source.
 - Refreshed the public README Preview to show the current Weekly-only Pet Ring.
+
+### Release
+
+- Published tag `v0.1.0-beta.3` from reviewed source commit
+  `e8480a0443783e05dd871f5c248157633a84d9c5` and the public GitHub Release.
+- Published the unsigned Universal
+  `Pet-Halo-0.1.0-beta.3-unsigned-universal.zip`, `release-manifest.json`,
+  `RELEASE_NOTES.md`, and `SHA256SUMS` assets.
+- Fresh public download verification passed for every checksum and GitHub asset
+  digest; the manifest source commit matches the tag.
+- The release uses product version `0.1.0`, bundle build `3`,
+  `signing: unsigned`, and `notarization: not-submitted`.
 
 ## [0.1.0-beta.2] - 2026-07-21
 
