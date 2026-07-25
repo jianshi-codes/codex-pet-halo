@@ -16,23 +16,23 @@ Pet Halo is a macOS menu-bar companion that places a transparent Usage ring arou
 <table>
   <tr>
     <td width="50%" align="center">
-      <img src="docs/assets/screenshots/pet-halo-activity-above.png" width="100%" alt="Pet Halo with Codex activity above and Usage labels on the right">
+      <img src="docs/assets/screenshots/pet-halo-activity-above.png" width="100%" alt="Pet Halo current source with the Codex task card above and Weekly label on the right">
     </td>
     <td width="50%" align="center">
-      <img src="docs/assets/screenshots/pet-halo-activity-below.png" width="100%" alt="Pet Halo with Codex activity below and Usage labels on the left">
+      <img src="docs/assets/screenshots/pet-halo-activity-below.png" width="100%" alt="Pet Halo current source with the Codex task card below and Weekly label on the left">
     </td>
   </tr>
   <tr>
-    <td align="center">Activity above · labels on the right</td>
-    <td align="center">Activity below · labels on the left</td>
+    <td align="center">Task card above · Weekly label on the right</td>
+    <td align="center">Task card below · Weekly label on the left</td>
   </tr>
 </table>
 
 Codex Pet is shown only to demonstrate integration. It is not Pet Halo project branding.
 
-> The screenshots show the published Beta 2 surface. Current source removes its
-> Today ring and keeps the inner layout slot empty for a future exact Context
-> Remaining metric.
+> These screenshots show current source behavior: Weekly is visible, the optional
+> 5h ring is omitted when unavailable, and the inner layout slot stays hidden for
+> a future exact Context Remaining metric.
 
 ## What the rings mean
 
