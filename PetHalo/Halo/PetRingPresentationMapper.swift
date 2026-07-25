@@ -2,26 +2,18 @@ import Foundation
 import PetHaloCore
 
 struct PetRingPresentationMapper {
-    private var calendar: Calendar
-    private let locale: Locale
-    private let compactTokenFormatter: CompactTokenFormatter
     private let weeklyResetDateFormatter: WeeklyResetDateFormatter
 
     init(
-        calendar: Calendar = .autoupdatingCurrent,
-        locale: Locale = .autoupdatingCurrent,
-        timeZone: TimeZone = TimeZone(secondsFromGMT: 0)!,
         weeklyResetDateFormatter: WeeklyResetDateFormatter = WeeklyResetDateFormatter()
     ) {
-        var calendar = calendar
-        calendar.timeZone = timeZone
-        self.calendar = calendar
-        self.locale = locale
-        compactTokenFormatter = CompactTokenFormatter(locale: locale)
         self.weeklyResetDateFormatter = weeklyResetDateFormatter
     }
 
-    func map(_ state: CodexUsageState, date: Date) -> PetRingPresentationModel {
+    func map(
+        _ state: CodexUsageState,
+        isLiveActivityActive: Bool = false
+    ) -> PetRingPresentationModel {
         let weekly = weeklyMetric(
             capability: state.capabilities.generalWeekly,
             freshness: state.componentFreshness.rateLimits
@@ -30,19 +22,14 @@ struct PetRingPresentationMapper {
             capability: state.capabilities.generalFiveHour,
             freshness: state.componentFreshness.rateLimits
         )
-        let todayTokens = todayTokenMetric(
-            capability: state.capabilities.accountUsage,
-            freshness: state.componentFreshness.accountUsage,
-            date: date
-        )
         return PetRingPresentationModel(
             weekly: weekly,
             fiveHour: fiveHour,
-            todayTokens: todayTokens,
+            isLiveActivityActive: isLiveActivityActive,
             accessibilityValue: accessibilityValue(
                 weekly: weekly,
                 fiveHour: fiveHour,
-                todayTokens: todayTokens
+                isLiveActivityActive: isLiveActivityActive
             )
         )
     }
@@ -94,53 +81,17 @@ struct PetRingPresentationMapper {
         }
     }
 
-    private func todayTokenMetric(
-        capability: Capability<AccountUsage>,
-        freshness: DataFreshness,
-        date: Date
-    ) -> TodayTokenPresentation? {
-        guard case let .available(usage) = capability else { return nil }
-        let matches = (usage.dailyBuckets ?? []).filter {
-            calendar.isDate($0.date, inSameDayAs: date)
-        }
-        guard matches.count == 1,
-              let bucket = matches.first,
-              let peak = usage.summary.peakDailyTokenCount,
-              peak > 0
-        else {
-            return nil
-        }
-        let ratio = Double(bucket.tokenCount) / Double(peak)
-        let value = TodayTokenValue(
-            tokenCount: bucket.tokenCount,
-            tokenText: numberText(bucket.tokenCount),
-            compactTokenText: compactTokenFormatter.string(from: bucket.tokenCount),
-            peakDailyTokenCount: peak,
-            peakTokenText: numberText(peak),
-            consumptionRatio: ratio,
-            semanticLevel: PetRingPresentationPolicy.todayLevel(for: ratio)
-        )
-        switch freshness {
-        case .current:
-            return .current(value)
-        case .stale:
-            return .stale(value)
-        case .unavailable:
-            return nil
-        }
-    }
-
     private func accessibilityValue(
         weekly: RingMetricPresentation,
         fiveHour: RingMetricPresentation?,
-        todayTokens: TodayTokenPresentation?
+        isLiveActivityActive: Bool
     ) -> String {
         var values = [ringAccessibilityValue(name: "Weekly quota", metric: weekly)]
         if let fiveHour {
             values.append(ringAccessibilityValue(name: "Five-hour quota", metric: fiveHour))
         }
-        if let todayTokens {
-            values.append(todayAccessibilityValue(todayTokens))
+        if isLiveActivityActive {
+            values.append("Live activity, Codex working")
         }
         return values.joined(separator: "; ")
     }
@@ -157,18 +108,4 @@ struct PetRingPresentationMapper {
             + "\(metric.freshnessText.lowercased()), \(value.semanticLevel.text.lowercased())"
     }
 
-    private func todayAccessibilityValue(_ metric: TodayTokenPresentation) -> String {
-        let value = metric.value
-        return "Today tokens, \(value.tokenText), \(value.percentOfPeakText) of historical peak, "
-            + "\(metric.freshnessText.lowercased()), \(value.semanticLevel.text.lowercased())"
-    }
-
-    private func numberText(_ value: UInt64) -> String {
-        let formatter = NumberFormatter()
-        formatter.locale = locale
-        formatter.numberStyle = .decimal
-        formatter.usesGroupingSeparator = true
-        formatter.maximumFractionDigits = 0
-        return formatter.string(from: NSNumber(value: value)) ?? String(value)
-    }
 }

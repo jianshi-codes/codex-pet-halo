@@ -235,6 +235,15 @@ private final class FollowingEventRecorder {
         }
     }
 
+    var liveActivities: [Bool] {
+        events.compactMap { event in
+            if case let .petLiveActivityChanged(isActive) = event {
+                return isActive
+            }
+            return nil
+        }
+    }
+
     var placementModes: [PetAttachmentUpdateMode] {
         events.compactMap { event in
             if case let .placePetAttachment(_, mode) = event {
@@ -693,6 +702,7 @@ final class WindowFollowingServiceTests: XCTestCase {
         }
         let layoutCount = recorder.layouts.count
         XCTAssertEqual(recorder.orientations.last, .openingBottom)
+        XCTAssertEqual(recorder.liveActivities, [true])
 
         let generation = try XCTUnwrap(context.petAccessor.snapshot?.generation)
         context.petAccessor.snapshot = PetTargetSnapshot(
@@ -701,8 +711,11 @@ final class WindowFollowingServiceTests: XCTestCase {
             activityGeometryHint: .ambiguous
         )
         context.petAccessor.emit(.activityGeometryChanged)
-        try await Task.sleep(for: .milliseconds(5))
+        for _ in 0 ..< 100 where recorder.liveActivities.last != false {
+            try await Task.sleep(for: .milliseconds(1))
+        }
         XCTAssertEqual(recorder.orientations, [.openingBottom])
+        XCTAssertEqual(recorder.liveActivities, [true, false])
 
         context.petAccessor.snapshot = PetTargetSnapshot(
             generation: generation,
@@ -715,6 +728,7 @@ final class WindowFollowingServiceTests: XCTestCase {
         }
 
         XCTAssertEqual(recorder.orientations, [.openingBottom, .openingTop])
+        XCTAssertEqual(recorder.liveActivities, [true, false, true])
         XCTAssertEqual(recorder.layouts.count, layoutCount)
         recorder.stop()
         await context.service.stop()
@@ -749,7 +763,11 @@ final class WindowFollowingServiceTests: XCTestCase {
         let petFrame = CGRect(x: 500, y: 600, width: 120, height: 110)
         let offset = PetVisualCenterOffset(horizontal: -8, vertical: 32)
         let context = makeContext(
-            petAccessResult: .selected(PetTargetSnapshot(generation: 0, frame: petFrame)),
+            petAccessResult: .selected(PetTargetSnapshot(
+                generation: 0,
+                frame: petFrame,
+                activityGeometryHint: .above
+            )),
             enabled: true,
             anchor: windowAnchor(),
             petVisualCenterOffset: offset
@@ -764,6 +782,10 @@ final class WindowFollowingServiceTests: XCTestCase {
         context.petAccessor.emit(.targetInvalidated)
         XCTAssertEqual(context.service.targetSource, .codexWindowFallback)
         XCTAssertEqual(context.service.petPlacementStatus, .unavailable)
+        for _ in 0 ..< 100 where recorder.liveActivities.last != false {
+            await Task.yield()
+        }
+        XCTAssertEqual(recorder.liveActivities, [true, false])
 
         context.petAccessor.result = .selected(PetTargetSnapshot(generation: 0, frame: petFrame))
         context.windowAccessor.emit(.selectionChanged)
@@ -778,6 +800,7 @@ final class WindowFollowingServiceTests: XCTestCase {
         XCTAssertEqual(recovered.panelFrame.midY, petFrame.midY + 32)
         XCTAssertEqual(context.preferences.snapshot.petVisualCenterOffset, offset)
         XCTAssertEqual(recorder.activationLayouts.last, recovered)
+        XCTAssertEqual(recorder.liveActivities, [true, false])
         recorder.stop()
         await context.service.stop()
     }

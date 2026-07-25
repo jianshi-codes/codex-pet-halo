@@ -127,10 +127,10 @@ The M3 panel itself does not discover or inspect Codex. M4 through M6 own the se
 | Card fallback | Compact/Expanded, Account Usage, scrolling, and non-activation remain unchanged outside Pet |
 | Weekly | Domain `remainingPercent` with rate-limit component freshness |
 | Five-hour | Present only for an available exact 300-minute capability |
-| Today tokens | Current-day tokens divided by nonzero historical peak; omit missing inputs, clamp arc progress at 100%, preserve actual token text |
-| Semantic policy | Remaining: healthy ≥50%, warning 20–49%, critical <20%; Today: healthy ≤50%, warning 51–80%, critical >80% |
-| Orientation | Fixed 260-degree partial arcs; activity above the calibrated visual Pet center opens top, activity below opens bottom, no activity uses the default, ambiguous retains prior after debounce |
-| Accessibility | Every ring owns its label/value; stale also uses opacity/dash/text and an explicit stale accessibility state |
+| Live Activity | The reserved inner slot shows an indeterminate arc only for one confirmed wide activity surface; missing or ambiguous geometry hides it, and it never represents percent complete |
+| Semantic policy | Weekly and five-hour remaining: healthy ≥50%, warning 20–49%, critical <20%; Live Activity has identity color only and no quota status |
+| Orientation | Fixed 260-degree partial arcs; activity above the calibrated visual Pet center opens top, activity below opens bottom, no activity uses the default, ambiguous retains prior orientation after debounce while hiding Live Activity |
+| Accessibility | Every visible ring owns its label/value; stale quota metrics also use opacity/dash/text and an explicit stale accessibility state; Live Activity exposes `Codex working` |
 
 `ApplicationCoordinator` remains the single owner of target, Usage, and presentation state. It records both the fallback card choice and non-Pet reference before entering Pet. On Pet loss, a delivered M4 reference is retained; otherwise the pre-Pet free-floating reference is restored before the card is resized. A direct Compact/Expanded command cannot change the Pet Ring, and `360×520` can never be applied at the Pet midpoint.
 
@@ -141,14 +141,14 @@ Activity orientation is derived only after the near-square Pet core has been sel
 | Component | M8 contract |
 | --- | --- |
 | System appearance | SwiftUI/system colors update live for light/dark, Increase Contrast, Differentiate Without Color, and Reduce Transparency; there is no theme system |
-| Identity colors | Dot palette remains Weekly `#5865F2`, 5h `#00B8D9`, Today `#A855F7`; appearance-aware related key text has a tested practical contrast floor; numeric values use system label text |
+| Identity colors | Dot palette remains Weekly `#5865F2`, 5h `#00B8D9`, and reserved context slot `#A855F7`; appearance-aware related key text has a tested practical contrast floor; numeric values use system label text |
 | Freshness/status | Stale remains dashed and visibly glyph-marked; unavailable uses `N/A`, a missing arc, and a glyph; semantic status colors remain system green/orange/red and Differentiate Without Color adds a shape glyph |
 | Edge placement | The already-centered panel and selected display `visibleFrame` choose only capsule side; negative coordinates work and screen identity is not stored |
 | Dialog geometry | Continues to choose only the shared arc opening; it does not override an edge-safe capsule side |
 | Reduce Motion | New positions apply directly without interpolation; an active display-link callback is invalidated; normal mode retains latest-value following |
 | Icons | Complete original AppIcon catalog plus separate monochrome template menu asset; no official artwork or generic `circle.dashed` symbol |
 
-M8 does not alter Route A discovery, Pet core selection, panel midpoint, visual-center persistence, Usage semantics, bridge behavior, fallback hierarchy, or M7 ring radii. When either capsule side fits, every visible capsule is contained in `visibleFrame`; if neither fits, the smaller-overflow side is selected without clamping the Ring center. M9 remains the separately gated compatibility-hardening and public-beta milestone.
+The active maintenance branch does not alter Route A discovery, Pet core selection, panel midpoint, visual-center persistence, bridge behavior, fallback hierarchy, or M7 ring radii. It replaces only the former Today presentation in the reserved inner slot. When either capsule side fits, every visible capsule is contained in `visibleFrame`; if neither fits, the smaller-overflow side is selected without clamping the Ring center. M9 remains the separately gated compatibility-hardening and public-beta milestone.
 
 ## M4 window-following contract
 

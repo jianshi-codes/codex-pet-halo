@@ -625,6 +625,37 @@ final class ApplicationCoordinatorTests: XCTestCase {
     }
 
     @MainActor
+    func testLiveActivityUpdatesPetRingAndClearsWhenPetTargetIsLost() async {
+        let panel = FakeHaloPanelController()
+        let following = FakeWindowFollowingService()
+        let coordinator = ApplicationCoordinator(
+            usageService: FakeUsageService(),
+            haloPanelController: panel,
+            windowFollowingService: following,
+            terminateApplication: {}
+        )
+        coordinator.start()
+        following.emit(.targetSourceChanged(.pet))
+        following.emit(.petLiveActivityChanged(true))
+        for _ in 0 ..< 100 where !coordinator.petRingPresentationModel.isLiveActivityActive {
+            await Task.yield()
+        }
+
+        XCTAssertTrue(coordinator.petRingPresentationModel.isLiveActivityActive)
+        XCTAssertTrue(panel.petRingModels.last?.isLiveActivityActive == true)
+
+        following.emit(.targetSourceChanged(.codexWindowFallback))
+        for _ in 0 ..< 100 where coordinator.petRingPresentationModel.isLiveActivityActive {
+            await Task.yield()
+        }
+
+        XCTAssertFalse(coordinator.petRingPresentationModel.isLiveActivityActive)
+        XCTAssertTrue(panel.petRingModels.last?.isLiveActivityActive == false)
+        coordinator.requestTermination()
+        await coordinator.waitForShutdown()
+    }
+
+    @MainActor
     func testCancelCalibrationRestoresCompactClickThroughAndReferencePoint() async {
         let panel = FakeHaloPanelController()
         let following = FakeWindowFollowingService()

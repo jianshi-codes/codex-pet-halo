@@ -30,11 +30,14 @@ Pet Halo is a macOS menu-bar companion that places a transparent Usage ring arou
 
 Codex Pet is shown only to demonstrate integration. It is not Pet Halo project branding.
 
+> The screenshots show the published Beta 2 surface. Current source replaces its
+> Today ring with the conditional Live Activity ring described below.
+
 ## What the rings mean
 
 - **Outer ring — Weekly remaining:** the remaining percentage for the exact 10,080-minute Codex rate-limit window. When Codex provides its reset timestamp, the capsule also shows that date in the user's local timezone, for example `W 39% · Jul 27`.
 - **Middle ring — optional 5h remaining:** the remaining percentage for an exact 300-minute window. It is omitted when Codex does not provide one.
-- **Inner ring — Today versus historical peak:** tokens in the current Codex UTC account day divided by the highest nonzero historical daily token count supplied by Codex. Missing or ambiguous data is omitted, never estimated as zero.
+- **Inner ring — conditional Live Activity:** an indeterminate arc appears only while Pet Halo can confirm one eligible Codex activity surface. It hides for idle, missing, or ambiguous activity geometry and does not claim a completion percentage. Reduce Motion keeps the indicator static.
 
 Weekly and 5h remaining use these status thresholds:
 
@@ -42,15 +45,11 @@ Weekly and 5h remaining use these status thresholds:
 - warning: `20%` through `49%`;
 - critical: `< 20%`.
 
-Today versus historical peak uses the opposite direction:
-
-- healthy: `<= 50%`;
-- warning: `> 50%` through `80%`;
-- critical: `> 80%`.
-
-**Status color does not identify the metric.** The `W`, `5h`, and `T` capsule text and their fixed identity dots identify Weekly, five-hour, and Today. Today is not a quota: `T 10%` means today’s usage is 10% of the historical peak day, not 90% remaining.
-
-Weekly and 5h use independent rate-limit freshness. Today uses independent Account Usage freshness, so a successful rate-only refresh cannot make stale Today data current.
+The `W`, `5h`, and `Live` capsule text and fixed identity dots identify each ring.
+Weekly and 5h use rate-limit freshness. Live Activity comes only from the existing
+read-only Accessibility geometry path; it does not use token counts or Account Usage.
+The inner layout slot is reserved for a future exact Context Remaining metric if
+Codex exposes the selected task safely to Pet Halo.
 
 ## Download
 

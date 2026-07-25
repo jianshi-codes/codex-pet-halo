@@ -345,7 +345,7 @@ final class HaloPanelController: HaloPanelControlling {
         }
         var metrics: [PetRingMetricKind] = [.weekly]
         if viewState.petRingModel.fiveHour != nil { metrics.append(.fiveHour) }
-        if viewState.petRingModel.todayTokens != nil { metrics.append(.today) }
+        if viewState.petRingModel.isLiveActivityActive { metrics.append(.contextSlot) }
         let side = PetRingLabelPlacementPolicy.side(
             panelFrame: panelFrame,
             visibleFrame: screen.visibleFrame,

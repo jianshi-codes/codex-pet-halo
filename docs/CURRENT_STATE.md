@@ -3,7 +3,9 @@
 - Milestone: M9 — Public Beta Release Readiness
 - Status: **PARTIAL — SOURCE RELEASE READY, SIGNED BINARY BLOCKED**
 - Closeout branch: `docs/beta2-release-closeout`
-- Product/UI: frozen at the accepted M8 behavior
+- Active maintenance branch: `codex/fix-pet-target-ambiguity`, Draft PR #17
+- Product/UI on the active branch: Beta 2 Ring geometry plus the conditional Live
+  Activity inner ring; this source behavior is not part of the published Beta 2 artifact
 - Published release: `v0.1.0-beta.2`, product version `0.1.0`, bundle build `2`
 - Repository: public at `jianshi-codes/codex-pet-halo`
 - Artifact: unsigned Universal ZIP; Developer ID signing and Apple notarization are not complete
@@ -28,7 +30,9 @@
 
 - CLI `0.145.0-alpha.18` remains the exact reviewed baseline. Exact registry entries carry the schema and production-semantic review evidence.
 - Newer versions at or above `0.145.0-alpha.18` and below `1.0.0` may run provisionally. Provisional sessions must pass initialize/initialized, account behavior, rate-limit decoding, and a usable exact 10,080-minute Weekly window at runtime.
-- The optional 5h window and Account Usage/Today remain capability-gated and may be absent; missing data is not estimated.
+- The optional 5h window and Account Usage remain capability-gated and may be absent;
+  missing data is not estimated. Account Usage remains available only to fallback cards,
+  not the Pet Ring.
 - Malformed, too-old, explicitly denied, 1.x, and runtime-incompatible versions fail closed. Required provisional runtime failure closes the owned child and disables automatic reconnect until manual Refresh or application restart.
 - Installed CLI `0.145.0-alpha.27` passed the sanitized provisional real smoke, including required Weekly percentage/reset decoding and clean owned-child shutdown. Optional 5h was absent and Account Usage was available on the validation host.
 - Provisional runtime success is session evidence only; it is not formal schema-review evidence and does not add the installed version to the reviewed registry.
