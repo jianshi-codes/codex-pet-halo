@@ -16,8 +16,16 @@ on:
         description: Beta tag matching the marketing version
         required: true
         type: string
+      distribution:
+        description: Distribution trust mode
+        required: true
+        default: signed-notarized
+        type: choice
+        options:
+          - signed-notarized
+          - unsigned
       publish:
-        description: Create the tag and GitHub prerelease after credentialed validation
+        description: Create the tag and GitHub prerelease after validation
         required: true
         default: false
         type: boolean
@@ -35,6 +43,7 @@ env:
   MARKETING_VERSION: ${{ inputs.marketing_version }}
   BUILD_NUMBER: ${{ inputs.build_number }}
   RELEASE_TAG: ${{ inputs.release_tag }}
+  RELEASE_DISTRIBUTION: ${{ inputs.distribution }}
 
 jobs:
   validate:
@@ -94,6 +103,9 @@ jobs:
       - name: Validate source and unsigned artifact
         run: |
           set -euo pipefail
+          if [[ "$RELEASE_DISTRIBUTION" == "unsigned" ]]; then
+            export RELEASE_ARTIFACT_QUALIFIER=unsigned
+          fi
           make public-exposure-audit
           make check
           make release-build
@@ -102,9 +114,94 @@ jobs:
           RELEASE_MODE=unsigned make release-verify
           git diff --check
 
+  publish_unsigned:
+    name: Publish unsigned developer prerelease
+    if: ${{ inputs.publish && github.ref == 'refs/heads/main' && inputs.distribution == 'unsigned' }}
+    needs: validate
+    runs-on: macos-15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Reject an existing release identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          set +e
+          git ls-remote --exit-code --refs origin "refs/tags/$RELEASE_TAG" >/dev/null 2>&1
+          tag_status=$?
+          set -e
+          case "$tag_status" in
+            0)
+              echo "Release tag already exists: $RELEASE_TAG" >&2
+              exit 1
+              ;;
+            2) ;;
+            *)
+              echo "Unable to prove release tag is unused: $RELEASE_TAG" >&2
+              exit 1
+              ;;
+          esac
+
+          set +e
+          release_response=$(gh api --include \
+            "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" 2>&1)
+          release_status=$?
+          set -e
+          if [[ "$release_status" -eq 0 ]]; then
+            echo "GitHub Release already exists: $RELEASE_TAG" >&2
+            exit 1
+          fi
+          if ! grep -Eq 'HTTP/[0-9.]+ 404|\(HTTP 404\)' <<<"$release_response"; then
+            echo "Unable to prove GitHub Release is unused: $RELEASE_TAG" >&2
+            exit 1
+          fi
+      - name: Install pinned XcodeGen
+        run: |
+          set -euo pipefail
+          readonly archive="$RUNNER_TEMP/xcodegen.zip"
+          curl --fail --show-error --silent --location --proto '=https' --tlsv1.2 \
+            --retry 3 --retry-all-errors --retry-delay 2 --connect-timeout 15 --max-time 120 \
+            --output "$archive" \
+            "https://github.com/yonaskolb/XcodeGen/releases/download/${XCODEGEN_VERSION}/xcodegen.zip"
+          printf '%s  %s\n' "$XCODEGEN_SHA256" "$archive" | shasum -a 256 --check
+          mkdir -p "$RUNNER_TEMP/xcodegen-release"
+          ditto -x -k "$archive" "$RUNNER_TEMP/xcodegen-release"
+          echo "$RUNNER_TEMP/xcodegen-release/xcodegen/bin" >> "$GITHUB_PATH"
+      - name: Build and verify unsigned artifact
+        run: |
+          set -euo pipefail
+          export RELEASE_ARTIFACT_QUALIFIER=unsigned
+          make release-build
+          make release-archive
+          make release-checksum
+          RELEASE_MODE=unsigned make release-verify
+      - name: Publish unsigned GitHub prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          readonly output="dist/$RELEASE_TAG"
+          readonly label="${RELEASE_TAG#v}"
+          gh release create "$RELEASE_TAG" \
+            --target "$GITHUB_SHA" \
+            --title "Pet Halo ${MARKETING_VERSION} Beta ${RELEASE_TAG##*.} — Unsigned Developer Preview" \
+            --notes-file "$output/RELEASE_NOTES.md" \
+            --prerelease \
+            --latest=false \
+            --fail-on-no-commits \
+            "$output/Pet-Halo-$label-unsigned-universal.zip" \
+            "$output/SHA256SUMS" \
+            "$output/release-manifest.json" \
+            "$output/RELEASE_NOTES.md"
+
   publish:
     name: Sign, notarize, and publish prerelease
-    if: ${{ inputs.publish && github.ref == 'refs/heads/main' }}
+    if: ${{ inputs.publish && github.ref == 'refs/heads/main' && inputs.distribution == 'signed-notarized' }}
     needs: validate
     runs-on: macos-15
     environment: public-beta
@@ -224,9 +321,12 @@ jobs:
             --title "Pet Halo ${MARKETING_VERSION} Beta ${RELEASE_TAG##*.}" \
             --notes-file "$output/RELEASE_NOTES.md" \
             --prerelease \
+            --latest=false \
+            --fail-on-no-commits \
             "$output/Pet-Halo-$label-universal.zip" \
             "$output/SHA256SUMS" \
-            "$output/release-manifest.json"
+            "$output/release-manifest.json" \
+            "$output/RELEASE_NOTES.md"
       - name: Remove temporary credentials
         if: ${{ always() }}
         env:
