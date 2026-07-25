@@ -2,83 +2,111 @@
 
 - Milestone: M9 — Public Beta Release Readiness
 - Status: **PARTIAL — SOURCE RELEASE READY, SIGNED BINARY BLOCKED**
-- Closeout branch: `docs/beta2-release-closeout`
-- Active maintenance branch: `codex/fix-pet-target-ambiguity`, Draft PR #17
-- Product/UI on the active branch: current Desktop multi-surface Pet selection,
-  immediate saved-center restoration after Hide/Wake, Beta 2 Ring geometry with
-  Today and unverified Live Activity removed, and an intentionally empty inner
-  context slot; this behavior is not part of the published Beta 2 artifact
-- Published release: `v0.1.0-beta.2`, product version `0.1.0`, bundle build `2`
-- Next candidate identity: `v0.1.0-beta.3`, product version `0.1.0`, bundle build
-  `3`; the tag and GitHub Release were confirmed unused on 2026-07-25 but have
-  not been created
+- Published release: `v0.1.0-beta.3`, product version `0.1.0`, bundle build `3`
+- Published source: `e8480a0443783e05dd871f5c248157633a84d9c5`
+- Release classification: public, non-draft, non-prerelease, latest; unsigned
+  and not notarized
+- Post-release branch: `codex/beta3-release-closeout`
+- Next unused identity: `v0.1.0-beta.4`, product version `0.1.0`, bundle build
+  `4`; both the remote tag and GitHub Release were confirmed absent on
+  2026-07-25
 - Repository: public at `jianshi-codes/codex-pet-halo`
-- Artifact: unsigned Universal ZIP; Developer ID signing and Apple notarization are not complete
 
-## Published Beta 2 evidence
+## Published Beta 3 evidence
 
-- PR #14 and PR #15 are merged into `main`; the annotated `v0.1.0-beta.2` tag peels to reviewed source commit `4e14938e06b50162a810cdaa5b195357e5239342`.
-- GitHub published `Pet Halo 0.1.0 Beta 2 — Unsigned Developer Preview` at `2026-07-21T08:43:44Z`: <https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.2>.
-- The live REST API reports target `main`, `draft: false`, `prerelease: false`; the `/releases/latest` endpoint resolves to Beta 2, so it is the latest Release.
-- The complete public asset set and API-reported sizes are:
-  - `Pet-Halo-0.1.0-beta.2-unsigned-universal.zip` — 1,382,813 bytes;
-  - `release-manifest.json` — 336 bytes;
-  - `RELEASE_NOTES.md` — 1,852 bytes;
-  - `SHA256SUMS` — 282 bytes.
-- A fresh public download contains exactly those four assets. `shasum -a 256 -c SHA256SUMS` passes for the ZIP, manifest, and release notes.
-- The manifest records product `Pet Halo`, version `0.1.0`, build `2`, tag `v0.1.0-beta.2`, bundle identifier `io.github.jianshicodes.PetHalo`, minimum macOS `14.0`, `arm64` and `x86_64`, `signing: unsigned`, `notarization: not-submitted`, and a `sourceCommit` equal to the peeled tag commit.
-- The extracted application reports `CFBundleShortVersionString = 0.1.0`, `CFBundleVersion = 2`, `CFBundleIdentifier = io.github.jianshicodes.PetHalo`, and `LSMinimumSystemVersion = 14.0`; `lipo -archs` reports both `x86_64` and `arm64`.
-- Downloaded `RELEASE_NOTES.md` is byte-identical to `docs/release-notes/v0.1.0-beta.2.md` at the published tag.
-- Beta 1, its tag, its four published assets, and its release notes remain unchanged.
+- PR #17 merged the current Desktop Pet targeting, Hide/Wake center restoration,
+  and truthful Weekly-only Pet Ring behavior at
+  `b95e268eb0a0769ff23c077fa45035bf4ab947f1`. PR #18 merged the unsigned
+  publication path at the released source commit
+  `e8480a0443783e05dd871f5c248157633a84d9c5`.
+- The validation-only workflow
+  [run 30162649808](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/30162649808)
+  passed at the released SHA without creating a tag or Release.
+- The publication workflow
+  [run 30162751853](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/30162751853)
+  passed at the same SHA. The unsigned publish job completed and the
+  Developer ID/notarization job was skipped.
+- GitHub published
+  [Pet Halo 0.1.0 Beta 3 — Unsigned Developer Preview](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.3)
+  at `2026-07-25T15:03:26Z`.
+- The live API reports target/source
+  `e8480a0443783e05dd871f5c248157633a84d9c5`, `draft: false`, and
+  `prerelease: false`. The user intentionally changed the release classification
+  after publication, and the `/releases/latest` endpoint resolves to Beta 3.
+- The complete public asset set is:
+  - `Pet-Halo-0.1.0-beta.3-unsigned-universal.zip` — 1,343,373 bytes,
+    SHA-256 `f57f97f51b6c0334faac1501456a7a6be2cefdd1ceb24ae04a3422407bd0ca54`;
+  - `release-manifest.json` — 336 bytes,
+    SHA-256 `a45d23a8665cfd48b5b8ee311f803adf4df72f15a9b95c5cecb840fa75d76416`;
+  - `RELEASE_NOTES.md` — 2,041 bytes,
+    SHA-256 `124e068996746f4e3b4a86193ff5e54a12df549e427f81f2b8ead4639271fa4e`;
+  - `SHA256SUMS` — 282 bytes,
+    SHA-256 `33a25f1d966c85be649e203b1bd3df17fbc8c28ab7bc2a887dbc74a80956644e`.
+- A fresh public download contained exactly those four files. Every
+  `SHA256SUMS` entry and every GitHub API asset digest matched.
+- The manifest records product `Pet Halo`, version `0.1.0`, build `3`, tag
+  `v0.1.0-beta.3`, bundle identifier `io.github.jianshicodes.PetHalo`, minimum
+  macOS `14.0`, `arm64` and `x86_64`, `signing: unsigned`,
+  `notarization: not-submitted`, and the released source commit.
+- The extracted public application reports the same version/build/identifier
+  and minimum macOS. `lipo -archs` reports `x86_64 arm64`; strict
+  `codesign --verify --deep --strict` reports that the code is not signed.
+- Downloaded `RELEASE_NOTES.md` is byte-identical to the tagged
+  `docs/release-notes/v0.1.0-beta.3.md`.
+- The public artifact launched, created its owned local Codex app-server, quit
+  normally, and left neither process running.
+- Beta 1 and Beta 2 tags, assets, and release notes were not modified.
 
-## CLI compatibility state
+## CLI and Desktop compatibility state
 
-- CLI `0.145.0-alpha.18` remains the exact reviewed baseline. Exact registry entries carry the schema and production-semantic review evidence.
-- Newer versions at or above `0.145.0-alpha.18` and below `1.0.0` may run provisionally. Provisional sessions must pass initialize/initialized, account behavior, rate-limit decoding, and a usable exact 10,080-minute Weekly window at runtime.
-- The optional 5h window and Account Usage remain capability-gated and may be absent;
-  missing data is not estimated. Account Usage remains available only to fallback cards,
-  not the Pet Ring.
-- Malformed, too-old, explicitly denied, 1.x, and runtime-incompatible versions fail closed. Required provisional runtime failure closes the owned child and disables automatic reconnect until manual Refresh or application restart.
-- Installed CLI `0.145.0-alpha.27` passed the sanitized provisional real smoke, including required Weekly percentage/reset decoding and clean owned-child shutdown. Optional 5h was absent and Account Usage was available on the validation host.
-- Installed CLI `0.146.0-alpha.3.1` passed the same sanitized provisional
-  read-only smoke on 2026-07-25: handshake, JSON-RPC envelopes, account/rate
-  reads, valid Weekly percentage/reset decoding, optional 5h omission, available
-  Account Usage, and clean shutdown.
-- Provisional runtime success is session evidence only; it is not formal schema-review evidence and does not add the installed version to the reviewed registry.
+- CLI `0.145.0-alpha.18` remains the exact reviewed baseline. Newer versions at
+  or above that version and below `1.0.0` may run provisionally only after
+  required runtime capability validation.
+- Installed CLI `0.146.0-alpha.3.1` passed the sanitized provisional read-only
+  smoke on 2026-07-25: handshake, JSON-RPC envelopes, account/rate reads,
+  valid Weekly percentage/reset decoding, optional 5h omission, available
+  Account Usage, and clean shutdown. This is session evidence, not formal schema
+  review.
+- Desktop `26.721.41059 (5848)` current multi-surface targeting, direct
+  Hide/Wake center restoration, and truthful inner-slot behavior are included
+  in Beta 3.
+- Optional 5h and Account Usage remain capability-gated. Account Usage is
+  available only in fallback cards, not the Pet Ring. Missing data is never
+  estimated.
 
-## Retained validation state
+## Final validation state
 
-- `make check`: PASS on the active release-preparation working tree on
-  2026-07-25, including generated-project drift, boundary/privacy scans, Debug
-  and Universal Release builds, 73 core Swift tests with one local-only smoke
-  skipped, 121 application Swift tests, and 43 deterministic Python tests.
-- M2 smoke: PASS — current CLI `0.146.0-alpha.3.1` passed the required
-  provisional read-only capabilities and completed clean owned-child
-  launch/shutdown.
-- M3 smoke: PASS.
-- M4 smoke: deterministic PASS; the standard-window target was unavailable during the retained live probe.
-- Unified M5–M7 gate: PASS — 110 deterministic tests plus one direct movement/Tuck Away/Wake/Quit flow.
+- `make check`: PASS on released `main`, including generated-project and
+  boundary/privacy checks, Debug and Universal Release builds, 73 core Swift
+  tests with one intended local-only skip, 121 application Swift tests, and 44
+  Python tests.
+- M2 and M3 smoke: PASS with installed CLI `0.146.0-alpha.3.1`.
+- M4 deterministic smoke: PASS; physical calibration/movement remains separate
+  observer evidence.
+- Unified Pet-following gate: 112 deterministic tests passed. The user
+  confirmed the final Move, Tuck Away, Wake, Quit, center, and Ring observation
+  flow on 2026-07-25.
 - M8 smoke: deterministic PASS.
-- Unsigned release archive verification and extracted launch/quit: PASS.
-- Equivalent isolated-host unsigned launch/quit: PASS; signed/notarized clean-machine acceptance remains incomplete.
-- `make public-exposure-audit`: PASS — all reachable Git blobs inspected with one exact synthetic fixture allowance.
-- Fresh published Beta 2 download, checksums, manifest source commit, bundle metadata, Universal architectures, and release-note identity: PASS.
-- Draft PR #17 CI: PASS on the active implementation and release-preparation
-  documentation head observed on 2026-07-25.
+- `make public-exposure-audit`: PASS across 1,768 reachable Git blobs with one
+  exact synthetic fixture allowance.
+- Local unsigned archive verification and isolated clean-preferences
+  launch/quit: PASS.
+- Fresh public-download checksum, digest, manifest, bundle, Universal
+  architecture, release-note identity, launch, and owned-child shutdown:
+  PASS.
 
-## Remaining release gate
+## Remaining trust gate
 
-- Source and unsigned Beta 2 publication: complete.
-- PR #17 remains Draft and unmerged; Beta 3 must start from its reviewed, clean
-  merge commit on `main`.
-- `public-beta` does not currently exist, so required reviewers and release
-  secrets are not configured behind the workflow environment.
-- The Beta 3 candidate notes and unused identity do not create or
-  authorize a tag, GitHub Release, signing operation, notarization submission,
-  or publication.
 - Developer ID signing: not complete.
-- Apple notarization: not complete.
-- Stapling and Gatekeeper signed verification: not complete.
-- Signed clean-machine acceptance: not complete.
+- Apple notarization and stapling: not complete.
+- Gatekeeper signed verification: not applicable to this unsigned artifact and
+  not claimed.
+- Signed clean-machine acceptance: not complete. The local isolated
+  clean-preferences launch is not presented as a separate clean-machine test.
+- The `public-beta` environment and signing/notarization credentials remain
+  unnecessary for the published unsigned path and unavailable for a future
+  signed path.
 
-Any future signed publication must use a new tag and build number. Neither Beta 1 nor Beta 2 may be overwritten, retagged, reclassified, or presented as signed/notarized.
+Any future publication must use a new tag and build number. Beta 1, Beta 2, and
+Beta 3 may not be overwritten, retagged, reclassified as signed/notarized, or
+silently replaced.

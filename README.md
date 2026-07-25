@@ -6,7 +6,7 @@
 
 Pet Halo is a macOS menu-bar companion that places a transparent Usage ring around Codex Pet, with safe Codex-window and free-floating fallbacks.
 
-[![Download v0.1.0-beta.2](https://img.shields.io/badge/download-v0.1.0--beta.2-5865F2)](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.2)
+[![Download v0.1.0-beta.3](https://img.shields.io/badge/download-v0.1.0--beta.3-5865F2)](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.3)
 [![CI](https://github.com/jianshi-codes/codex-pet-halo/actions/workflows/ci.yml/badge.svg)](https://github.com/jianshi-codes/codex-pet-halo/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-black)
@@ -54,9 +54,9 @@ the selected task safely to Pet Halo.
 
 ## Download
 
-[Download Pet Halo v0.1.0-beta.2 from its tag-specific GitHub Release page.](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.2)
+[Download Pet Halo v0.1.0-beta.3 from its tag-specific GitHub Release page.](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.3)
 
-> **Unsigned preview warning:** `Pet-Halo-0.1.0-beta.2-unsigned-universal.zip` is unsigned and not notarized by Apple. It is not a Developer ID release, and macOS may block its first launch. Only override Gatekeeper after independently verifying the GitHub source, release checksum, and repository provenance.
+> **Unsigned preview warning:** `Pet-Halo-0.1.0-beta.3-unsigned-universal.zip` is unsigned and not notarized by Apple. It is not a Developer ID release, and macOS may block its first launch. Only override Gatekeeper after independently verifying the GitHub source, release checksum, and repository provenance.
 
 Before downloading, confirm the installed CLI version:
 
@@ -74,7 +74,7 @@ The reviewed baseline remains the strongest evidence. Newer pre-1.0 CLI versions
 | Codex CLI provisional range | `>= 0.145.0-alpha.18` and `< 1.0.0` | Session-only acceptance after required runtime capability validation; known-broken versions may be denied |
 | Codex Desktop | `26.715.31925 (5551)` | Previously validated Pet Accessibility geometry |
 | Codex Desktop | `26.715.52143 (5591)` | Current M9 Route A and complete Pet-following gate validated |
-| Codex Desktop | `26.721.41059 (5848)` | Active-source candidate validated for the current multi-surface topology; not included in published Beta 2 |
+| Codex Desktop | `26.721.41059 (5848)` | Current multi-surface topology validated and included in Beta 3 |
 
 Only exact registry entries carry reviewed semantic evidence. Provisional compatibility does not claim schema review: initialize/initialized, JSON-RPC envelopes, account behavior, rate-limit decoding, and a usable exact 10,080-minute Weekly window must succeed at runtime. See [Compatibility](docs/COMPATIBILITY.md).
 
@@ -88,7 +88,7 @@ Only exact registry entries carry reviewed semantic evidence. Provisional compat
 
 ## Installation and first run
 
-1. Download `Pet-Halo-0.1.0-beta.2-unsigned-universal.zip`, `SHA256SUMS`, `release-manifest.json`, and `RELEASE_NOTES.md` from the [Beta 2 Release](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.2).
+1. Download `Pet-Halo-0.1.0-beta.3-unsigned-universal.zip`, `SHA256SUMS`, `release-manifest.json`, and `RELEASE_NOTES.md` from the [Beta 3 Release](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.3).
 2. In the directory containing all four assets, verify the archive, manifest, and release notes:
 
    ```sh
@@ -167,16 +167,17 @@ Xcode 26.4.1, Swift 6.3.1, and XcodeGen 2.46.0 are the current reviewed toolchai
 ```sh
 make bootstrap
 make check
-make release-unsigned-preview MARKETING_VERSION=0.1.0 BUILD_NUMBER=3 RELEASE_TAG=v0.1.0-beta.3
+make release-unsigned-preview MARKETING_VERSION=0.1.0 BUILD_NUMBER=4 RELEASE_TAG=v0.1.0-beta.4
 ```
 
-The unsigned preview target requires a clean source tree and produces a local
-`Pet-Halo-0.1.0-beta.3-unsigned-universal.zip` candidate. It does not create a
+After the next candidate's release notes are created and reviewed, the unsigned
+preview target requires a clean source tree and produces a local
+`Pet-Halo-0.1.0-beta.4-unsigned-universal.zip` candidate. It does not create a
 tag or GitHub Release. Developer ID signing, Apple notarization, clean-machine
 acceptance, and publication remain separate hold points described in the
-[Release checklist](docs/RELEASE_CHECKLIST.md). The Download section continues
-to point to the immutable published Beta 2 artifact until a later release is
-actually published.
+[Release checklist](docs/RELEASE_CHECKLIST.md). The Download section points to
+the immutable published Beta 3 artifact; a later candidate must use a new tag
+and build number.
 
 ## Contributing and security
 

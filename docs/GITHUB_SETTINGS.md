@@ -1,6 +1,9 @@
 # GitHub Repository Settings
 
-Observed on 2026-07-21 with `gh repo view` and GitHub REST API calls against `jianshi-codes/codex-pet-halo`. “Observed” means the API confirmed the state; “Recommended” is a manual action and is not claimed as enabled.
+Repository settings were observed on 2026-07-21 with `gh repo view` and GitHub
+REST API calls against `jianshi-codes/codex-pet-halo`. Environment, tag, and
+Release state was refreshed on 2026-07-25. “Observed” means the API confirmed
+the state; “Recommended” is a manual action and is not claimed as enabled.
 
 ## Observed state
 
@@ -24,8 +27,8 @@ Observed on 2026-07-21 with `gh repo view` and GitHub REST API calls against `ji
 | Private vulnerability reporting | Disabled |
 | Environments | None returned; `public-beta` does not currently exist |
 | Pages | No Pages site returned (HTTP 404) |
-| Tags | `v0.1.0-beta.2` peels to `4e14938e06b50162a810cdaa5b195357e5239342`; `v0.1.0-beta.1` resolves to `4fe6f0e4926a1acd6a8e6faaf1a34be430eaddc1` |
-| Releases | `v0.1.0-beta.2`: target `main`, published `2026-07-21T08:43:44Z`, non-draft, non-prerelease, latest; `v0.1.0-beta.1`: target `main`, published `2026-07-21T05:17:24Z`, non-draft, non-prerelease, not latest |
+| Tags | `v0.1.0-beta.3` resolves to `e8480a0443783e05dd871f5c248157633a84d9c5`; `v0.1.0-beta.2` peels to `4e14938e06b50162a810cdaa5b195357e5239342`; `v0.1.0-beta.1` resolves to `4fe6f0e4926a1acd6a8e6faaf1a34be430eaddc1` |
+| Releases | `v0.1.0-beta.3`: target/source `e8480a0443783e05dd871f5c248157633a84d9c5`, published `2026-07-25T15:03:26Z`, non-draft, non-prerelease, latest after the user's explicit promotion; Beta 2 and Beta 1 remain non-draft, non-prerelease, and not latest |
 
 The complete observed label list includes the `bug` and `compatibility` labels required by the issue forms.
 
@@ -38,9 +41,9 @@ The complete observed label list includes the `bug` and `compatibility` labels r
 - Enable private vulnerability reporting so the Security Policy and security contact link lead to an available private reporting path.
 - Keep Pages unconfigured unless a separately reviewed Pages publication is intended.
 
-No branch-protection/ruleset, environment, vulnerability-reporting, Pages, visibility, tag, or Release setting was changed automatically in this closeout.
-
-Release-preparation recheck on 2026-07-25 confirmed that the classic
-branch-protection endpoint still reports no classic protection and
-`public-beta` still returns not found. The active ruleset details above were not
-re-audited in that narrower check. No setting was changed.
+The 2026-07-25 refresh confirmed zero environments, including no `public-beta`.
+The active ruleset details above were not re-audited in that narrower refresh.
+The Beta 3 publication workflow created the tag and four-asset Release; the user
+then explicitly promoted it to non-prerelease Latest state. No
+branch-protection/ruleset, environment, vulnerability-reporting, Pages, or
+visibility setting was changed during this release.

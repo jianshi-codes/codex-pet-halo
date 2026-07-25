@@ -4,17 +4,17 @@ This runbook is the deterministic operator contract for a future Pet Halo Beta.
 It is written so Codex can execute the mechanical work end to end while stopping
 at authority, credential, Apple, GitHub-environment, and clean-machine gates.
 
-The current candidate inputs are:
+The next reserved defaults are:
 
 | Input | Value |
 | --- | --- |
 | Product version | `0.1.0` |
-| Bundle build | `3` |
-| Tag | `v0.1.0-beta.3` |
+| Bundle build | `4` |
+| Tag | `v0.1.0-beta.4` |
 | Distribution | `unsigned` |
-| Release notes | `docs/release-notes/v0.1.0-beta.3.md` |
-| Signed artifact | `Pet-Halo-0.1.0-beta.3-universal.zip` |
-| Local unsigned evidence | `Pet-Halo-0.1.0-beta.3-unsigned-universal.zip` |
+| Release notes | `docs/release-notes/v0.1.0-beta.4.md` — create and review before `PREPARED` |
+| Signed artifact | `Pet-Halo-0.1.0-beta.4-universal.zip` |
+| Local unsigned evidence | `Pet-Halo-0.1.0-beta.4-unsigned-universal.zip` |
 
 Every execution must re-read these values from the reviewed source. Do not reuse
 this table after a release closeout advances the next candidate identity.
@@ -48,6 +48,8 @@ Codex must record one state at a time:
 5. `VERIFIED` — downloaded public assets, tag/source identity, signatures,
    notarization, checksums, launch, and clean-machine acceptance pass.
 6. `DOCS_PR_OPEN` — post-release truth is committed to a separate Draft PR.
+7. `PROMOTED` — the reviewed post-release documentation is merged and the
+   verified prerelease is explicitly promoted to Latest.
 
 Any failed requirement leaves the process at its last completed state and stops.
 
@@ -95,8 +97,8 @@ Run both checks and treat any result other than the documented “not found” s
 as a blocker:
 
 ```sh
-git ls-remote --exit-code --refs origin refs/tags/v0.1.0-beta.3
-gh release view v0.1.0-beta.3 --json tagName,name,isDraft,isPrerelease,url
+git ls-remote --exit-code --refs origin refs/tags/v0.1.0-beta.4
+gh release view v0.1.0-beta.4 --json tagName,name,isDraft,isPrerelease,url
 ```
 
 For an unused identity, `git ls-remote --exit-code` returns status `2` and
@@ -141,15 +143,15 @@ make m8-smoke
 make public-exposure-audit
 make release-unsigned-preview \
   MARKETING_VERSION=0.1.0 \
-  BUILD_NUMBER=3 \
-  RELEASE_TAG=v0.1.0-beta.3
+  BUILD_NUMBER=4 \
+  RELEASE_TAG=v0.1.0-beta.4
 ```
 
 Keep deterministic tests, live smoke, user interaction, and clean-machine
 evidence as separate rows. A smoke test that could not observe its required
 interaction is not a pass.
 
-The unsigned command must produce, under `dist/v0.1.0-beta.3/`, only:
+The unsigned command must produce, under `dist/v0.1.0-beta.4/`, only:
 
 - the local unsigned Universal ZIP;
 - `release-manifest.json`;
@@ -169,8 +171,8 @@ The manual workflow must run from the same reviewed `main` commit:
 gh workflow run release.yml \
   --ref main \
   -f marketing_version=0.1.0 \
-  -f build_number=3 \
-  -f release_tag=v0.1.0-beta.3 \
+  -f build_number=4 \
+  -f release_tag=v0.1.0-beta.4 \
   -f distribution=unsigned \
   -f publish=false
 ```
@@ -218,8 +220,8 @@ For an unsigned developer preview:
 gh workflow run release.yml \
   --ref main \
   -f marketing_version=0.1.0 \
-  -f build_number=3 \
-  -f release_tag=v0.1.0-beta.3 \
+  -f build_number=4 \
+  -f release_tag=v0.1.0-beta.4 \
   -f distribution=unsigned \
   -f publish=true
 ```
@@ -234,8 +236,8 @@ For a signed and notarized prerelease:
 gh workflow run release.yml \
   --ref main \
   -f marketing_version=0.1.0 \
-  -f build_number=3 \
-  -f release_tag=v0.1.0-beta.3 \
+  -f build_number=4 \
+  -f release_tag=v0.1.0-beta.4 \
   -f distribution=signed-notarized \
   -f publish=true
 ```
@@ -260,7 +262,7 @@ Download into a new temporary directory; never verify against local build output
 
 ```sh
 release_tmp="$(mktemp -d "${TMPDIR:-/tmp}/pet-halo-release-postflight.XXXXXX")"
-gh release download v0.1.0-beta.3 --dir "$release_tmp"
+gh release download v0.1.0-beta.4 --dir "$release_tmp"
 (
   cd "$release_tmp"
   shasum -a 256 -c SHA256SUMS
@@ -340,7 +342,22 @@ git diff --check
 Commit, push, open a Draft PR, and wait for required CI. Do not merge the
 post-release documentation PR without its own review/authorization.
 
-## R10 — Closeout handoff
+## R10 — Promote and close out
+
+Keep the verified Release as a prerelease while the post-release documentation
+Draft PR is under review. After that PR is approved and merged, refresh `main`
+and confirm that its current documentation points to the exact published tag,
+trust level, and assets. Promotion is a separate public metadata change: require
+the user's explicit approval, recheck tag/source and assets, then run:
+
+```sh
+gh release edit v0.1.0-beta.4 --prerelease=false --latest
+```
+
+Requery the Release and `/releases/latest`. Require non-draft,
+non-prerelease, Latest state without changing the tag, title, notes, or assets.
+If documentation is not merged or promotion is not explicitly authorized,
+leave the verified prerelease unchanged and report `DOCS_PR_OPEN`.
 
 The final handoff must report:
 
@@ -353,5 +370,6 @@ The final handoff must report:
 - remaining risks or blocked external actions;
 - confirmation that no prior release identity was changed.
 
-Mark the release complete only when `VERIFIED` and the post-release documentation
-truth is safely handed off. `DOCS_PR_OPEN` is not the same as merged closeout.
+Mark the full release cycle complete only when `PROMOTED` is verified. A
+published and verified prerelease with a Draft docs PR remains safely at
+`DOCS_PR_OPEN`; it is not the same as merged closeout.
