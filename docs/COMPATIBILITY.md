@@ -24,6 +24,20 @@ M9 regenerated 341 JSON schema files from the current local CLI into a temporary
 
 For Desktop `26.715.52143 (5591)`, the consolidated M9 Pet-following gate directly observed one unique Route A Pet core moving while the resolved Codex standard window remained stationary, automatic visual-center attachment, Tuck Away fallback, Wake recovery, Pet Ring selection, non-activation, and complete Pet Halo/owned-child shutdown. M5–M7 use this one live flow rather than repeating the same interaction across milestone scripts.
 
+Desktop `26.721.41059 (5848)` changed the visible-Pet Route A topology to three
+`AXDialog` and three `AXSystemDialog` surfaces across five logical frames. One
+near-square frame is corroborated by two coincident surfaces, while two separate
+near-square `AXSystemDialog` surfaces are singletons. The larger SystemDialog is
+the live Pet core; the smaller one is a control, while the coincident Dialog frame
+can retain stale geometry across Tuck Away and Wake. Pet selection now chooses
+the unique largest near-square SystemDialog and fails closed when the largest
+area is tied. If no eligible SystemDialog exists, exactly one corroborated Dialog
+frame wins, followed by the existing unique-Dialog compatibility fallback.
+The production selector, Route A probe, and center-lock smoke compile the same
+pure selection policy. A sanitized read-only structural probe resolves the
+current topology uniquely; complete interaction validation remains a separate
+local gate before this Desktop build is added to the supported registry.
+
 The M9 validation host is macOS 26.5.2 (Build 25F84), arm64, with Xcode 26.4.1 (17E202), Swift 6.3.1, Codex CLI 0.145.0-alpha.18, and Codex Desktop 26.715.52143 (5591). Host observations are evidence, not a broad compatibility promise.
 
 On 2026-07-21, installed CLI `0.145.0-alpha.27` passed the provisional runtime path: executable discovery; version parsing and provisional decision; initialize/initialized; valid JSON-RPC envelopes; account and rate-limit reads; a usable exact Weekly window with valid percentage and decoded reset timestamp; optional 5h omission; available Account Usage; and clean owned-child shutdown. This is session runtime evidence only. It does not add `0.145.0-alpha.27` to the reviewed registry or claim a schema review.
@@ -158,7 +172,7 @@ Synthetic tests cover a main display at `(0,0)`, a negative-X left display, a ne
 | --- | --- |
 | Route | `ROUTE_A — PET_ACCESSIBILITY_WINDOW` on the validated Codex Desktop build |
 | Process boundary | Reuse exact `com.openai.codex` selection; no generic process or window-server scan |
-| Pet selection | visible, non-minimized, finite positive near-square `AXWindow/AXDialog`; half-point overlap collapse; exactly one logical frame or fail closed |
+| Pet selection | visible, non-minimized, finite positive near-square `AXWindow/AXDialog` or `AXWindow/AXSystemDialog`; half-point overlap collapse; unique largest SystemDialog first, otherwise one corroborated Dialog frame, then one Dialog frame; fail closed for tied largest or persistent ambiguity |
 | AX data | application window list, role, subrole, minimized, hidden, position, and size only |
 | AX events | Pet moved, resized, destroyed, and application window created |
 | Burst handling | 80 ms callback coalescing; 160 ms stability recheck for non-atomic overlapping layers |
@@ -167,7 +181,7 @@ Synthetic tests cover a main display at `(0,0)`, a negative-X left display, a ne
 | Recovery | preserve Pet anchor; retry Pet discovery every five seconds while fallback is active; stale generations ignored |
 | Interaction | existing non-activating panel, compact click-through, expanded scrolling, and display containment remain unchanged |
 
-Direct discovery observed the Pet core move independently while the standard Codex window stayed stationary, disappear on Tuck Away, and return on Wake. Activity UI could move above or below Pet and expose separate controls, so neither relative position nor button count is used. Two overlapping core surfaces can update non-atomically; persistent ambiguity activates fallback rather than guessing.
+Direct discovery observed the Pet core move independently while the standard Codex window stayed stationary, disappear on Tuck Away, and return on Wake. Activity UI could move above or below Pet and expose separate controls, so neither relative position nor button count is used. Current Desktop exposes one larger near-square SystemDialog Pet core and one smaller near-square SystemDialog control; the unique area ordering remains stable across idle and activity states. Coincident Dialog identities are only a compatibility fallback because their frame may remain stale after Wake. A tied largest SystemDialog, multiple corroborated fallback frames, or persistent unresolved singleton candidates activates fallback rather than guessing.
 
 The official [Codex Pets documentation](https://learn.chatgpt.com/docs/pets.md) does not define an Accessibility compatibility contract. M5 is consequently validated against the recorded Codex Desktop build and must fail closed when future builds change the observed role/subrole, geometry layering, or notification behavior.
 

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0324F3721AAE50650FAA2130 /* WindowFollowingPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8EF462D6DF607F186DFF063 /* WindowFollowingPreferences.swift */; };
+		05B6C567EC80C39A178AA100 /* PetWindowSelectionPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45831007BCD5848B6E013B1E /* PetWindowSelectionPolicy.swift */; };
 		06FF249CF73ABA9AFC9DAAB5 /* HaloPresentationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30A1747435125A348828A345 /* HaloPresentationModel.swift */; };
 		07DC8F21E84C010449858D59 /* WindowFollowingModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 604DA30ACBFED09B1C88E181 /* WindowFollowingModelsTests.swift */; };
 		171B9C8965C06CA84D826CE4 /* PetHaloApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D8C3263630349D92C95DE2 /* PetHaloApp.swift */; };
@@ -137,6 +138,7 @@
 		31E285D59ED6AC3404B469E7 /* PetHaloCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PetHaloCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		35AFD2CD8C45A1680B00269C /* WindowFollowingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowFollowingService.swift; sourceTree = "<group>"; };
 		44D0290C78C6A5EE7675F17E /* JSONRPCClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONRPCClient.swift; sourceTree = "<group>"; };
+		45831007BCD5848B6E013B1E /* PetWindowSelectionPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetWindowSelectionPolicy.swift; sourceTree = "<group>"; };
 		46B738427C1831977BD2BC5E /* AppVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppVersion.swift; sourceTree = "<group>"; };
 		5311A709BB4CD6252DEEF841 /* PetRingPresentationMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PetRingPresentationMapper.swift; sourceTree = "<group>"; };
 		536E0F03E1EE78F2BEF06FA7 /* WindowFollowingModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowFollowingModels.swift; sourceTree = "<group>"; };
@@ -334,6 +336,7 @@
 			isa = PBXGroup;
 			children = (
 				CB9FACC16B52113909B52C8B /* PetTargetModels.swift */,
+				45831007BCD5848B6E013B1E /* PetWindowSelectionPolicy.swift */,
 				C112BE358820FE91C44D276C /* SystemMotionPreference.swift */,
 				12DC814CFCAB6851D7A8D8AB /* SystemPetTargetDiscovery.swift */,
 				0E7FB4ADDC2F920A77C7B6AC /* SystemWindowFollowing.swift */,
@@ -675,6 +678,7 @@
 				67CC323020778A59EC11E8AF /* PetRingPresentationPolicy.swift in Sources */,
 				87DEF4461EDD118E7A3D8FE8 /* PetRingView.swift in Sources */,
 				ECD8CFE1A0A3D3729DCA82A2 /* PetTargetModels.swift in Sources */,
+				05B6C567EC80C39A178AA100 /* PetWindowSelectionPolicy.swift in Sources */,
 				3573EF5FCC1C3EDEE9EC8DAB /* SystemMotionPreference.swift in Sources */,
 				44196C28F04B02B682757680 /* SystemPetTargetDiscovery.swift in Sources */,
 				BDB8F8E7A3D150F459B932D9 /* SystemWindowFollowing.swift in Sources */,

@@ -36,12 +36,16 @@ if ! CONFIGURATION=Debug DERIVED_DATA_PATH="$derived_data_path" ./Scripts/build.
     echo "Pet-following smoke blocker: current application build failed" >&2
     exit 1
 fi
-if ! xcrun swiftc "$repository_root/Tools/M5PetDiscovery/main.swift" \
+if ! xcrun swiftc \
+    "$repository_root/PetHalo/WindowFollowing/PetWindowSelectionPolicy.swift" \
+    "$repository_root/Tools/M5PetDiscovery/main.swift" \
     -o "$route_a_probe" >/dev/null 2>&1; then
     echo "Pet-following smoke blocker: Route A probe compilation failed" >&2
     exit 1
 fi
-if ! xcrun swiftc "$repository_root/Tools/M6CenterLockSmoke/main.swift" \
+if ! xcrun swiftc \
+    "$repository_root/PetHalo/WindowFollowing/PetWindowSelectionPolicy.swift" \
+    "$repository_root/Tools/M6CenterLockSmoke/main.swift" \
     -o "$ring_probe" >/dev/null 2>&1; then
     echo "Pet-following smoke blocker: Ring probe compilation failed" >&2
     exit 1
