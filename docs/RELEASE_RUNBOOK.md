@@ -130,7 +130,14 @@ prepublication preparation.
 
 ## R4 — Local validation and unsigned evidence
 
-From the reviewed clean source, run:
+First reuse valid evidence already collected from the exact candidate source.
+When the user has explicitly accepted the affected UI behavior through direct
+manual testing, record that acceptance and do not repeat the interactive
+M3/M4/Pet/M8 smoke sequence during release preparation. Run only missing or
+source-invalidated checks, followed by the release-specific audit and packaging
+steps.
+
+For a candidate without current evidence, the complete validation surface is:
 
 ```sh
 make m8-tests
@@ -148,8 +155,10 @@ make release-unsigned-preview \
 ```
 
 Keep deterministic tests, live smoke, user interaction, and clean-machine
-evidence as separate rows. A smoke test that could not observe its required
-interaction is not a pass.
+evidence as separate rows. Evidence reuse must name the exact source and
+environment. A smoke test that could not observe its required interaction is
+not a pass, and accepted direct user testing must not be duplicated merely to
+complete the release checklist.
 
 The unsigned command must produce, under `dist/v0.1.0-beta.4/`, only:
 

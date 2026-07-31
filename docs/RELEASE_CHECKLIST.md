@@ -73,17 +73,25 @@ overwrite, retag, or upload with `--clobber` to an existing release identity.
 ## Source and compatibility for a future Beta
 
 - [x] Reserve the next unused identity as `v0.1.0-beta.4` and build `4`;
-  `git ls-remote` and `gh release view` both reported it absent on 2026-07-25.
-- [ ] Start from a reviewed, clean `main` commit.
-- [ ] Confirm exact CLI and Desktop versions in `docs/COMPATIBILITY.md`.
-- [ ] Generate current CLI schemas into a temporary directory and review every
-  production semantic required by the new source.
-- [ ] Run `make check`, M2–M4 smoke, the single
-  `make pet-following-gate`, and M8 smoke.
-- [ ] Run `make public-exposure-audit` from a full clone containing every branch
+  `git ls-remote` and `gh release view` both reported it absent again on
+  2026-07-31.
+- [x] Start from clean `main` commit
+  `4dbf55c6c13580f54010d4c5f4c0cb8e030ce977`, matching `origin/main`.
+- [x] Record installed CLI `0.146.0-alpha.9.2` and Codex Desktop
+  `26.727.40816 (6067)` candidate evidence in `docs/COMPATIBILITY.md`.
+- [x] Generate 349 current CLI schemas into a temporary directory and review the
+  production-used initialization, account, Rate Limit, and Account Usage
+  semantics; unrelated new methods and unused account metadata do not expand
+  the production protocol surface.
+- [x] User confirmed direct final activity-above and activity-below Halo opening
+  behavior on Codex Desktop `26.727.40816 (6067)` on 2026-07-31; no repeat of
+  the older interactive M3/M4/Pet/M8 smoke sequence is required.
+- [x] Reuse deterministic validation already collected from the exact source;
+  do not rerun checks solely for release-preparation bookkeeping.
+- [x] Run `make public-exposure-audit` from a full clone containing every branch
   and tag.
 - [ ] Reconfirm immediately before release that the selected tag and Release are
-  unused; the 2026-07-25 Beta 4 observation is not publication evidence.
+  unused; the 2026-07-31 Beta 4 observation is not publication evidence.
 
 ## Unsigned preview build
 

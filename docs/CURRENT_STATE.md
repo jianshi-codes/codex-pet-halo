@@ -9,8 +9,40 @@
 - Post-release branch: `codex/beta3-release-closeout`
 - Next unused identity: `v0.1.0-beta.4`, product version `0.1.0`, bundle build
   `4`; both the remote tag and GitHub Release were confirmed absent on
-  2026-07-25
+  2026-07-31
 - Repository: public at `jianshi-codes/codex-pet-halo`
+
+## Beta 4 preparation state
+
+- Candidate identity: `v0.1.0-beta.4`, product version `0.1.0`, bundle build
+  `4`, unsigned and not notarized.
+- The current source fix is
+  `4dbf55c6c13580f54010d4c5f4c0cb8e030ce977` on `main` and `origin/main`.
+  It restores symmetric activity-card direction handling for the current Codex
+  Desktop without changing Pet selection, midpoint tracking, or the saved
+  visual-center offset.
+- Current Codex Desktop `26.727.40816 (6067)` exposes the Pet core, a wider
+  Pet-spanning container, narrow voice/resize controls, and one or more activity
+  cards as separate Accessibility windows. The candidate excludes the
+  Pet-spanning container and narrow controls, resolves same-side activity
+  stacks, and retains the prior opening for mixed-side ambiguity.
+- The user confirmed final direct visual acceptance on 2026-07-31 with the Pet
+  at both the top and bottom of the screen: activity cards occupied the matching
+  Halo opening and the saved Pet center remained unchanged.
+- Deterministic validation on the source fix passed 115 M7 tests. The release
+  preparation branch passed the full
+  check: 73 core Swift tests with one intended local-only skip, 124 application
+  Swift tests, and 45 Python tests.
+- Installed CLI `0.146.0-alpha.9.2` generated 349 temporary JSON schema files.
+  Production-used initialization and Account Usage shapes matched; the observed
+  account/rate differences affected only fields Pet Halo does not decode. The
+  sanitized provisional M2 smoke passed required account, Weekly, Account Usage,
+  JSON-RPC, and clean-shutdown capabilities.
+- The user explicitly accepted the direct manual evidence and requested that
+  release preparation not repeat the older M3/M4/Pet/M8 smoke sequence in this
+  or future releases. The public-exposure audit passed; the local unsigned
+  candidate and GitHub validation workflow remain pending. No Beta 4 tag or
+  GitHub Release exists.
 
 ## Published Beta 3 evidence
 
