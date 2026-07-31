@@ -16,13 +16,26 @@ The known-incompatible denylist is initially empty. It is a safety override for 
 | --- | --- | --- | --- |
 | Codex CLI | `0.145.0-alpha.18` | Supported | Exact reviewed baseline; all production-used schemas and semantics reviewed |
 | Codex CLI | `0.146.0-alpha.3.1` | Provisional session PASS | Current installed CLI passed required read-only runtime capabilities and clean shutdown on 2026-07-25; no schema-review claim |
+| Codex CLI | `0.146.0-alpha.9.2` | Provisional session PASS | Beta 4 preparation generated current temporary schemas and passed required read-only runtime capabilities plus clean shutdown on 2026-07-31; no reviewed-registry claim |
 | Codex Desktop | `26.715.31925 (5551)` | Supported | Route A Pet/window Accessibility behavior previously validated |
 | Codex Desktop | `26.715.52143 (5591)` | Supported | Current M9 Route A and complete Pet-following gate validated |
 | Codex Desktop | `26.721.41059 (5848)` | Supported in Beta 3 | Published structural policy plus direct Hide/Wake/center interaction, deterministic tests, final-main smoke, and CI evidence |
+| Codex Desktop | `26.727.40816 (6067)` | Beta 4 candidate PASS | Geometry-only inspection and mirrored deterministic tests cover the Pet-spanning container, narrow voice/resize controls, and stacked activity cards; the user confirmed final direct two-sided opening behavior on 2026-07-31 |
 
 The CLI registry covers these semantic groups: initialize/initialized; `account/read`; `account/rateLimits/read`; `account/rateLimits/updated`; `account/usage/read`; and JSON-RPC request, response, error, and notification envelopes. It also covers exact rate-limit window durations, sparse update behavior, Account Usage summary/daily buckets, independent component freshness, and account-data clearing boundaries.
 
 M9 regenerated 341 JSON schema files from its then-current local CLI into a temporary directory. All 340 individual schema files were byte-identical to the retained `0.145.0-alpha.18` evidence. The aggregate v2 schema differed only in object ordering; both canonical sorted documents had SHA-256 `d7da14579e98011d40ad9c97a376cccfd69d0da5b2eb174b32d5bb6bd9159b6b`. This confirms schema stability for the already-supported CLI version but does not replace semantic review.
+
+Beta 4 preparation generated 349 JSON schema files from installed CLI
+`0.146.0-alpha.9.2` into a temporary directory. `InitializeResponse` and
+`GetAccountTokenUsageResponse` canonically match the retained reviewed evidence.
+The rate-limit response adds only the unused `ent26` plan enum value.
+`GetAccountResponse` also changes unused Amazon Bedrock credential metadata.
+Pet Halo decodes neither plan nor credential details: its production fields for
+account availability, rate-limit windows, and Account Usage retain their
+reviewed shapes. Eight additional generated method types are outside the
+production request/notification set. This is bounded compatibility evidence,
+not an addition to the exact reviewed registry.
 
 For Desktop `26.715.52143 (5591)`, the consolidated M9 Pet-following gate directly observed one unique Route A Pet core moving while the resolved Codex standard window remained stationary, automatic visual-center attachment, Tuck Away fallback, Wake recovery, Pet Ring selection, non-activation, and complete Pet Halo/owned-child shutdown. M5–M7 use this one live flow rather than repeating the same interaction across milestone scripts.
 
@@ -53,6 +66,12 @@ JSON-RPC envelopes, account and rate-limit reads, a usable Weekly percentage and
 decoded reset timestamp, optional 5h omission, available Account Usage, and clean
 owned-child shutdown. This is also session-only evidence and does not add the
 version to the reviewed registry.
+
+On 2026-07-31, the sanitized read-only smoke passed for installed CLI
+`0.146.0-alpha.9.2`: provisional version decision, initialize/initialized,
+valid JSON-RPC envelopes, account and rate-limit reads, available exact Weekly
+percentage and decoded reset timestamp, optional 5h omission, available Account
+Usage, and clean owned-child shutdown. This remains session-only evidence.
 
 ## Sanitized compatibility reports
 
@@ -146,7 +165,7 @@ The M3 panel itself does not discover or inspect Codex. M4 through M6 own the se
 
 `ApplicationCoordinator` remains the single owner of target, Usage, and presentation state. It records both the fallback card choice and non-Pet reference before entering Pet. On Pet loss, a delivered M4 reference is retained; otherwise the pre-Pet free-floating reference is restored before the card is resized. A direct Compact/Expanded command cannot change the Pet Ring, and `360×520` can never be applied at the Pet midpoint.
 
-Activity orientation is derived only after the near-square Pet core has been selected and cannot change discovery, tracking, placement, offset, or fallback. A unique wide `AXSystemDialog` is the preferred current activity hint, with a unique wide `AXDialog` retained as a compatibility fallback; the vertical comparison includes the saved visual-center offset so Auto matches the rendered Pet rather than the padded raw AX midpoint. Pet movement uses one latest-value display-linked direct follower without queued `NSWindow` animations. During an active movement burst it re-reads only the coincident selected core frames and stops after four unchanged refreshes; this fast path cannot enumerate candidates or change selection.
+Activity orientation is derived only after the near-square Pet core has been selected and cannot change discovery, tracking, placement, offset, or fallback. Wide activity candidates must be wider than the Pet core and cannot substantially contain it, excluding the current Pet-spanning container; narrow voice/resize controls are also excluded. `AXSystemDialog` remains the preferred current activity type, with `AXDialog` retained as a compatibility fallback. Multiple preferred activity surfaces resolve only when every surface is on the same side, using the nearest surface for the vertical delta; mixed-side activity remains ambiguous. The vertical comparison includes the saved visual-center offset so Auto matches the rendered Pet rather than the padded raw AX midpoint. Pet movement uses one latest-value display-linked direct follower without queued `NSWindow` animations. During an active movement burst it re-reads only the coincident selected core frames and stops after four unchanged refreshes; this fast path cannot enumerate candidates or change selection.
 
 ## M8 release UI compatibility contract
 
@@ -168,6 +187,13 @@ former Today presentation and leaves the reserved inner slot empty. When either
 capsule side fits, every visible capsule is contained in `visibleFrame`; if
 neither fits, the smaller-overflow side is selected without clamping the Ring
 center. M9 remains complete with its signed-binary gate blocked.
+
+The unreleased Beta 4 candidate adds only current-Desktop activity-direction
+filtering after Pet selection. It excludes the Pet-spanning container and narrow
+controls, treats same-side activity cards as a stack, and keeps mixed-side
+ambiguity fail-closed. It does not change the selected Pet frame, panel center,
+saved visual-center offset, target hierarchy, protocol behavior, or Usage
+presentation.
 
 ## M4 window-following contract
 

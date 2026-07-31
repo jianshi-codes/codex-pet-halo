@@ -361,7 +361,12 @@ class ReleaseReadinessTests(unittest.TestCase):
 
         unreleased = changelog.split("## [Unreleased]", maxsplit=1)[1]
         unreleased = unreleased.split("## [0.1.0-beta.3]", maxsplit=1)[0]
-        self.assertIn("No changes yet.", unreleased)
+        for candidate_change in (
+            "Halo arc opening",
+            "voice/resize",
+            "directional stack",
+        ):
+            self.assertIn(candidate_change, unreleased)
         beta_three = changelog.split("## [0.1.0-beta.3]", maxsplit=1)[1]
         beta_three = beta_three.split("## [0.1.0-beta.2]", maxsplit=1)[0]
         for shipped_change in (
@@ -448,6 +453,27 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("## Published Beta 3 record — 2026-07-25", checklist)
         self.assertIn("v0.1.0-beta.3", checklist)
         self.assertIn("signing: unsigned", checklist)
+
+    def test_beta_four_release_notes_match_candidate_boundary(self) -> None:
+        notes = (ROOT / "docs/release-notes/v0.1.0-beta.4.md").read_text(
+            encoding="utf-8"
+        )
+        for expected in (
+            "# Pet Halo 0.1.0 Beta 4",
+            "Pet-spanning Accessibility container",
+            "voice and resize controls",
+            "Mixed-side activity remains ambiguous",
+            "visual-center offset",
+            "26.727.40816 (6067)",
+            "Unsigned Developer Preview",
+            "Pet-Halo-0.1.0-beta.4-unsigned-universal.zip",
+            "not signed with a Developer ID",
+            "not notarized by Apple",
+            "new tag and build number",
+        ):
+            self.assertIn(expected, notes)
+        self.assertNotIn("Beta 4 was published", notes)
+        self.assertNotIn("Beta 4 is published", notes)
 
     def test_release_runbook_covers_automation_and_post_release_truth(self) -> None:
         runbook = (ROOT / "docs/RELEASE_RUNBOOK.md").read_text(encoding="utf-8")

@@ -2,7 +2,7 @@
 
 Repository settings were observed on 2026-07-21 with `gh repo view` and GitHub
 REST API calls against `jianshi-codes/codex-pet-halo`. Environment, tag, and
-Release state was refreshed on 2026-07-25. “Observed” means the API confirmed
+Release state was refreshed on 2026-07-31. “Observed” means the API confirmed
 the state; “Recommended” is a manual action and is not claimed as enabled.
 
 ## Observed state
@@ -29,6 +29,7 @@ the state; “Recommended” is a manual action and is not claimed as enabled.
 | Pages | No Pages site returned (HTTP 404) |
 | Tags | `v0.1.0-beta.3` resolves to `e8480a0443783e05dd871f5c248157633a84d9c5`; `v0.1.0-beta.2` peels to `4e14938e06b50162a810cdaa5b195357e5239342`; `v0.1.0-beta.1` resolves to `4fe6f0e4926a1acd6a8e6faaf1a34be430eaddc1` |
 | Releases | `v0.1.0-beta.3`: target/source `e8480a0443783e05dd871f5c248157633a84d9c5`, published `2026-07-25T15:03:26Z`, non-draft, non-prerelease, latest after the user's explicit promotion; Beta 2 and Beta 1 remain non-draft, non-prerelease, and not latest |
+| Next identity | `v0.1.0-beta.4` tag and GitHub Release both returned not found on 2026-07-31; this is preparation evidence only and must be rechecked immediately before publication |
 
 The complete observed label list includes the `bug` and `compatibility` labels required by the issue forms.
 

@@ -75,6 +75,7 @@ The reviewed baseline remains the strongest evidence. Newer pre-1.0 CLI versions
 | Codex Desktop | `26.715.31925 (5551)` | Previously validated Pet Accessibility geometry |
 | Codex Desktop | `26.715.52143 (5591)` | Current M9 Route A and complete Pet-following gate validated |
 | Codex Desktop | `26.721.41059 (5848)` | Current multi-surface topology validated and included in Beta 3 |
+| Codex Desktop | `26.727.40816 (6067)` | Beta 4 candidate geometry, mirrored activity-direction tests, and user-confirmed two-sided opening behavior |
 
 Only exact registry entries carry reviewed semantic evidence. Provisional compatibility does not claim schema review: initialize/initialized, JSON-RPC envelopes, account behavior, rate-limit decoding, and a usable exact 10,080-minute Weekly window must succeed at runtime. See [Compatibility](docs/COMPATIBILITY.md).
 

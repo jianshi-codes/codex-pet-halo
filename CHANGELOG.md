@@ -4,7 +4,14 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 
 ## [Unreleased]
 
-No changes yet.
+### Fixed
+
+- Restored the Halo arc opening for the current Codex Desktop Pet layout when
+  activity cards appear above or below the Pet.
+- Ignored the new Pet-spanning Accessibility container and narrow voice/resize
+  controls when resolving activity direction.
+- Treated multiple activity cards on one side as one directional stack while
+  retaining the prior orientation for genuinely mixed-side ambiguity.
 
 ## [0.1.0-beta.3] - 2026-07-25
 
