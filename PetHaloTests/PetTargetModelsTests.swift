@@ -278,7 +278,108 @@ final class PetTargetModelsTests: XCTestCase {
         )
     }
 
-    func testMultipleWideSystemDialogsAreAmbiguousEvenWithLegacyFallback() {
+    func testUpdatedCodexContainerAndControlsDoNotOverrideActivityDialogAbove() {
+        let pet = candidate(
+            1,
+            subrole: "AXSystemDialog",
+            frame: CGRect(x: 4_731, y: 1_163, width: 238, height: 248)
+        )
+        let container = candidate(
+            2,
+            subrole: "AXSystemDialog",
+            frame: CGRect(x: 4_595, y: 1_162, width: 512, height: 257)
+        )
+        let activity = candidate(
+            3,
+            subrole: "AXSystemDialog",
+            frame: CGRect(x: 4_679, y: 1_149, width: 345, height: 66)
+        )
+        let voiceButton = candidate(
+            4,
+            subrole: "AXSystemDialog",
+            frame: CGRect(x: 4_822, y: 1_350, width: 24, height: 24)
+        )
+        let resizeButton = candidate(
+            5,
+            subrole: "AXSystemDialog",
+            frame: CGRect(x: 4_854, y: 1_350, width: 24, height: 24)
+        )
+        let candidates = [pet, container, activity, voiceButton, resizeButton]
+
+        let resolution = PetActivityGeometryResolver.resolve(
+            petFrame: pet.frame,
+            petMemberIdentities: [pet.identity],
+            candidates: candidates
+        )
+
+        XCTAssertEqual(resolution.hint, .above)
+        XCTAssertEqual(resolution.activityVerticalDelta, 105)
+        XCTAssertEqual(resolution.observedIdentities, [activity.identity])
+        XCTAssertEqual(
+            PetWindowSelector.select(from: candidates),
+            .selected(memberIdentities: [pet.identity], frame: pet.frame)
+        )
+    }
+
+    func testUpdatedCodexContainerAndControlsDoNotOverrideActivityDialogsBelow() {
+        let pet = candidate(
+            1,
+            subrole: "AXSystemDialog",
+            frame: CGRect(x: 4_731, y: 200, width: 238, height: 248)
+        )
+        let container = candidate(
+            2,
+            subrole: "AXSystemDialog",
+            frame: CGRect(x: 4_595, y: 199, width: 512, height: 257)
+        )
+        let firstActivity = candidate(
+            3,
+            subrole: "AXSystemDialog",
+            frame: CGRect(x: 4_679, y: 396, width: 345, height: 66)
+        )
+        let secondActivity = candidate(
+            4,
+            subrole: "AXSystemDialog",
+            frame: CGRect(x: 4_679, y: 476, width: 345, height: 66)
+        )
+        let voiceButton = candidate(
+            5,
+            subrole: "AXSystemDialog",
+            frame: CGRect(x: 4_822, y: 360, width: 24, height: 24)
+        )
+        let resizeButton = candidate(
+            6,
+            subrole: "AXSystemDialog",
+            frame: CGRect(x: 4_854, y: 360, width: 24, height: 24)
+        )
+        let candidates = [
+            pet,
+            container,
+            firstActivity,
+            secondActivity,
+            voiceButton,
+            resizeButton,
+        ]
+
+        let resolution = PetActivityGeometryResolver.resolve(
+            petFrame: pet.frame,
+            petMemberIdentities: [pet.identity],
+            candidates: candidates
+        )
+
+        XCTAssertEqual(resolution.hint, .below)
+        XCTAssertEqual(resolution.activityVerticalDelta, -105)
+        XCTAssertEqual(
+            resolution.observedIdentities,
+            [firstActivity.identity, secondActivity.identity]
+        )
+        XCTAssertEqual(
+            PetWindowSelector.select(from: candidates),
+            .selected(memberIdentities: [pet.identity], frame: pet.frame)
+        )
+    }
+
+    func testMultipleWideSystemDialogsBelowResolveUsingNearestCurrentSurface() {
         let pet = candidate(1)
         let legacyDialog = candidate(
             2,
@@ -301,8 +402,29 @@ final class PetTargetModelsTests: XCTestCase {
             candidates: [pet, legacyDialog, first, second]
         )
 
-        XCTAssertEqual(resolution.hint, .ambiguous)
+        XCTAssertEqual(resolution.hint, .below)
+        XCTAssertEqual(resolution.activityVerticalDelta, -35)
         XCTAssertEqual(resolution.observedIdentities, [2, 3, 4])
+    }
+
+    func testMultipleLegacyActivityDialogsBelowResolveAsOneStack() {
+        let pet = candidate(1)
+        let first = candidate(2, frame: CGRect(x: 40, y: 350, width: 360, height: 70))
+        let second = candidate(3, frame: CGRect(x: 40, y: 430, width: 360, height: 70))
+
+        let resolution = PetActivityGeometryResolver.resolve(
+            petFrame: pet.frame,
+            petMemberIdentities: [pet.identity],
+            candidates: [pet, first, second]
+        )
+
+        XCTAssertEqual(resolution.hint, .below)
+        XCTAssertEqual(resolution.activityVerticalDelta, -130)
+        XCTAssertEqual(resolution.observedIdentities, [2, 3])
+        XCTAssertEqual(
+            PetWindowSelector.select(from: [pet, first, second]),
+            .selected(memberIdentities: [pet.identity], frame: pet.frame)
+        )
     }
 
     func testMultipleActivityDialogsAreAmbiguousWithoutChangingPetSelection() {

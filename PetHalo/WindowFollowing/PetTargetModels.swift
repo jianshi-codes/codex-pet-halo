@@ -178,6 +178,8 @@ enum PetActivityGeometryResolver {
         let activity = candidates.filter {
             !petMemberIdentities.contains($0.identity)
                 && $0.isEligibleActivitySurface
+                && $0.frame.width > petFrame.width
+                && !substantiallyContains($0.frame, petFrame)
                 && horizontalOverlap($0.frame, petFrame)
         }
         let identities = Set(activity.map(\.identity))
@@ -185,23 +187,20 @@ enum PetActivityGeometryResolver {
         let orientedActivity = preferred.isEmpty
             ? activity.filter { $0.subrole == "AXDialog" }
             : preferred
-        guard orientedActivity.count == 1, let dialog = orientedActivity.first else {
+        let deltas = orientedActivity.map { $0.frame.midY - petFrame.midY }
+        let allAbove = deltas.allSatisfy { $0 < -1 }
+        let allBelow = deltas.allSatisfy { $0 > 1 }
+        guard (allAbove || allBelow),
+              let delta = deltas.min(by: { abs($0) < abs($1) })
+        else {
             return PetActivityGeometryResolution(
                 hint: activity.isEmpty ? .none : .ambiguous,
                 observedIdentities: identities,
                 activityVerticalDelta: nil
             )
         }
-        let delta = dialog.frame.midY - petFrame.midY
-        guard abs(delta) > 1 else {
-            return PetActivityGeometryResolution(
-                hint: .ambiguous,
-                observedIdentities: identities,
-                activityVerticalDelta: nil
-            )
-        }
         return PetActivityGeometryResolution(
-            hint: delta < 0 ? .above : .below,
+            hint: allAbove ? .above : .below,
             observedIdentities: identities,
             activityVerticalDelta: -delta
         )
@@ -209,6 +208,13 @@ enum PetActivityGeometryResolver {
 
     private static func horizontalOverlap(_ lhs: CGRect, _ rhs: CGRect) -> Bool {
         min(lhs.maxX, rhs.maxX) > max(lhs.minX, rhs.minX)
+    }
+
+    private static func substantiallyContains(_ outer: CGRect, _ inner: CGRect) -> Bool {
+        let intersection = outer.intersection(inner)
+        guard !intersection.isNull else { return false }
+        return intersection.width * intersection.height
+            >= inner.width * inner.height * 0.9
     }
 }
 
