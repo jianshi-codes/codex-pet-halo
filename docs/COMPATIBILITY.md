@@ -16,17 +16,17 @@ The known-incompatible denylist is initially empty. It is a safety override for 
 | --- | --- | --- | --- |
 | Codex CLI | `0.145.0-alpha.18` | Supported | Exact reviewed baseline; all production-used schemas and semantics reviewed |
 | Codex CLI | `0.146.0-alpha.3.1` | Provisional session PASS | Current installed CLI passed required read-only runtime capabilities and clean shutdown on 2026-07-25; no schema-review claim |
-| Codex CLI | `0.146.0-alpha.9.2` | Provisional session PASS | Beta 4 preparation generated current temporary schemas and passed required read-only runtime capabilities plus clean shutdown on 2026-07-31; no reviewed-registry claim |
+| Codex CLI | `0.146.0-alpha.9.2` | Provisional session PASS | Beta 4 generated current temporary schemas and passed required read-only runtime capabilities plus clean shutdown on 2026-07-31; no reviewed-registry claim |
 | Codex Desktop | `26.715.31925 (5551)` | Supported | Route A Pet/window Accessibility behavior previously validated |
 | Codex Desktop | `26.715.52143 (5591)` | Supported | Current M9 Route A and complete Pet-following gate validated |
 | Codex Desktop | `26.721.41059 (5848)` | Supported in Beta 3 | Published structural policy plus direct Hide/Wake/center interaction, deterministic tests, final-main smoke, and CI evidence |
-| Codex Desktop | `26.727.40816 (6067)` | Beta 4 candidate PASS | Geometry-only inspection and mirrored deterministic tests cover the Pet-spanning container, narrow voice/resize controls, and stacked activity cards; the user confirmed final direct two-sided opening behavior on 2026-07-31 |
+| Codex Desktop | `26.727.40816 (6067)` | Supported in Beta 4 | Published geometry policy and mirrored deterministic tests cover the Pet-spanning container, narrow voice/resize controls, and stacked activity cards; the user confirmed final direct two-sided opening behavior on 2026-07-31 |
 
 The CLI registry covers these semantic groups: initialize/initialized; `account/read`; `account/rateLimits/read`; `account/rateLimits/updated`; `account/usage/read`; and JSON-RPC request, response, error, and notification envelopes. It also covers exact rate-limit window durations, sparse update behavior, Account Usage summary/daily buckets, independent component freshness, and account-data clearing boundaries.
 
 M9 regenerated 341 JSON schema files from its then-current local CLI into a temporary directory. All 340 individual schema files were byte-identical to the retained `0.145.0-alpha.18` evidence. The aggregate v2 schema differed only in object ordering; both canonical sorted documents had SHA-256 `d7da14579e98011d40ad9c97a376cccfd69d0da5b2eb174b32d5bb6bd9159b6b`. This confirms schema stability for the already-supported CLI version but does not replace semantic review.
 
-Beta 4 preparation generated 349 JSON schema files from installed CLI
+Beta 4 generated 349 JSON schema files from installed CLI
 `0.146.0-alpha.9.2` into a temporary directory. `InitializeResponse` and
 `GetAccountTokenUsageResponse` canonically match the retained reviewed evidence.
 The rate-limit response adds only the unused `ent26` plan enum value.
@@ -36,6 +36,14 @@ account availability, rate-limit windows, and Account Usage retain their
 reviewed shapes. Eight additional generated method types are outside the
 production request/notification set. This is bounded compatibility evidence,
 not an addition to the exact reviewed registry.
+
+Desktop `26.727.40816 (6067)` adds a wider Accessibility container spanning
+the Pet plus narrow voice/resize controls below it. Beta 4 excludes those
+surfaces from activity-direction resolution, groups multiple activity cards on
+the same side, and preserves the prior opening when cards genuinely occupy both
+sides. Direct user acceptance covered the Pet at both the top and bottom of the
+screen without changing the saved visual-center offset. This geometry-only
+policy is included in published Beta 4.
 
 For Desktop `26.715.52143 (5591)`, the consolidated M9 Pet-following gate directly observed one unique Route A Pet core moving while the resolved Codex standard window remained stationary, automatic visual-center attachment, Tuck Away fallback, Wake recovery, Pet Ring selection, non-activation, and complete Pet Halo/owned-child shutdown. M5–M7 use this one live flow rather than repeating the same interaction across milestone scripts.
 
@@ -188,7 +196,7 @@ capsule side fits, every visible capsule is contained in `visibleFrame`; if
 neither fits, the smaller-overflow side is selected without clamping the Ring
 center. M9 remains complete with its signed-binary gate blocked.
 
-The unreleased Beta 4 candidate adds only current-Desktop activity-direction
+Published Beta 4 adds only current-Desktop activity-direction
 filtering after Pet selection. It excludes the Pet-spanning container and narrow
 controls, treats same-side activity cards as a stack, and keeps mixed-side
 ambiguity fail-closed. It does not change the selected Pet frame, panel center,
