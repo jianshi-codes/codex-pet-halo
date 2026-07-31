@@ -9,12 +9,12 @@ The next reserved defaults are:
 | Input | Value |
 | --- | --- |
 | Product version | `0.1.0` |
-| Bundle build | `4` |
-| Tag | `v0.1.0-beta.4` |
+| Bundle build | `5` |
+| Tag | `v0.1.0-beta.5` |
 | Distribution | `unsigned` |
-| Release notes | `docs/release-notes/v0.1.0-beta.4.md` — create and review before `PREPARED` |
-| Signed artifact | `Pet-Halo-0.1.0-beta.4-universal.zip` |
-| Local unsigned evidence | `Pet-Halo-0.1.0-beta.4-unsigned-universal.zip` |
+| Release notes | `docs/release-notes/v0.1.0-beta.5.md` — create and review before `PREPARED` |
+| Signed artifact | `Pet-Halo-0.1.0-beta.5-universal.zip` |
+| Local unsigned evidence | `Pet-Halo-0.1.0-beta.5-unsigned-universal.zip` |
 
 Every execution must re-read these values from the reviewed source. Do not reuse
 this table after a release closeout advances the next candidate identity.
@@ -97,8 +97,8 @@ Run both checks and treat any result other than the documented “not found” s
 as a blocker:
 
 ```sh
-git ls-remote --exit-code --refs origin refs/tags/v0.1.0-beta.4
-gh release view v0.1.0-beta.4 --json tagName,name,isDraft,isPrerelease,url
+git ls-remote --exit-code --refs origin refs/tags/v0.1.0-beta.5
+gh release view v0.1.0-beta.5 --json tagName,name,isDraft,isPrerelease,url
 ```
 
 For an unused identity, `git ls-remote --exit-code` returns status `2` and
@@ -130,37 +130,44 @@ prepublication preparation.
 
 ## R4 — Local validation and unsigned evidence
 
-First reuse valid evidence already collected from the exact candidate source.
-When the user has explicitly accepted the affected UI behavior through direct
-manual testing, record that acceptance and do not repeat the interactive
-M3/M4/Pet/M8 smoke sequence during release preparation. Run only missing or
-source-invalidated checks, followed by the release-specific audit and packaging
-steps.
+Behavioral validation belongs to the reviewed PR and its required CI before
+merge. Record any direct user acceptance separately. Release preparation does
+not repeat `make check`, focused tests, or interactive M3/M4/Pet/M8 smoke from
+the exact reviewed source.
 
-For a candidate without current evidence, the complete validation surface is:
+From the reviewed clean source, run only release-specific audit and packaging:
 
 ```sh
-make m8-tests
-make check
-make m2-smoke
-make m3-smoke
-make m4-smoke
-make pet-following-gate
-make m8-smoke
 make public-exposure-audit
-make release-unsigned-preview \
+make release-build \
+  RELEASE_ARTIFACT_QUALIFIER=unsigned \
   MARKETING_VERSION=0.1.0 \
-  BUILD_NUMBER=4 \
-  RELEASE_TAG=v0.1.0-beta.4
+  BUILD_NUMBER=5 \
+  RELEASE_TAG=v0.1.0-beta.5
+make release-archive \
+  RELEASE_ARTIFACT_QUALIFIER=unsigned \
+  MARKETING_VERSION=0.1.0 \
+  BUILD_NUMBER=5 \
+  RELEASE_TAG=v0.1.0-beta.5
+make release-checksum \
+  RELEASE_ARTIFACT_QUALIFIER=unsigned \
+  MARKETING_VERSION=0.1.0 \
+  BUILD_NUMBER=5 \
+  RELEASE_TAG=v0.1.0-beta.5
+make release-verify \
+  RELEASE_ARTIFACT_QUALIFIER=unsigned \
+  RELEASE_MODE=unsigned \
+  MARKETING_VERSION=0.1.0 \
+  BUILD_NUMBER=5 \
+  RELEASE_TAG=v0.1.0-beta.5
 ```
 
 Keep deterministic tests, live smoke, user interaction, and clean-machine
-evidence as separate rows. Evidence reuse must name the exact source and
-environment. A smoke test that could not observe its required interaction is
-not a pass, and accepted direct user testing must not be duplicated merely to
-complete the release checklist.
+evidence as separate rows in the release record. Evidence reuse must name the
+exact source and environment. The release workflow repeats only release-specific
+validation and must not call `make check`.
 
-The unsigned command must produce, under `dist/v0.1.0-beta.4/`, only:
+The unsigned command must produce, under `dist/v0.1.0-beta.5/`, only:
 
 - the local unsigned Universal ZIP;
 - `release-manifest.json`;
@@ -180,8 +187,8 @@ The manual workflow must run from the same reviewed `main` commit:
 gh workflow run release.yml \
   --ref main \
   -f marketing_version=0.1.0 \
-  -f build_number=4 \
-  -f release_tag=v0.1.0-beta.4 \
+  -f build_number=5 \
+  -f release_tag=v0.1.0-beta.5 \
   -f distribution=unsigned \
   -f publish=false
 ```
@@ -229,8 +236,8 @@ For an unsigned developer preview:
 gh workflow run release.yml \
   --ref main \
   -f marketing_version=0.1.0 \
-  -f build_number=4 \
-  -f release_tag=v0.1.0-beta.4 \
+  -f build_number=5 \
+  -f release_tag=v0.1.0-beta.5 \
   -f distribution=unsigned \
   -f publish=true
 ```
@@ -245,8 +252,8 @@ For a signed and notarized prerelease:
 gh workflow run release.yml \
   --ref main \
   -f marketing_version=0.1.0 \
-  -f build_number=4 \
-  -f release_tag=v0.1.0-beta.4 \
+  -f build_number=5 \
+  -f release_tag=v0.1.0-beta.5 \
   -f distribution=signed-notarized \
   -f publish=true
 ```
@@ -271,7 +278,7 @@ Download into a new temporary directory; never verify against local build output
 
 ```sh
 release_tmp="$(mktemp -d "${TMPDIR:-/tmp}/pet-halo-release-postflight.XXXXXX")"
-gh release download v0.1.0-beta.4 --dir "$release_tmp"
+gh release download v0.1.0-beta.5 --dir "$release_tmp"
 (
   cd "$release_tmp"
   shasum -a 256 -c SHA256SUMS
@@ -342,8 +349,6 @@ Only after R8 passes, create a separate branch and Draft PR. Update current trut
 Run:
 
 ```sh
-make m8-tests
-make check
 make public-exposure-audit
 git diff --check
 ```
@@ -360,7 +365,7 @@ trust level, and assets. Promotion is a separate public metadata change: require
 the user's explicit approval, recheck tag/source and assets, then run:
 
 ```sh
-gh release edit v0.1.0-beta.4 --prerelease=false --latest
+gh release edit v0.1.0-beta.5 --prerelease=false --latest
 ```
 
 Requery the Release and `/releases/latest`. Require non-draft,

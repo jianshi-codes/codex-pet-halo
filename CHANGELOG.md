@@ -4,6 +4,10 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 
 ## [Unreleased]
 
+No changes yet.
+
+## [0.1.0-beta.4] - 2026-07-31
+
 ### Fixed
 
 - Restored the Halo arc opening for the current Codex Desktop Pet layout when
@@ -12,6 +16,18 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
   controls when resolving activity direction.
 - Treated multiple activity cards on one side as one directional stack while
   retaining the prior orientation for genuinely mixed-side ambiguity.
+
+### Release
+
+- Published tag `v0.1.0-beta.4` from reviewed source commit
+  `beb0c2c925d04fccf650205a611a1a20d22ead75`.
+- Published the unsigned Universal
+  `Pet-Halo-0.1.0-beta.4-unsigned-universal.zip`, `release-manifest.json`,
+  `RELEASE_NOTES.md`, and `SHA256SUMS` assets.
+- Fresh public download verification passed for every checksum and GitHub asset
+  digest; the manifest source commit matches the tag.
+- The release uses product version `0.1.0`, bundle build `4`,
+  `signing: unsigned`, and `notarization: not-submitted`.
 
 ## [0.1.0-beta.3] - 2026-07-25
 

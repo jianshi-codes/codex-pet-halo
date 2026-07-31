@@ -70,38 +70,72 @@ overwrite, retag, or upload with `--clobber` to an existing release identity.
 - [ ] Signed clean-machine acceptance — not completed for Beta 3; local isolated
   clean-preferences launch is recorded separately.
 
+## Published Beta 4 record — 2026-07-31
+
+- [x] PR #20 merged into `main`; `main` and `origin/main` resolved to
+  `beb0c2c925d04fccf650205a611a1a20d22ead75`.
+- [x] The user confirmed direct final activity-above and activity-below Halo
+  opening behavior on Codex Desktop `26.727.40816 (6067)`.
+- [x] Existing exact-source evidence was reused without repeating the older
+  interactive M3/M4/Pet/M8 smoke sequence.
+- [x] Validation-only workflow
+  [30612303612](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/30612303612)
+  passed without creating release state.
+- [x] The ordinary `main` CI run
+  [30612184013](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/30612184013)
+  passed on failed-job rerun at the same SHA after one isolated debounce timing
+  failure.
+- [x] Publication workflow
+  [30612707366](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/30612707366)
+  passed at the same SHA; the unsigned job completed and the signed/notarized
+  job was skipped.
+- [x] Tag `v0.1.0-beta.4` resolves directly to
+  `beb0c2c925d04fccf650205a611a1a20d22ead75`.
+- [x] GitHub Release
+  `Pet Halo 0.1.0 Beta 4 — Unsigned Developer Preview` published at
+  `2026-07-31T07:29:22Z` as non-draft prerelease; Beta 3 remains Latest.
+- [x] Exactly four assets were published:
+  `Pet-Halo-0.1.0-beta.4-unsigned-universal.zip`, `SHA256SUMS`,
+  `release-manifest.json`, and `RELEASE_NOTES.md`.
+- [x] A fresh public download matched every checksum and GitHub asset digest.
+- [x] Manifest and extracted bundle match version `0.1.0`, build `4`, tag,
+  source SHA, identifier, macOS 14 minimum, and Universal architectures.
+- [x] Manifest states `signing: unsigned` and
+  `notarization: not-submitted`; strict code-signing verification confirms the
+  executable is not signed.
+- [x] Downloaded release notes are byte-identical to tagged source.
+- [ ] Developer ID signing — not completed for Beta 4.
+- [ ] Apple notarization and stapling — not completed for Beta 4.
+- [ ] Gatekeeper signed verification — not applicable and not claimed.
+- [ ] Signed clean-machine acceptance — not completed for Beta 4.
+
 ## Source and compatibility for a future Beta
 
-- [x] Reserve the next unused identity as `v0.1.0-beta.4` and build `4`;
-  `git ls-remote` and `gh release view` both reported it absent again on
-  2026-07-31.
-- [x] Start from clean `main` commit
-  `4dbf55c6c13580f54010d4c5f4c0cb8e030ce977`, matching `origin/main`.
-- [x] Record installed CLI `0.146.0-alpha.9.2` and Codex Desktop
-  `26.727.40816 (6067)` candidate evidence in `docs/COMPATIBILITY.md`.
-- [x] Generate 349 current CLI schemas into a temporary directory and review the
-  production-used initialization, account, Rate Limit, and Account Usage
-  semantics; unrelated new methods and unused account metadata do not expand
-  the production protocol surface.
-- [x] User confirmed direct final activity-above and activity-below Halo opening
-  behavior on Codex Desktop `26.727.40816 (6067)` on 2026-07-31; no repeat of
-  the older interactive M3/M4/Pet/M8 smoke sequence is required.
-- [x] Reuse deterministic validation already collected from the exact source;
-  do not rerun checks solely for release-preparation bookkeeping.
-- [x] Run `make public-exposure-audit` from a full clone containing every branch
-  and tag.
+- [ ] Confirm `v0.1.0-beta.5` and build `5` are unused before preparation.
+- [ ] Start from a reviewed, clean `main` commit.
+- [ ] Record exact CLI and Desktop evidence in `docs/COMPATIBILITY.md`.
+- [ ] Generate current CLI schemas into a temporary directory and review every
+  production semantic required by the new source.
+- [ ] Reuse valid exact-source evidence; when the user directly accepts affected
+  UI behavior, do not repeat interactive smoke solely for release bookkeeping.
+- [ ] Run `make public-exposure-audit` from a full clone containing every branch
+  and tag when source or reachable history changes.
 - [ ] Reconfirm immediately before release that the selected tag and Release are
-  unused; the 2026-07-31 Beta 4 observation is not publication evidence.
+  unused.
 
 ## Unsigned preview build
 
 ```sh
-make release-unsigned-preview MARKETING_VERSION=0.1.0 BUILD_NUMBER=4 RELEASE_TAG=v0.1.0-beta.4
+make public-exposure-audit
+make release-build RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=5 RELEASE_TAG=v0.1.0-beta.5
+make release-archive RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=5 RELEASE_TAG=v0.1.0-beta.5
+make release-checksum RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=5 RELEASE_TAG=v0.1.0-beta.5
+make release-verify RELEASE_ARTIFACT_QUALIFIER=unsigned RELEASE_MODE=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=5 RELEASE_TAG=v0.1.0-beta.5
 ```
 
 - [ ] Verify Release configuration and Universal `arm64 x86_64`.
 - [ ] Verify versions, identifier, minimum macOS, icons, and packaged-file allowlist.
-- [ ] Verify `Pet-Halo-0.1.0-beta.4-unsigned-universal.zip`, manifest
+- [ ] Verify `Pet-Halo-0.1.0-beta.5-unsigned-universal.zip`, manifest
   `unsigned` / `not-submitted`, release notes, and SHA-256.
 
 ## Developer ID and notarization
@@ -111,10 +145,10 @@ the runbook. Never place identities, secrets, Keychain contents, or notarization
 credentials in repository files or command output.
 
 ```sh
-make release-sign MARKETING_VERSION=0.1.0 BUILD_NUMBER=4 RELEASE_TAG=v0.1.0-beta.4
-make release-archive MARKETING_VERSION=0.1.0 BUILD_NUMBER=4 RELEASE_TAG=v0.1.0-beta.4
-make release-notarize MARKETING_VERSION=0.1.0 BUILD_NUMBER=4 RELEASE_TAG=v0.1.0-beta.4
-make release-verify MARKETING_VERSION=0.1.0 BUILD_NUMBER=4 RELEASE_TAG=v0.1.0-beta.4 RELEASE_MODE=notarized
+make release-sign MARKETING_VERSION=0.1.0 BUILD_NUMBER=5 RELEASE_TAG=v0.1.0-beta.5
+make release-archive MARKETING_VERSION=0.1.0 BUILD_NUMBER=5 RELEASE_TAG=v0.1.0-beta.5
+make release-notarize MARKETING_VERSION=0.1.0 BUILD_NUMBER=5 RELEASE_TAG=v0.1.0-beta.5
+make release-verify MARKETING_VERSION=0.1.0 BUILD_NUMBER=5 RELEASE_TAG=v0.1.0-beta.5 RELEASE_MODE=notarized
 ```
 
 - [ ] Record an actual Apple `Accepted` result; never infer it from submission.
@@ -131,7 +165,7 @@ clean-preferences launch is useful evidence but is not a clean machine.
 
 ## Future publication hold point
 
-Beta 1, Beta 2, and Beta 3 are immutable publication identities: never
+Beta 1, Beta 2, Beta 3, and Beta 4 are immutable publication identities: never
 overwrite, retag, reclassify as signed/notarized, or upload to them with
 `--clobber`. A future release must use a new tag and build number.
 

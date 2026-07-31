@@ -27,9 +27,9 @@ the state; “Recommended” is a manual action and is not claimed as enabled.
 | Private vulnerability reporting | Disabled |
 | Environments | None returned; `public-beta` does not currently exist |
 | Pages | No Pages site returned (HTTP 404) |
-| Tags | `v0.1.0-beta.3` resolves to `e8480a0443783e05dd871f5c248157633a84d9c5`; `v0.1.0-beta.2` peels to `4e14938e06b50162a810cdaa5b195357e5239342`; `v0.1.0-beta.1` resolves to `4fe6f0e4926a1acd6a8e6faaf1a34be430eaddc1` |
-| Releases | `v0.1.0-beta.3`: target/source `e8480a0443783e05dd871f5c248157633a84d9c5`, published `2026-07-25T15:03:26Z`, non-draft, non-prerelease, latest after the user's explicit promotion; Beta 2 and Beta 1 remain non-draft, non-prerelease, and not latest |
-| Next identity | `v0.1.0-beta.4` tag and GitHub Release both returned not found on 2026-07-31; this is preparation evidence only and must be rechecked immediately before publication |
+| Tags | `v0.1.0-beta.4` resolves directly to `beb0c2c925d04fccf650205a611a1a20d22ead75`; `v0.1.0-beta.3` resolves to `e8480a0443783e05dd871f5c248157633a84d9c5`; earlier tags remain unchanged |
+| Releases | `v0.1.0-beta.4`: target/source `beb0c2c925d04fccf650205a611a1a20d22ead75`, published `2026-07-31T07:29:22Z`, non-draft prerelease; Beta 3 remains non-draft, non-prerelease, and latest |
+| Next identity | `v0.1.0-beta.5` / build `5` is reserved only as a local default; tag and Release availability must be checked before preparation and immediately before publication |
 
 The complete observed label list includes the `bug` and `compatibility` labels required by the issue forms.
 
@@ -44,7 +44,8 @@ The complete observed label list includes the `bug` and `compatibility` labels r
 
 The 2026-07-25 refresh confirmed zero environments, including no `public-beta`.
 The active ruleset details above were not re-audited in that narrower refresh.
-The Beta 3 publication workflow created the tag and four-asset Release; the user
-then explicitly promoted it to non-prerelease Latest state. No
+The Beta 4 publication workflow created the tag and four-asset unsigned
+prerelease; the Latest endpoint continues to resolve to the user-promoted
+Beta 3 release. No
 branch-protection/ruleset, environment, vulnerability-reporting, Pages, or
 visibility setting was changed during this release.
