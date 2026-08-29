@@ -45,6 +45,14 @@ sides. Direct user acceptance covered the Pet at both the top and bottom of the
 screen without changing the saved visual-center offset. This geometry-only
 policy is included in published Beta 4.
 
+Beta 5 preserves that exact Desktop evidence boundary while adding a bounded
+compatibility fallback for a changed topology: when near-square candidates are
+absent, exactly one visible non-standard `AXWindow/AXDialog` with valid finite
+geometry may be accepted, while multiple candidates remain ambiguous. The
+latest direct user acceptance also covered the default visual-center baseline
+and no-activity upper/lower Ring direction. No additional exact Desktop version
+is added to the reviewed table without independent version evidence.
+
 For Desktop `26.715.52143 (5591)`, the consolidated M9 Pet-following gate directly observed one unique Route A Pet core moving while the resolved Codex standard window remained stationary, automatic visual-center attachment, Tuck Away fallback, Wake recovery, Pet Ring selection, non-activation, and complete Pet Halo/owned-child shutdown. M5–M7 use this one live flow rather than repeating the same interaction across milestone scripts.
 
 Desktop `26.721.41059 (5848)` changed the visible-Pet Route A topology to three

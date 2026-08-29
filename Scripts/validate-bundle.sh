@@ -8,7 +8,7 @@ readonly app_bundle="$derived_data_path/Build/Products/$configuration/Pet Halo.a
 readonly info_plist="$app_bundle/Contents/Info.plist"
 readonly executable="$app_bundle/Contents/MacOS/Pet Halo"
 readonly expected_marketing_version="${EXPECTED_MARKETING_VERSION:-0.1.0}"
-readonly expected_build_number="${EXPECTED_BUILD_NUMBER:-4}"
+readonly expected_build_number="${EXPECTED_BUILD_NUMBER:-5}"
 
 if [[ ! -d "$app_bundle" ]]; then
     echo "error: application bundle not found: $app_bundle" >&2
