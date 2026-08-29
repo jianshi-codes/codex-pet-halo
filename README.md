@@ -48,9 +48,11 @@ Weekly and 5h remaining use these status thresholds:
 
 The `W` and `5h` capsule text and fixed identity dots identify each visible ring.
 Weekly and 5h use rate-limit freshness. Wide Accessibility geometry may still choose
-the shared arc opening, but it is not treated as an idle/working signal. The inner
-layout slot is reserved for a future exact Context Remaining metric if Codex exposes
-the selected task safely to Pet Halo.
+the shared arc opening; without an activity surface, the selected display's visible
+frame chooses whether the visible arc sits above or below the Pet. Activity geometry
+overrides that default, but it is not treated as an idle/working signal. The
+inner layout slot is reserved for a future exact Context Remaining metric if Codex
+exposes the selected task safely to Pet Halo.
 
 ## Download
 
@@ -120,7 +122,7 @@ Target priority is Pet, then an explicitly calibrated Codex standard-window fall
 
 ### Adjust Ring Center
 
-When Pet is selected, choose **Adjust Ring Center**. Drag the Ring or use the four-point nudge commands, then choose **Save Ring Center**. **Cancel** restores the prior value and **Reset Visual Center** returns to zero offset.
+When Pet is selected, choose **Adjust Ring Center**. Drag the Ring or use the four-point nudge commands, then choose **Save Ring Center**. **Cancel** restores the prior value and **Reset Visual Center** returns to the current default baseline of `(-25.5, -1.5)` points.
 
 This setting moves the complete Ring surface by one bounded local offset. It does not change Pet discovery or persist Pet coordinates.
 

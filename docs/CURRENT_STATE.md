@@ -11,6 +11,30 @@
   `5`; availability must be checked before preparation or publication
 - Repository: public at `jianshi-codes/codex-pet-halo`
 
+## Beta 5 preparation state — 2026-08-30
+
+- Candidate identity: `v0.1.0-beta.5`, product version `0.1.0`, bundle build
+  `5`, unsigned and not notarized. The remote tag and GitHub Release were
+  rechecked absent on 2026-08-30.
+- The candidate source fix is commit
+  `125a6b6fa89e8cfccd677a2019cc8172f486132a` on
+  `codex/beta5-release-preparation`, based on the reviewed `main` source at
+  `28c2fb4bc1fcd12309e51b751b5d14bcc0287057`.
+- Pet discovery now accepts one unique visible non-standard Accessibility
+  Dialog when the near-square candidates disappear, removes only bounded
+  unknown-subrole containing wrappers, and keeps known-subrole priority and
+  fail-closed ambiguity handling.
+- The current manually accepted visual-center offset is the default baseline
+  `(-25.5, -1.5)` points. With no activity surface, the selected display's
+  visible frame chooses the visible Ring arc above or below the Pet; an active
+  activity surface overrides that default and remains on the opposite side.
+- The user confirmed the centered placement and both upper/lower Ring behaviors
+  on 2026-08-30. The focused Pet Halo suite passed 60 tests, and the local
+  Debug build produced successfully before release preparation.
+- The candidate has not been tagged or published. Public-exposure audit,
+  unsigned Release packaging, validation workflow, publication workflow, and
+  public-download postflight remain separate gates.
+
 ## Published Beta 4 evidence
 
 - PR #20 merged the release preparation into `main`; tag

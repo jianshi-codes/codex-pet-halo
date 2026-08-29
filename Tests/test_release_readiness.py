@@ -272,6 +272,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("cannot truthfully infer Live Activity from geometry", readme)
         self.assertIn("not treated as an idle/working signal", readme)
         self.assertIn("reserved for a future exact Context Remaining metric", readme)
+        self.assertIn("current default baseline of `(-25.5, -1.5)` points", readme)
         self.assertIn("codex --version", readme)
         self.assertIn("The reviewed baseline remains the strongest evidence", readme)
         self.assertIn("Session-only acceptance after required runtime capability validation", readme)
@@ -370,7 +371,12 @@ class ReleaseReadinessTests(unittest.TestCase):
 
         unreleased = changelog.split("## [Unreleased]", maxsplit=1)[1]
         unreleased = unreleased.split("## [0.1.0-beta.4]", maxsplit=1)[0]
-        self.assertIn("No changes yet.", unreleased)
+        for candidate_change in (
+            "unique visible non-standard",
+            "visual-center position",
+            "visible-frame",
+        ):
+            self.assertIn(candidate_change, unreleased)
         beta_four = changelog.split("## [0.1.0-beta.4]", maxsplit=1)[1]
         beta_four = beta_four.split("## [0.1.0-beta.3]", maxsplit=1)[0]
         for shipped_change in (
@@ -426,6 +432,27 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("2026-07-31T07:29:22Z", settings)
         self.assertIn("non-draft prerelease", settings)
         self.assertIn("Beta 3 remains", settings)
+
+    def test_beta_five_release_notes_are_publication_neutral_and_unsigned(self) -> None:
+        notes = (ROOT / "docs/release-notes/v0.1.0-beta.5.md").read_text(
+            encoding="utf-8"
+        )
+        for expected in (
+            "# Pet Halo 0.1.0 Beta 5",
+            "unique visible non-standard Accessibility Dialog",
+            "visual-center offset",
+            "(-25.5, -1.5)",
+            "visible-frame midpoint",
+            "activity surface overrides",
+            "Unsigned Developer Preview",
+            "Pet-Halo-0.1.0-beta.5-unsigned-universal.zip",
+            "not signed with a Developer ID",
+            "not notarized by Apple",
+            "new tag and build number",
+        ):
+            self.assertIn(expected, notes)
+        self.assertNotIn("Beta 5 was published", notes)
+        self.assertNotIn("Beta 5 is published", notes)
 
     def test_beta_two_release_notes_remain_publication_neutral_and_unchanged(self) -> None:
         notes_path = ROOT / "docs/release-notes/v0.1.0-beta.2.md"

@@ -4,7 +4,16 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 
 ## [Unreleased]
 
-No changes yet.
+### Fixed
+
+- Accepted a unique visible non-standard Accessibility Dialog as a bounded Pet
+  discovery fallback when the current Codex layout no longer exposes a
+  near-square Pet surface, while retaining fail-closed ambiguity handling.
+- Preserved the latest manually accepted Ring visual-center position as the
+  default offset and made Reset Visual Center return to that baseline.
+- Chose the no-activity Ring side from the selected display's visible-frame
+  midpoint, while keeping an active activity surface as the higher-priority
+  opposite-side direction hint.
 
 ## [0.1.0-beta.4] - 2026-07-31
 
