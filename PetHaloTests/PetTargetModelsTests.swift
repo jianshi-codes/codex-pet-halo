@@ -84,6 +84,14 @@ final class PetTargetModelsTests: XCTestCase {
         XCTAssertFalse(PetVisualCenterOffset(horizontal: 0, vertical: -.infinity).isValid)
     }
 
+    func testDefaultVisualCenterOffsetMatchesLatestCalibratedPosition() {
+        XCTAssertEqual(
+            PetVisualCenterOffset.defaultValue,
+            PetVisualCenterOffset(horizontal: -25.5, vertical: -1.5)
+        )
+        XCTAssertTrue(PetVisualCenterOffset.defaultValue.isValid)
+    }
+
     func testCenteredLayoutSupportsNegativeDisplayCoordinates() throws {
         let petFrame = CGRect(x: -1_100, y: -450, width: 120, height: 110)
         let layout = try XCTUnwrap(PetAttachmentLayoutPolicy.centeredLayout(
@@ -130,6 +138,103 @@ final class PetTargetModelsTests: XCTestCase {
         XCTAssertEqual(
             PetWindowSelector.select(from: [systemDialog, candidate(1)]),
             .selected(memberIdentities: [2], frame: systemDialog.frame)
+        )
+    }
+
+    func testContainingNearSquareWrapperDoesNotOverridePetCore() {
+        let pet = candidate(
+            1,
+            subrole: "AXFloatingWindow",
+            frame: CGRect(x: 100, y: 200, width: 120, height: 110)
+        )
+        let wrapper = candidate(
+            2,
+            subrole: "AXFloatingWindow",
+            frame: CGRect(x: 90, y: 190, width: 140, height: 130)
+        )
+
+        XCTAssertEqual(
+            PetWindowSelector.select(from: [wrapper, pet]),
+            .selected(memberIdentities: [pet.identity], frame: pet.frame)
+        )
+    }
+
+    func testKnownSystemDialogCoreKeepsLargestSurfaceWhenItContainsControls() {
+        let pet = candidate(
+            1,
+            subrole: "AXSystemDialog",
+            frame: CGRect(x: 100, y: 200, width: 120, height: 110)
+        )
+        let control = candidate(
+            2,
+            subrole: "AXSystemDialog",
+            frame: CGRect(x: 140, y: 240, width: 24, height: 24)
+        )
+
+        XCTAssertEqual(
+            PetWindowSelector.select(from: [control, pet]),
+            .selected(memberIdentities: [pet.identity], frame: pet.frame)
+        )
+    }
+
+    func testUniqueUnknownNearSquareSurfaceIsAcceptedAsCompatibilityFallback() {
+        let candidate = candidate(
+            1,
+            subrole: "AXFloatingWindow",
+            frame: CGRect(x: 100, y: 200, width: 120, height: 110)
+        )
+
+        XCTAssertEqual(
+            PetWindowSelector.select(from: [candidate]),
+            .selected(memberIdentities: [candidate.identity], frame: candidate.frame)
+        )
+    }
+
+    func testUniqueNonSquareDialogIsAcceptedAsCompatibilityFallback() {
+        let candidate = candidate(
+            1,
+            frame: CGRect(x: 100, y: 200, width: 320, height: 180)
+        )
+
+        XCTAssertEqual(
+            PetWindowSelector.select(from: [candidate]),
+            .selected(memberIdentities: [candidate.identity], frame: candidate.frame)
+        )
+    }
+
+    func testUniqueTallDialogIsAcceptedAsCompatibilityFallback() {
+        let candidate = candidate(
+            1,
+            frame: CGRect(x: 100, y: 200, width: 160, height: 420)
+        )
+
+        XCTAssertEqual(
+            PetWindowSelector.select(from: [candidate]),
+            .selected(memberIdentities: [candidate.identity], frame: candidate.frame)
+        )
+    }
+
+    func testMultipleNonSquareDialogsRemainAmbiguous() {
+        XCTAssertEqual(
+            PetWindowSelector.select(from: [
+                candidate(1, frame: CGRect(x: 100, y: 200, width: 320, height: 180)),
+                candidate(2, frame: CGRect(x: 500, y: 200, width: 320, height: 180)),
+            ]),
+            .ambiguous
+        )
+    }
+
+    func testMultipleUnknownNearSquareSurfacesRemainAmbiguous() {
+        XCTAssertEqual(
+            PetWindowSelector.select(from: [
+                candidate(1, subrole: "AXFloatingWindow"),
+                candidate(
+                    2,
+                    subrole: "AXFloatingWindow",
+                    frame: CGRect(x: 500, y: 200, width: 120, height: 110)
+                ),
+            ]),
+            .ambiguous
         )
     }
 

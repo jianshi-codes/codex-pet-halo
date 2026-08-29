@@ -49,6 +49,7 @@ struct PetAttachmentLayout: Equatable, Sendable {
 
 struct PetVisualCenterOffset: Codable, Equatable, Sendable {
     static let zero = PetVisualCenterOffset(horizontal: 0, vertical: 0)
+    static let defaultValue = PetVisualCenterOffset(horizontal: -25.5, vertical: -1.5)
     static let maximumMagnitude = PetRingGeometry.standard.panelDiameter
 
     let horizontal: Double

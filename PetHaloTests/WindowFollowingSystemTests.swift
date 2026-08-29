@@ -67,7 +67,7 @@ final class WindowFollowingSystemTests: XCTestCase {
             try JSONEncoder().encode(visualOffset),
             forKey: "io.github.jianshicodes.PetHalo.petRing.visualCenterOffset.v1"
         )
-        XCTAssertEqual(store.load().petVisualCenterOffset, .zero)
+        XCTAssertEqual(store.load().petVisualCenterOffset, .defaultValue)
 
         store.setFollowingEnabled(true)
         store.setWindowAnchor(anchor)

@@ -608,7 +608,7 @@ final class WindowFollowingServiceTests: XCTestCase {
     }
 
     @MainActor
-    func testResetVisualCenterPersistsOnlyZeroOffsetAndSnaps() async throws {
+    func testResetVisualCenterPersistsCurrentDefaultOffsetAndSnaps() async throws {
         let petFrame = CGRect(x: 500, y: 300, width: 120, height: 110)
         let context = makeContext(
             petAccessResult: .selected(PetTargetSnapshot(generation: 0, frame: petFrame)),
@@ -624,17 +624,28 @@ final class WindowFollowingServiceTests: XCTestCase {
         context.service.beginPetCalibration(currentReferencePoint: initial.referencePoint)
         XCTAssertEqual(context.service.state, .calibrating)
         context.service.resetPetVisualCenter()
-        for _ in 0 ..< 100 where recorder.layouts.last?.panelFrame.midX != petFrame.midX {
+        for _ in 0 ..< 100 where recorder.layouts.last?.panelFrame.midX
+            != petFrame.midX + PetVisualCenterOffset.defaultValue.horizontal
+        {
             await Task.yield()
         }
 
-        XCTAssertEqual(context.preferences.petVisualCenterOffsetWrites, [.zero])
+        XCTAssertEqual(
+            context.preferences.petVisualCenterOffsetWrites,
+            [.defaultValue]
+        )
         XCTAssertEqual(context.service.state, .following)
         XCTAssertTrue(recorder.events.contains(.setCalibrationEnabled(true)))
         XCTAssertTrue(recorder.events.contains(.setCalibrationEnabled(false)))
         XCTAssertTrue(context.preferences.windowAnchorWrites.isEmpty)
-        XCTAssertEqual(recorder.layouts.last?.panelFrame.midX, petFrame.midX)
-        XCTAssertEqual(recorder.layouts.last?.panelFrame.midY, petFrame.midY)
+        XCTAssertEqual(
+            recorder.layouts.last?.panelFrame.midX,
+            petFrame.midX + PetVisualCenterOffset.defaultValue.horizontal
+        )
+        XCTAssertEqual(
+            recorder.layouts.last?.panelFrame.midY,
+            petFrame.midY + PetVisualCenterOffset.defaultValue.vertical
+        )
         XCTAssertEqual(recorder.placementModes.last, .snap)
         recorder.stop()
         await context.service.stop()
@@ -668,6 +679,89 @@ final class WindowFollowingServiceTests: XCTestCase {
             try await Task.sleep(for: .milliseconds(1))
         }
         XCTAssertEqual(recorder.orientations.last, .openingTop)
+        recorder.stop()
+        await context.service.stop()
+    }
+
+    @MainActor
+    func testNoActivityUsesScreenHalfForRingOrientation() async throws {
+        let screen = ScreenGeometry(
+            frame: CGRect(x: 0, y: 0, width: 1_200, height: 1_000),
+            visibleFrame: CGRect(x: 0, y: 24, width: 1_200, height: 976)
+        )
+        let upperPet = CGRect(x: 500, y: 650, width: 120, height: 110)
+        let context = makeContext(
+            petAccessResult: .selected(PetTargetSnapshot(
+                generation: 0,
+                frame: upperPet
+            )),
+            enabled: true,
+            screenGeometries: [screen],
+            orientationDebounce: .milliseconds(1)
+        )
+        let recorder = FollowingEventRecorder()
+        recorder.start(context.service.events())
+        context.service.start()
+        await waitForLayout(recorder)
+        for _ in 0 ..< 100 where recorder.orientations.last != .openingBottom {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        XCTAssertEqual(recorder.orientations.last, .openingBottom)
+
+        let generation = try XCTUnwrap(context.petAccessor.snapshot?.generation)
+        context.petAccessor.snapshot = PetTargetSnapshot(
+            generation: generation,
+            frame: CGRect(x: 500, y: 100, width: 120, height: 110)
+        )
+        context.petAccessor.emit(.geometryChanged)
+        for _ in 0 ..< 100 where recorder.orientations.last != .openingTop {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+
+        XCTAssertEqual(recorder.orientations, [.openingBottom, .openingTop])
+        recorder.stop()
+        await context.service.stop()
+    }
+
+    @MainActor
+    func testActivityDirectionOverridesScreenHalfForRingOrientation() async throws {
+        let screen = ScreenGeometry(
+            frame: CGRect(x: 0, y: 0, width: 1_200, height: 1_000),
+            visibleFrame: CGRect(x: 0, y: 24, width: 1_200, height: 976)
+        )
+        let context = makeContext(
+            petAccessResult: .selected(PetTargetSnapshot(
+                generation: 0,
+                frame: CGRect(x: 500, y: 650, width: 120, height: 110),
+                activityGeometryHint: .below,
+                activityVerticalDelta: -80
+            )),
+            enabled: true,
+            screenGeometries: [screen],
+            orientationDebounce: .milliseconds(1)
+        )
+        let recorder = FollowingEventRecorder()
+        recorder.start(context.service.events())
+        context.service.start()
+        await waitForLayout(recorder)
+        for _ in 0 ..< 100 where recorder.orientations.last != .openingBottom {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+        XCTAssertEqual(recorder.orientations.last, .openingBottom)
+
+        let generation = try XCTUnwrap(context.petAccessor.snapshot?.generation)
+        context.petAccessor.snapshot = PetTargetSnapshot(
+            generation: generation,
+            frame: CGRect(x: 500, y: 650, width: 120, height: 110),
+            activityGeometryHint: .above,
+            activityVerticalDelta: 80
+        )
+        context.petAccessor.emit(.activityGeometryChanged)
+        for _ in 0 ..< 100 where recorder.orientations.last != .openingTop {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+
+        XCTAssertEqual(recorder.orientations, [.openingBottom, .openingTop])
         recorder.stop()
         await context.service.stop()
     }
@@ -893,6 +987,7 @@ final class WindowFollowingServiceTests: XCTestCase {
         enabled: Bool = false,
         anchor: HaloWindowAnchor? = nil,
         petVisualCenterOffset: PetVisualCenterOffset = .zero,
+        screenGeometries: [ScreenGeometry] = [],
         orientationDebounce: Duration = .milliseconds(180),
         movementRetry: Duration = .milliseconds(16)
     ) -> Context {
@@ -912,6 +1007,7 @@ final class WindowFollowingServiceTests: XCTestCase {
             windowAccessor: windowAccessor,
             systemEvents: events,
             preferences: preferences,
+            screenGeometryProvider: { screenGeometries },
             petOrientationDebounce: orientationDebounce,
             petMovementRetry: movementRetry
         )
