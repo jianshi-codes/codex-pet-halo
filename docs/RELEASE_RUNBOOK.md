@@ -9,12 +9,12 @@ The next reserved defaults are:
 | Input | Value |
 | --- | --- |
 | Product version | `0.1.0` |
-| Bundle build | `5` |
-| Tag | `v0.1.0-beta.5` |
+| Bundle build | `6` |
+| Tag | `v0.1.0-beta.6` |
 | Distribution | `unsigned` |
-| Release notes | `docs/release-notes/v0.1.0-beta.5.md` — create and review before `PREPARED` |
-| Signed artifact | `Pet-Halo-0.1.0-beta.5-universal.zip` |
-| Local unsigned evidence | `Pet-Halo-0.1.0-beta.5-unsigned-universal.zip` |
+| Release notes | `docs/release-notes/v0.1.0-beta.6.md` — create and review before `PREPARED` |
+| Signed artifact | `Pet-Halo-0.1.0-beta.6-universal.zip` |
+| Local unsigned evidence | `Pet-Halo-0.1.0-beta.6-unsigned-universal.zip` |
 
 Every execution must re-read these values from the reviewed source. Do not reuse
 this table after a release closeout advances the next candidate identity.
@@ -97,8 +97,8 @@ Run both checks and treat any result other than the documented “not found” s
 as a blocker:
 
 ```sh
-git ls-remote --exit-code --refs origin refs/tags/v0.1.0-beta.5
-gh release view v0.1.0-beta.5 --json tagName,name,isDraft,isPrerelease,url
+git ls-remote --exit-code --refs origin refs/tags/v0.1.0-beta.6
+gh release view v0.1.0-beta.6 --json tagName,name,isDraft,isPrerelease,url
 ```
 
 For an unused identity, `git ls-remote --exit-code` returns status `2` and
@@ -142,24 +142,24 @@ make public-exposure-audit
 make release-build \
   RELEASE_ARTIFACT_QUALIFIER=unsigned \
   MARKETING_VERSION=0.1.0 \
-  BUILD_NUMBER=5 \
-  RELEASE_TAG=v0.1.0-beta.5
+  BUILD_NUMBER=6 \
+  RELEASE_TAG=v0.1.0-beta.6
 make release-archive \
   RELEASE_ARTIFACT_QUALIFIER=unsigned \
   MARKETING_VERSION=0.1.0 \
-  BUILD_NUMBER=5 \
-  RELEASE_TAG=v0.1.0-beta.5
+  BUILD_NUMBER=6 \
+  RELEASE_TAG=v0.1.0-beta.6
 make release-checksum \
   RELEASE_ARTIFACT_QUALIFIER=unsigned \
   MARKETING_VERSION=0.1.0 \
-  BUILD_NUMBER=5 \
-  RELEASE_TAG=v0.1.0-beta.5
+  BUILD_NUMBER=6 \
+  RELEASE_TAG=v0.1.0-beta.6
 make release-verify \
   RELEASE_ARTIFACT_QUALIFIER=unsigned \
   RELEASE_MODE=unsigned \
   MARKETING_VERSION=0.1.0 \
-  BUILD_NUMBER=5 \
-  RELEASE_TAG=v0.1.0-beta.5
+  BUILD_NUMBER=6 \
+  RELEASE_TAG=v0.1.0-beta.6
 ```
 
 Keep deterministic tests, live smoke, user interaction, and clean-machine
@@ -167,7 +167,7 @@ evidence as separate rows in the release record. Evidence reuse must name the
 exact source and environment. The release workflow repeats only release-specific
 validation and must not call `make check`.
 
-The unsigned command must produce, under `dist/v0.1.0-beta.5/`, only:
+The unsigned command must produce, under `dist/v0.1.0-beta.6/`, only:
 
 - the local unsigned Universal ZIP;
 - `release-manifest.json`;
@@ -187,8 +187,8 @@ The manual workflow must run from the same reviewed `main` commit:
 gh workflow run release.yml \
   --ref main \
   -f marketing_version=0.1.0 \
-  -f build_number=5 \
-  -f release_tag=v0.1.0-beta.5 \
+  -f build_number=6 \
+  -f release_tag=v0.1.0-beta.6 \
   -f distribution=unsigned \
   -f publish=false
 ```
@@ -236,8 +236,8 @@ For an unsigned developer preview:
 gh workflow run release.yml \
   --ref main \
   -f marketing_version=0.1.0 \
-  -f build_number=5 \
-  -f release_tag=v0.1.0-beta.5 \
+  -f build_number=6 \
+  -f release_tag=v0.1.0-beta.6 \
   -f distribution=unsigned \
   -f publish=true
 ```
@@ -252,8 +252,8 @@ For a signed and notarized prerelease:
 gh workflow run release.yml \
   --ref main \
   -f marketing_version=0.1.0 \
-  -f build_number=5 \
-  -f release_tag=v0.1.0-beta.5 \
+  -f build_number=6 \
+  -f release_tag=v0.1.0-beta.6 \
   -f distribution=signed-notarized \
   -f publish=true
 ```
@@ -278,7 +278,7 @@ Download into a new temporary directory; never verify against local build output
 
 ```sh
 release_tmp="$(mktemp -d "${TMPDIR:-/tmp}/pet-halo-release-postflight.XXXXXX")"
-gh release download v0.1.0-beta.5 --dir "$release_tmp"
+gh release download v0.1.0-beta.6 --dir "$release_tmp"
 (
   cd "$release_tmp"
   shasum -a 256 -c SHA256SUMS
@@ -365,7 +365,7 @@ trust level, and assets. Promotion is a separate public metadata change: require
 the user's explicit approval, recheck tag/source and assets, then run:
 
 ```sh
-gh release edit v0.1.0-beta.5 --prerelease=false --latest
+gh release edit v0.1.0-beta.6 --prerelease=false --latest
 ```
 
 Requery the Release and `/releases/latest`. Require non-draft,

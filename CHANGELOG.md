@@ -4,6 +4,10 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 
 ## [Unreleased]
 
+No changes yet.
+
+## [0.1.0-beta.5] - 2026-08-30
+
 ### Fixed
 
 - Accepted a unique visible non-standard Accessibility Dialog as a bounded Pet
@@ -14,6 +18,18 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 - Chose the no-activity Ring side from the selected display's visible-frame
   midpoint, while keeping an active activity surface as the higher-priority
   opposite-side direction hint.
+
+### Release
+
+- Published tag `v0.1.0-beta.5` from reviewed source commit
+  `aa59c89cc5ce1789cb180ef2f6358d39bfae7161`.
+- Published the unsigned Universal
+  `Pet-Halo-0.1.0-beta.5-unsigned-universal.zip`, `release-manifest.json`,
+  `RELEASE_NOTES.md`, and `SHA256SUMS` assets.
+- Fresh public download verification passed for every checksum and GitHub
+  asset digest; the manifest source commit matches the tag.
+- The release uses product version `0.1.0`, bundle build `5`,
+  `signing: unsigned`, and `notarization: not-submitted`.
 
 ## [0.1.0-beta.4] - 2026-07-31
 
