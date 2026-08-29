@@ -24,6 +24,29 @@ extension PetRingOrientation {
     }
 }
 
+enum PetRingOrientationPolicy {
+    static func withoutActivity(
+        visualCenter: CGPoint,
+        visibleFrame: CGRect
+    ) -> PetRingOrientation {
+        guard visualCenter.x.isFinite,
+              visualCenter.y.isFinite,
+              visibleFrame.origin.x.isFinite,
+              visibleFrame.origin.y.isFinite,
+              visibleFrame.width.isFinite,
+              visibleFrame.height.isFinite,
+              visibleFrame.width > 0,
+              visibleFrame.height > 0
+        else {
+            return .fixedDefault
+        }
+
+        // The visible arc sits opposite the partial-arc opening. Keep it above a
+        // Pet in the upper half and below a Pet in the lower half.
+        return visualCenter.y >= visibleFrame.midY ? .openingBottom : .openingTop
+    }
+}
+
 #if DEBUG
 enum PetRingOrientationPreview: String, CaseIterable, Equatable, Sendable {
     case auto

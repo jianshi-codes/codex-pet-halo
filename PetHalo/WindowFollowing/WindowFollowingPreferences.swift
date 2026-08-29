@@ -8,7 +8,7 @@ struct WindowFollowingPreferenceSnapshot: Equatable, Sendable {
     init(
         followingEnabled: Bool,
         windowAnchor: HaloWindowAnchor?,
-        petVisualCenterOffset: PetVisualCenterOffset = .zero
+        petVisualCenterOffset: PetVisualCenterOffset = .defaultValue
     ) {
         self.followingEnabled = followingEnabled
         self.windowAnchor = windowAnchor
@@ -49,7 +49,7 @@ final class UserDefaultsWindowFollowingPreferences: WindowFollowingPreferenceSto
         let petVisualCenterOffset = defaults.data(forKey: Key.petVisualCenterOffset)
             .flatMap { try? decoder.decode(PetVisualCenterOffset.self, from: $0) }
             .flatMap { $0.isValid ? $0 : nil }
-            ?? .zero
+            ?? .defaultValue
         return WindowFollowingPreferenceSnapshot(
             followingEnabled: defaults.bool(forKey: Key.followingEnabled),
             windowAnchor: windowAnchor,

@@ -111,17 +111,20 @@ overwrite, retag, or upload with `--clobber` to an existing release identity.
 
 ## Source and compatibility for a future Beta
 
-- [ ] Confirm `v0.1.0-beta.5` and build `5` are unused before preparation.
-- [ ] Start from a reviewed, clean `main` commit.
-- [ ] Record exact CLI and Desktop evidence in `docs/COMPATIBILITY.md`.
-- [ ] Generate current CLI schemas into a temporary directory and review every
-  production semantic required by the new source.
-- [ ] Reuse valid exact-source evidence; when the user directly accepts affected
-  UI behavior, do not repeat interactive smoke solely for release bookkeeping.
+- [x] Confirm `v0.1.0-beta.5` and build `5` are unused before preparation on
+  2026-08-30; both the remote tag and GitHub Release were absent.
+- [x] Base the candidate on `main` at
+  `28c2fb4bc1fcd12309e51b751b5d14bcc0287057` and record the fix commit
+  `125a6b6fa89e8cfccd677a2019cc8172f486132a` on the preparation branch.
+- [x] Keep the current CLI and Desktop compatibility boundary in
+  `docs/COMPATIBILITY.md`; this fix changes only bounded Accessibility geometry
+  and local Ring presentation, not the protocol semantics.
+- [x] Reuse the focused exact-source tests and the user's direct acceptance;
+  do not repeat interactive smoke solely for release bookkeeping.
 - [ ] Run `make public-exposure-audit` from a full clone containing every branch
   and tag when source or reachable history changes.
 - [ ] Reconfirm immediately before release that the selected tag and Release are
-  unused.
+  unused and that the reviewed `main` SHA is unchanged.
 
 ## Unsigned preview build
 

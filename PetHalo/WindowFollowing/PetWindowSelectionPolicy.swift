@@ -9,18 +9,37 @@ struct PetWindowCandidate: Equatable, Sendable {
     let role: String?
     let subrole: String?
 
-    var isEligibleCoreSurface: Bool {
+    var isEligibleCoreWindow: Bool {
         guard !isMinimized,
               !isHidden,
               frame.hasFiniteComponents,
               frame.width > 0,
               frame.height > 0,
               role == "AXWindow",
-              subrole == "AXDialog" || subrole == "AXSystemDialog"
+              subrole != "AXStandardWindow"
         else {
             return false
         }
+        return true
+    }
+
+    var isEligibleCoreGeometry: Bool {
+        guard isEligibleCoreWindow else { return false }
         return (0.8 ... 1.5).contains(frame.width / frame.height)
+    }
+
+    var isEligibleCoreSurface: Bool {
+        isEligibleCoreGeometry && (subrole == "AXDialog" || subrole == "AXSystemDialog")
+    }
+
+    var isCompatibilityCoreSurface: Bool {
+        isEligibleCoreGeometry && !isEligibleCoreSurface
+    }
+
+    var isCompatibilityDialogWindow: Bool {
+        guard isEligibleCoreWindow, subrole == "AXDialog" else { return false }
+        let aspectRatio = frame.width / frame.height
+        return aspectRatio <= 2.5
     }
 
     var isSystemDialogCoreSurface: Bool {
@@ -45,14 +64,26 @@ enum PetWindowSelection: Equatable, Sendable {
 
 enum PetWindowSelector {
     static func select(from candidates: [PetWindowCandidate]) -> PetWindowSelection {
-        let eligible = candidates.filter(\.isEligibleCoreSurface)
-        let groups = Dictionary(grouping: eligible, by: { FrameKey(frame: $0.frame) })
-        guard !groups.isEmpty else { return .unavailable }
+        let eligible = candidates.filter(\.isEligibleCoreGeometry)
+        let grouped = Dictionary(grouping: eligible, by: { FrameKey(frame: $0.frame) })
+        let groups = removeContainingWrappers(Array(grouped.values))
+        guard !groups.isEmpty else {
+            // The current Desktop build exposes one visible Pet AXDialog with a
+            // tall non-square frame. Keep extremely wide activity surfaces out.
+            let dialogCandidates = candidates.filter(\.isCompatibilityDialogWindow)
+            let dialogGroups = Dictionary(
+                grouping: dialogCandidates,
+                by: { FrameKey(frame: $0.frame) }
+            )
+            guard dialogGroups.count == 1, let group = dialogGroups.values.first else {
+                return dialogGroups.isEmpty ? .unavailable : .ambiguous
+            }
+            return selected(group)
+        }
 
-        // Current Codex exposes the live Pet core as the largest balanced SystemDialog.
-        // Smaller balanced SystemDialogs are controls, while coincident Dialogs may retain
-        // stale geometry across Tuck Away and Wake.
-        let systemDialogGroups = groups.values.filter {
+        // Prefer the known Codex Pet surface. Smaller balanced SystemDialogs are controls,
+        // while coincident Dialogs may retain stale geometry across Tuck Away and Wake.
+        let systemDialogGroups = groups.filter {
             $0.contains(where: \.isSystemDialogCoreSurface)
         }
         if !systemDialogGroups.isEmpty {
@@ -64,8 +95,11 @@ enum PetWindowSelector {
             return selected(group)
         }
 
-        // Coincident Dialog surfaces remain the compatibility fallback.
-        let corroborated = groups.values.filter {
+        // Coincident Dialog surfaces remain the primary compatibility fallback.
+        let dialogGroups = groups.filter {
+            $0.contains(where: { $0.subrole == "AXDialog" })
+        }
+        let corroborated = dialogGroups.filter {
             Set($0.map(\.identity)).count >= 2
         }
         if corroborated.count == 1, let group = corroborated.first {
@@ -75,10 +109,59 @@ enum PetWindowSelector {
             return .ambiguous
         }
 
-        guard groups.count == 1, let group = groups.values.first else {
+        if dialogGroups.count > 1 {
             return .ambiguous
         }
+        if dialogGroups.count == 1, let group = dialogGroups.first {
+            return selected(group)
+        }
+
+        // Some Desktop builds may keep the geometry but change the subrole. Accept only
+        // one non-standard near-square surface; multiple unknown surfaces remain ambiguous.
+        let compatibilityGroups = groups.filter {
+            $0.contains(where: \.isCompatibilityCoreSurface)
+        }
+        guard compatibilityGroups.count == 1, let group = compatibilityGroups.first else {
+            return compatibilityGroups.isEmpty ? .unavailable : .ambiguous
+        }
         return selected(group)
+    }
+
+    private static func removeContainingWrappers(
+        _ groups: [[PetWindowCandidate]]
+    ) -> [[PetWindowCandidate]] {
+        groups.filter { outerGroup in
+            guard outerGroup.allSatisfy(\.isCompatibilityCoreSurface) else {
+                return true
+            }
+            let outerFrame = averagedFrame(outerGroup)
+            return !groups.contains { innerGroup in
+                guard innerGroup.allSatisfy(\.isCompatibilityCoreSurface) else {
+                    return false
+                }
+                let innerFrame = averagedFrame(innerGroup)
+                guard frameArea(outerFrame) > frameArea(innerFrame) else {
+                    return false
+                }
+                return substantiallyContains(outerFrame, innerFrame)
+            }
+        }
+    }
+
+    private static func substantiallyContains(_ outer: CGRect, _ inner: CGRect) -> Bool {
+        let intersection = outer.intersection(inner)
+        guard !intersection.isNull,
+              intersection.width > 0,
+              intersection.height > 0,
+              frameArea(inner) > 0
+        else {
+            return false
+        }
+        return frameArea(intersection) >= frameArea(inner) * 0.9
+    }
+
+    private static func frameArea(_ frame: CGRect) -> CGFloat {
+        frame.width * frame.height
     }
 
     private static func areaKey(_ group: [PetWindowCandidate]) -> Int {

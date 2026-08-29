@@ -51,6 +51,7 @@ final class WindowFollowingService: HaloWindowFollowing {
     private let windowAccessor: any CodexWindowAccessing
     private let systemEvents: any WindowFollowingSystemEventSourcing
     private let preferences: any WindowFollowingPreferenceStoring
+    private let screenGeometryProvider: () -> [ScreenGeometry]
     private let eventStream: AsyncStream<HaloWindowFollowingEvent>
     private let eventContinuation: AsyncStream<HaloWindowFollowingEvent>.Continuation
 
@@ -61,7 +62,7 @@ final class WindowFollowingService: HaloWindowFollowing {
     private var followingEnabled = false
     private var petFollowingSuppressed = false
     private var windowAnchor: HaloWindowAnchor?
-    private var petVisualCenterOffset: PetVisualCenterOffset = .zero
+    private var petVisualCenterOffset: PetVisualCenterOffset = .defaultValue
     private var petSnapshot: PetTargetSnapshot?
     private var lastPetLayout: PetAttachmentLayout?
     private var windowFrame: CGRect?
@@ -89,6 +90,11 @@ final class WindowFollowingService: HaloWindowFollowing {
         windowAccessor: any CodexWindowAccessing = AccessibilityCodexWindowAccessor(),
         systemEvents: any WindowFollowingSystemEventSourcing = WorkspaceWindowFollowingEventSource(),
         preferences: any WindowFollowingPreferenceStoring = UserDefaultsWindowFollowingPreferences(),
+        screenGeometryProvider: @escaping () -> [ScreenGeometry] = {
+            NSScreen.screens.map {
+                ScreenGeometry(frame: $0.frame, visibleFrame: $0.visibleFrame)
+            }
+        },
         petOrientationDebounce: Duration = .milliseconds(180),
         petMovementRetry: Duration = .milliseconds(16)
     ) {
@@ -98,6 +104,7 @@ final class WindowFollowingService: HaloWindowFollowing {
         self.windowAccessor = windowAccessor
         self.systemEvents = systemEvents
         self.preferences = preferences
+        self.screenGeometryProvider = screenGeometryProvider
         self.petOrientationDebounce = petOrientationDebounce
         self.petMovementRetry = petMovementRetry
         let pair = AsyncStream.makeStream(
@@ -325,8 +332,8 @@ final class WindowFollowingService: HaloWindowFollowing {
             preCalibrationReferencePoint = nil
             eventContinuation.yield(.setCalibrationEnabled(false))
         }
-        petVisualCenterOffset = .zero
-        preferences.setPetVisualCenterOffset(.zero)
+        petVisualCenterOffset = .defaultValue
+        preferences.setPetVisualCenterOffset(.defaultValue)
         if let petSnapshot {
             schedulePetRingOrientation(for: petSnapshot)
         }
@@ -719,7 +726,20 @@ final class WindowFollowingService: HaloWindowFollowing {
         let desired: PetRingOrientation
         switch snapshot.activityGeometryHint {
         case .none:
-            desired = .fixedDefault
+            let visualCenter = CGPoint(
+                x: snapshot.frame.midX + petVisualCenterOffset.horizontal,
+                y: snapshot.frame.midY + petVisualCenterOffset.vertical
+            )
+            let screen = HaloPlacementGeometry.selectedScreen(
+                for: visualCenter,
+                screens: screenGeometryProvider()
+            )
+            desired = screen.map {
+                PetRingOrientationPolicy.withoutActivity(
+                    visualCenter: visualCenter,
+                    visibleFrame: $0.visibleFrame
+                )
+            } ?? .fixedDefault
         case .above, .below:
             if let activityVerticalDelta = snapshot.activityVerticalDelta {
                 let visualVerticalDelta = activityVerticalDelta

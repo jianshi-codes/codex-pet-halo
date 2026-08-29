@@ -63,6 +63,8 @@ chooses only the arc opening and is never exposed as idle/working state. See the
 
 **Complete with partial gate — `PARTIAL — SOURCE RELEASE READY, SIGNED BINARY BLOCKED`.** PRs #10 and #11 merged on 2026-07-21. The repository is public, and Beta 1 plus its unsigned Universal ZIP and checksum metadata were published on 2026-07-21. PRs #14 and #15 subsequently merged, and `v0.1.0-beta.2` plus its unsigned Universal ZIP and checksum metadata were published on 2026-07-21. PRs #17 and #18 merged on 2026-07-25, and `v0.1.0-beta.3` plus its unsigned Universal ZIP and checksum metadata were published as an Unsigned Developer Preview from commit `e8480a0443783e05dd871f5c248157633a84d9c5`; the user explicitly promoted the verified Release to Latest. PR #20 merged on 2026-07-31, and `v0.1.0-beta.4` was published as an Unsigned Developer Preview from commit `beb0c2c925d04fccf650205a611a1a20d22ead75`. Compatibility hardening, onboarding, privacy/security/legal evidence, reproducible packaging, sanitized issue forms, and collision-safe future release automation are in place. Developer ID signing, Apple notarization, stapling, Gatekeeper verification, and signed clean-machine acceptance remain incomplete and require a new release identity. See [the M9 report](milestones/m9-public-beta-readiness.md).
 
-Post-release defaults reserve `v0.1.0-beta.5` / build `5` as the next unused
-identity. Preparing it does not authorize creating a tag, signing, notarizing,
-or publishing.
+The Beta 5 candidate uses `v0.1.0-beta.5` / build `5` and is being prepared on
+the dedicated `codex/beta5-release-preparation` branch. Its source and unsigned
+distribution remain separately gated by review, validation, publication, and
+postflight evidence; preparation alone does not authorize signing, notarizing,
+or publication.
