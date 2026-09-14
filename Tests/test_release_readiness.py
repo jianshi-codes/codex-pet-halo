@@ -427,7 +427,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("2026-09-14T16:51:05Z", current_state)
         self.assertIn("bundle build `6`", current_state)
         self.assertIn("39a0c1a596309f6ff5467be65f5059f175c03c47", current_state)
-        self.assertIn("/releases/latest` still resolved to Beta 5", current_state)
+        self.assertIn("Beta 6 is currently Latest", current_state)
         self.assertIn("draft: false", current_state)
         self.assertIn("prerelease: true", current_state)
         self.assertIn("signing: unsigned", current_state)
@@ -447,9 +447,9 @@ class ReleaseReadinessTests(unittest.TestCase):
 
         self.assertIn("`v0.1.0-beta.6` resolves to", settings)
         self.assertIn("2026-09-14T16:51:05Z", settings)
-        self.assertIn("non-draft unsigned prerelease", settings)
+        self.assertIn("non-draft unsigned release", settings)
         self.assertIn("v0.1.0-beta.4", settings)
-        self.assertIn("Beta 5", settings)
+        self.assertIn("current Latest", settings)
         self.assertNotIn("Beta 4 remains", settings)
         self.assertNotIn("Beta 3 remains", settings)
 

@@ -170,9 +170,10 @@ overwrite, retag, or upload with `--clobber` to an existing release identity.
   `39a0c1a596309f6ff5467be65f5059f175c03c47`.
 - [x] GitHub Release
   `Pet Halo 0.1.0 Beta 6 — Unsigned Developer Preview` published at
-  `2026-09-14T16:51:05Z` as a non-draft prerelease. At this documentation
-  snapshot the `/releases/latest` endpoint still resolved to Beta 5; R10
-  promotion is the separate final release action.
+  `2026-09-14T16:51:05Z` as a non-draft release; the `/releases/latest`
+  endpoint resolves to Beta 6 after the R10 promotion.
+- [x] R10 promotion completed: Beta 6 is the GitHub Latest release and is no
+  longer marked as a prerelease.
 - [x] Exactly four assets were published:
   `Pet-Halo-0.1.0-beta.6-unsigned-universal.zip`, `SHA256SUMS`,
   `release-manifest.json`, and `RELEASE_NOTES.md`.

@@ -4,9 +4,8 @@
 - Status: **PARTIAL — SOURCE RELEASE READY, SIGNED BINARY BLOCKED**
 - Published release: `v0.1.0-beta.6`, product version `0.1.0`, bundle build `6`
 - Published source: `39a0c1a596309f6ff5467be65f5059f175c03c47`
-- Release classification: public, non-draft prerelease; unsigned and not
-  notarized. The Beta 6 post-release snapshot was recorded before the separate
-  R10 Latest promotion; `/releases/latest` then resolved to Beta 5.
+- Release classification: public, non-draft release; unsigned and not
+  notarized. Beta 6 is currently Latest.
 - Post-release branch: `codex/beta6-release-closeout`
 - Next unused identity: `v0.1.0-beta.7`, product version `0.1.0`, bundle build
   `7`; availability was rechecked after Beta 6 publication
@@ -34,9 +33,8 @@
   skipped.
 - GitHub published
   [Pet Halo 0.1.0 Beta 6 — Unsigned Developer Preview](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.6)
-  at `2026-09-14T16:51:05Z` as a non-draft prerelease. At this post-release
-  documentation snapshot, `/releases/latest` still resolved to Beta 5; R10
-  promotes Beta 6 separately.
+  at `2026-09-14T16:51:05Z` as a non-draft release; the `/releases/latest`
+  endpoint resolves to Beta 6 after the R10 promotion.
 - The tag resolves directly to the reviewed source commit
   `39a0c1a596309f6ff5467be65f5059f175c03c47`. The complete public asset set is:
   - `Pet-Halo-0.1.0-beta.6-unsigned-universal.zip` — 1,366,220 bytes,
