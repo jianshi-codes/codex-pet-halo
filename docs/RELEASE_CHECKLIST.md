@@ -127,7 +127,7 @@ overwrite, retag, or upload with `--clobber` to an existing release identity.
 - [x] GitHub Release
   `Pet Halo 0.1.0 Beta 5 — Unsigned Developer Preview` published at
   `2026-08-29T16:55:13Z` as a non-draft prerelease; the `/releases/latest`
-  endpoint resolves to Beta 4.
+  endpoint resolves to Beta 5.
 - [x] Exactly four assets were published:
   `Pet-Halo-0.1.0-beta.5-unsigned-universal.zip`, `SHA256SUMS`,
   `release-manifest.json`, and `RELEASE_NOTES.md`.
@@ -155,13 +155,16 @@ overwrite, retag, or upload with `--clobber` to an existing release identity.
 
 ## Source and compatibility for a future Beta
 
-- [ ] Confirm `v0.1.0-beta.6` and build `6` are unused before preparation.
-- [ ] Start from a reviewed, clean `main` commit.
-- [ ] Record exact CLI and Desktop evidence in `docs/COMPATIBILITY.md`.
-- [ ] Generate current CLI schemas into a temporary directory and review every
-  production semantic required by the new source.
-- [ ] Reuse valid exact-source evidence; when the user directly accepts affected
-  UI behavior, do not repeat interactive smoke solely for release bookkeeping.
+- [x] Confirm `v0.1.0-beta.6` and build `6` are unused before preparation on
+  2026-09-15; both the remote tag and GitHub Release were absent.
+- [x] Base the candidate on reviewed `main` at
+  `aa59c89cc5ce1789cb180ef2f6358d39bfae7161` and record the source fixes in
+  `43174291707c7a72fa31763ee413f2e66e56a1c7` and
+  `bb308c09675f7fe8a9d5fd423fa34f3e53562820`.
+- [x] Keep the current CLI and Desktop compatibility boundary; this fix changes
+  only local Accessibility permission/geometry state handling.
+- [x] Reuse the exact-source user acceptance and run `make check`; the focused
+  target and permission tests plus the complete check passed with zero failures.
 - [ ] Run `make public-exposure-audit` from a full clone containing every branch
   and tag when source or reachable history changes.
 - [ ] Reconfirm immediately before release that the selected tag and Release are

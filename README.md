@@ -118,7 +118,19 @@ To enable following:
 2. Grant Pet Halo access in **System Settings → Privacy & Security → Accessibility**.
 3. Return to Pet Halo. A unique visible Pet is preferred automatically.
 
+After the grant, the menu may briefly show `Following: Checking Accessibility`
+while macOS publishes the updated trust state. Pet Halo does not repeat the
+prompt during this interval and resumes following automatically once the grant
+is visible. If the bounded check expires, the state returns to
+`Following: Accessibility Required` without affecting Usage or application
+launch.
+
 Target priority is Pet, then an explicitly calibrated Codex standard-window fallback, then free-floating placement. Ambiguous Pet geometry is never guessed. When Pet is tucked away or unavailable, Pet Halo hides by default; **Use Codex Window Fallback** restores the calibrated card, and Wake returns to a unique supported Pet target.
+
+Small transient input-method indicator surfaces are not Pet candidates. While a
+Pet is already tracked, a window-created or selection event cannot move the
+Halo to an `A`, `中`, or `拼` indicator; a replacement target must first remain
+stable.
 
 ### Adjust Ring Center
 
@@ -143,6 +155,7 @@ See [Privacy](docs/PRIVACY.md) and [Security](SECURITY.md).
 | `Usage: Rate limits temporarily unavailable` | The read-only rate snapshot failed | Wait and use **Refresh Usage**; no value is estimated |
 | `Usage: Today temporarily unavailable` | Account Usage is unsupported or temporarily failed | Weekly may remain current; Today stays omitted/unavailable |
 | `Following: Codex Not Running` | Codex Desktop is not available | Start Codex Desktop |
+| `Following: Checking Accessibility` | macOS is still publishing the result of the explicit permission request | Wait briefly; do not click Enable again; following resumes automatically after a grant |
 | `Following: Accessibility Required` | Permission is absent or was revoked | Re-enable Pet Halo in Accessibility settings |
 | `Pet: Unavailable or Tucked Away` | No supported visible Pet target exists | Wake Pet, or use the Codex window fallback |
 | `Pet: Target Ambiguous` | More than one eligible target remains | Tuck Away/Wake Pet; Pet Halo will not guess |

@@ -4,7 +4,18 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 
 ## [Unreleased]
 
-No changes yet.
+### Fixed
+
+- Prevented transient input-method indicators such as `A`, `中`, and `拼` from
+  replacing the currently tracked Pet target. Pet-sized continuity is preserved
+  during Accessibility selection events, and a replacement must remain stable
+  before the existing fallback hierarchy is considered.
+- Made Accessibility authorization settle through one bounded checking state:
+  repeated **Enable Pet Following** commands do not repeat the system prompt,
+  and following resumes automatically after macOS reports the grant.
+- Kept the local development build launchable with its embedded framework by
+  leaving Xcode's local signing path intact and disabling Hardened Runtime only
+  for `make build`; public release artifacts remain unsigned previews.
 
 ## [0.1.0-beta.5] - 2026-08-30
 
