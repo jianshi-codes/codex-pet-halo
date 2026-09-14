@@ -177,6 +177,21 @@ final class PetTargetModelsTests: XCTestCase {
         )
     }
 
+    func testSmallInputMethodHudSurfacesAreNotPetCandidates() {
+        let systemHud = candidate(
+            1,
+            subrole: "AXSystemDialog",
+            frame: CGRect(x: 300, y: 400, width: 32, height: 32)
+        )
+        let compatibilityHud = candidate(
+            2,
+            frame: CGRect(x: 500, y: 400, width: 40, height: 36)
+        )
+
+        XCTAssertEqual(PetWindowSelector.select(from: [systemHud]), .unavailable)
+        XCTAssertEqual(PetWindowSelector.select(from: [compatibilityHud]), .unavailable)
+    }
+
     func testUniqueUnknownNearSquareSurfaceIsAcceptedAsCompatibilityFallback() {
         let candidate = candidate(
             1,

@@ -701,6 +701,31 @@ final class ApplicationCoordinatorTests: XCTestCase {
     }
 
     @MainActor
+    func testAccessibilityCheckBlocksRepeatedEnableCommands() async {
+        let panel = FakeHaloPanelController()
+        let following = FakeWindowFollowingService()
+        let coordinator = ApplicationCoordinator(
+            usageService: FakeUsageService(),
+            haloPanelController: panel,
+            windowFollowingService: following,
+            terminateApplication: {}
+        )
+        coordinator.start()
+        following.emit(.stateChanged(.checkingPermission))
+        for _ in 0 ..< 20 where coordinator.windowFollowingState != .checkingPermission {
+            await Task.yield()
+        }
+
+        XCTAssertFalse(coordinator.canEnablePetFollowing)
+        coordinator.enablePetFollowing()
+
+        XCTAssertEqual(following.enableCount, 0)
+        XCTAssertEqual(coordinator.windowFollowingState, .checkingPermission)
+        coordinator.requestTermination()
+        await coordinator.waitForShutdown()
+    }
+
+    @MainActor
     func testExpandedFallbackRecoversToAtomicPetRingAttachmentAndRestoresMode() async throws {
         let panel = FakeHaloPanelController()
         let following = FakeWindowFollowingService()

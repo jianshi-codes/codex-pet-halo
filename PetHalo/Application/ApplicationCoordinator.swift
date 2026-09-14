@@ -211,7 +211,10 @@ final class ApplicationCoordinator: ObservableObject {
     }
 
     var canEnablePetFollowing: Bool {
-        state == .running && targetSource != .pet && windowFollowingState != .calibrating
+        state == .running
+            && targetSource != .pet
+            && windowFollowingState != .calibrating
+            && windowFollowingState != .checkingPermission
     }
 
     var canCalibrateWindowFallback: Bool {

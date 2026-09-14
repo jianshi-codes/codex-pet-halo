@@ -24,6 +24,7 @@ protocol PetTargetAccessing: AnyObject {
         onEvent: @escaping @MainActor (PetTargetObservationEvent, Int) -> Void
     ) -> PetTargetAccessResult
     func currentSnapshot() -> PetTargetSnapshot?
+    func currentSnapshot(preferCurrentTarget: Bool) -> PetTargetSnapshot?
     func currentTrackedFrame() -> PetTrackedFrameSample?
     func stop()
 }
@@ -312,10 +313,29 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
     }
 
     func currentSnapshot() -> PetTargetSnapshot? {
+        currentSnapshot(preferCurrentTarget: false)
+    }
+
+    func currentSnapshot(preferCurrentTarget: Bool) -> PetTargetSnapshot? {
         guard let applicationElement else { return nil }
         let windows = elementArray(attribute: kAXWindowsAttribute, from: applicationElement)
-        guard case let .selected(selection) = select(from: windows),
-              let petFrame = appKitFrame(fromAccessibilityFrame: selection.petFrame)
+        let candidates = makeCandidates(from: windows)
+        let selection: Selection
+        if preferCurrentTarget {
+            guard let currentSelection = selectCurrentTarget(
+                from: windows,
+                candidates: candidates
+            ) else {
+                return nil
+            }
+            selection = currentSelection
+        } else {
+            guard case let .selected(newSelection) = select(from: candidates) else {
+                return nil
+            }
+            selection = newSelection
+        }
+        guard let petFrame = appKitFrame(fromAccessibilityFrame: selection.petFrame)
         else {
             return nil
         }
@@ -395,7 +415,70 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
     }
 
     private func select(from windows: [AXUIElement]) -> SelectionResult {
-        let candidates = windows.enumerated().map { index, window in
+        select(from: makeCandidates(from: windows))
+    }
+
+    private func select(from candidates: [PetWindowCandidate]) -> SelectionResult {
+        switch PetWindowSelector.select(from: candidates) {
+        case .unavailable:
+            return .unavailable
+        case .ambiguous:
+            return .ambiguous
+        case let .selected(memberIdentities, petFrame):
+            return .selected(makeSelection(
+                memberIdentities: memberIdentities,
+                petFrame: petFrame,
+                candidates: candidates
+            ))
+        }
+    }
+
+    private func selectCurrentTarget(
+        from windows: [AXUIElement],
+        candidates: [PetWindowCandidate]
+    ) -> Selection? {
+        guard !targetElements.isEmpty else { return nil }
+        let memberIdentities = Set(windows.enumerated().compactMap { index, window in
+            targetElements.contains { CFEqual($0, window) } ? index : nil
+        })
+        guard memberIdentities.count == targetElements.count else { return nil }
+        let trackedCandidates = candidates.filter {
+            memberIdentities.contains($0.identity)
+        }
+        guard trackedCandidates.count == targetElements.count,
+              trackedCandidates.allSatisfy(\.isPlausiblePetScale),
+              let petFrame = PetTrackedFrameResolver.resolve(trackedCandidates.map(\.frame))
+        else {
+            return nil
+        }
+        return makeSelection(
+            memberIdentities: memberIdentities,
+            petFrame: petFrame,
+            candidates: candidates
+        )
+    }
+
+    private func makeSelection(
+        memberIdentities: Set<Int>,
+        petFrame: CGRect,
+        candidates: [PetWindowCandidate]
+    ) -> Selection {
+        let activity = PetActivityGeometryResolver.resolve(
+            petFrame: petFrame,
+            petMemberIdentities: memberIdentities,
+            candidates: candidates
+        )
+        return Selection(
+            observedIdentities: memberIdentities,
+            activityObservedIdentities: activity.observedIdentities,
+            petFrame: petFrame,
+            activityGeometryHint: activity.hint,
+            activityVerticalDelta: activity.activityVerticalDelta
+        )
+    }
+
+    private func makeCandidates(from windows: [AXUIElement]) -> [PetWindowCandidate] {
+        windows.enumerated().map { index, window in
             PetWindowCandidate(
                 identity: index,
                 frame: accessibilityFrame(of: window) ?? .zero,
@@ -405,27 +488,13 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
                 subrole: string(attribute: kAXSubroleAttribute, from: window)
             )
         }
-        switch PetWindowSelector.select(from: candidates) {
-        case .unavailable:
-            return .unavailable
-        case .ambiguous:
-            return .ambiguous
-        case let .selected(memberIdentities, petFrame):
-            let activity = PetActivityGeometryResolver.resolve(
-                petFrame: petFrame,
-                petMemberIdentities: memberIdentities,
-                candidates: candidates
-            )
-            return .selected(Selection(
-                observedIdentities: memberIdentities,
-                activityObservedIdentities: activity.observedIdentities,
-                petFrame: petFrame,
-                activityGeometryHint: activity.hint,
-                activityVerticalDelta: activity.activityVerticalDelta
-            ))
-        }
     }
 
+    /*
+     The current Pet AX elements are the continuity anchor. A window-created
+     notification can expose a transient input-method HUD; never replace the
+     tracked Pet merely because that new top-level window wins a fresh scan.
+     */
     private func appKitFrame(fromAccessibilityFrame frame: CGRect) -> CGRect? {
         guard let primaryFrame = NSScreen.screens.first?.frame else { return nil }
         return AXCoordinateConverter(primaryDisplayFrame: primaryFrame)
