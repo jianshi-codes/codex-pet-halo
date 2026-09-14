@@ -71,3 +71,10 @@ screen-half Ring rule only when activity geometry is absent. Developer ID
 signing, Apple notarization, stapling, Gatekeeper verification, and signed
 clean-machine acceptance remain incomplete. The next unused candidate is
 `v0.1.0-beta.6` / build `6`.
+
+The next Beta 6 candidate uses `v0.1.0-beta.6` / build `6` on
+`codex/ime-hud-target-guard`. It hardens the Accessibility permission state
+machine against repeated prompts, ignores transient input-method indicator
+surfaces during Pet following, and waits for a stable replacement before
+falling back. It preserves the existing target hierarchy, privacy boundary, and
+unsigned-only distribution gate.

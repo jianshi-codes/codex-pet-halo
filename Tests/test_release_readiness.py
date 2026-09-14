@@ -371,7 +371,8 @@ class ReleaseReadinessTests(unittest.TestCase):
 
         unreleased = changelog.split("## [Unreleased]", maxsplit=1)[1]
         unreleased = unreleased.split("## [0.1.0-beta.5]", maxsplit=1)[0]
-        self.assertEqual(unreleased.strip(), "No changes yet.")
+        self.assertIn("Prevented transient input-method indicators", unreleased)
+        self.assertIn("Accessibility authorization settle", unreleased)
         beta_five = changelog.split("## [0.1.0-beta.5]", maxsplit=1)[1]
         beta_five = beta_five.split("## [0.1.0-beta.4]", maxsplit=1)[0]
         for shipped_change in (
@@ -417,7 +418,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("2026-08-29T16:55:13Z", current_state)
         self.assertIn("bundle build `5`", current_state)
         self.assertIn("aa59c89cc5ce1789cb180ef2f6358d39bfae7161", current_state)
-        self.assertIn("Beta 4 is currently Latest", current_state)
+        self.assertIn("Beta 5 is currently Latest", current_state)
         self.assertIn("draft: false", current_state)
         self.assertIn("prerelease: true", current_state)
         self.assertIn("signing: unsigned", current_state)
@@ -438,7 +439,9 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("`v0.1.0-beta.5` resolves to", settings)
         self.assertIn("2026-08-29T16:55:13Z", settings)
         self.assertIn("non-draft unsigned prerelease", settings)
-        self.assertIn("Beta 4", settings)
+        self.assertIn("v0.1.0-beta.4", settings)
+        self.assertIn("current Latest", settings)
+        self.assertNotIn("Beta 4 remains", settings)
         self.assertNotIn("Beta 3 remains", settings)
 
     def test_beta_five_release_notes_are_frozen_and_unsigned(self) -> None:
