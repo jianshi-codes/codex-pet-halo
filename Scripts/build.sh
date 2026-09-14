@@ -12,6 +12,5 @@ xcodebuild \
     -scheme PetHalo \
     -configuration "$configuration" \
     -derivedDataPath "$derived_data_path" \
-    CODE_SIGNING_ALLOWED=NO \
-    CODE_SIGNING_REQUIRED=NO \
+    ENABLE_HARDENED_RUNTIME=NO \
     build
