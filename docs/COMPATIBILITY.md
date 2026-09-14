@@ -53,6 +53,13 @@ latest direct user acceptance also covered the default visual-center baseline
 and no-activity upper/lower Ring direction. No additional exact Desktop version
 is added to the reviewed table without independent version evidence.
 
+Beta 6 preserves the same CLI and Desktop compatibility boundary. Its
+Accessibility changes are local state handling: an existing grant is checked
+before requesting, delayed grants settle through a bounded checking state, and
+transient input-method indicators are rejected as Pet targets while a stable
+Pet continuity anchor is available. No new CLI or Desktop version is added to
+the reviewed table by this release.
+
 For Desktop `26.715.52143 (5591)`, the consolidated M9 Pet-following gate directly observed one unique Route A Pet core moving while the resolved Codex standard window remained stationary, automatic visual-center attachment, Tuck Away fallback, Wake recovery, Pet Ring selection, non-activation, and complete Pet Halo/owned-child shutdown. M5–M7 use this one live flow rather than repeating the same interaction across milestone scripts.
 
 Desktop `26.721.41059 (5848)` changed the visible-Pet Route A topology to three

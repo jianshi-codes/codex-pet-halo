@@ -4,6 +4,10 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 
 ## [Unreleased]
 
+No changes yet.
+
+## [0.1.0-beta.6] - 2026-09-15
+
 ### Fixed
 
 - Prevented transient input-method indicators such as `A`, `中`, and `拼` from
@@ -16,6 +20,20 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 - Kept the local development build launchable with its embedded framework by
   leaving Xcode's local signing path intact and disabling Hardened Runtime only
   for `make build`; public release artifacts remain unsigned previews.
+
+### Release
+
+- Published tag `v0.1.0-beta.6` from reviewed source commit
+  `39a0c1a596309f6ff5467be65f5059f175c03c47`.
+- Published the unsigned Universal
+  `Pet-Halo-0.1.0-beta.6-unsigned-universal.zip`, `release-manifest.json`,
+  `RELEASE_NOTES.md`, and `SHA256SUMS` assets.
+- Validation-only and publication workflows passed; the signed/notarized job
+  was skipped because this is an unsigned Developer Preview.
+- Fresh public download verification passed for every checksum and GitHub
+  asset digest; the manifest source commit matches the tag.
+- The release uses product version `0.1.0`, bundle build `6`,
+  `signing: unsigned`, and `notarization: not-submitted`.
 
 ## [0.1.0-beta.5] - 2026-08-30
 

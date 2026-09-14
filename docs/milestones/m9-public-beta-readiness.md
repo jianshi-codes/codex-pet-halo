@@ -6,6 +6,10 @@ M9 hardens compatibility, public onboarding, safe failure messages, reproducible
 
 PR #10 merged the M9 implementation on 2026-07-21. PR #11 merged the unsigned publication preparation the same day. The repository is public and Beta 1 is published; this document now distinguishes that source/unsigned success from the still-blocked signed-binary gate.
 
+Beta 5 and Beta 6 were subsequently published as unsigned prereleases after
+their validation and public-download postflight gates. The signed-binary gate
+remains blocked.
+
 ## Current compatibility evidence
 
 - Local CLI: `0.145.0-alpha.18`; the only currently accepted CLI version.
@@ -15,7 +19,7 @@ PR #10 merged the M9 implementation on 2026-07-21. PR #11 merged the unsigned pu
 
 ## Published Beta 1 evidence
 
-GitHub Release `v0.1.0-beta.1` was published on 2026-07-21 with title `Pet Halo 0.1.0 Beta 1 — Unsigned Developer Preview`. At the M9 closeout it was non-draft, non-prerelease, and latest. Beta 2 was subsequently published and is now the latest Release; Beta 1 remains non-draft, non-prerelease, and otherwise unchanged.
+GitHub Release `v0.1.0-beta.1` was published on 2026-07-21 with title `Pet Halo 0.1.0 Beta 1 — Unsigned Developer Preview`. At the M9 closeout it was non-draft, non-prerelease, and latest. Beta 2 was subsequently published and later superseded by the later Beta releases; Beta 1 remains non-draft, non-prerelease, and otherwise unchanged.
 
 The GitHub Release target is `main`. Its tag resolves to `4fe6f0e4926a1acd6a8e6faaf1a34be430eaddc1`, exactly matching `release-manifest.json` `sourceCommit`. The manifest states `signing: unsigned` and `notarization: not-submitted`.
 
@@ -59,4 +63,4 @@ M9 also consolidates the overlapping M5–M7 validation into the single `make pe
 
 `PARTIAL — SOURCE RELEASE READY, SIGNED BINARY BLOCKED`
 
-Source and unsigned publication are complete. The signed binary remains externally blocked on a valid Developer ID Application identity, notarytool credentials, credentialed workflow execution, Apple `Accepted`, stapling, Gatekeeper, and exact signed-artifact clean-machine acceptance. No signing or notarization PASS is claimed. Beta 2 was subsequently published unsigned; any future signed publication must use a new release identity such as Beta 3 and must not replace or retag Beta 1 or Beta 2.
+Source and unsigned publication are complete. The signed binary remains externally blocked on a valid Developer ID Application identity, notarytool credentials, credentialed workflow execution, Apple `Accepted`, stapling, Gatekeeper, and exact signed-artifact clean-machine acceptance. No signing or notarization PASS is claimed. Beta 6 was subsequently published unsigned; any future signed publication must use a new release identity such as Beta 7 and must not replace or retag an earlier Beta.

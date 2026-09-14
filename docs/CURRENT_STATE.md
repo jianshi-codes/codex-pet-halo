@@ -2,39 +2,63 @@
 
 - Milestone: M9 — Public Beta Release Readiness
 - Status: **PARTIAL — SOURCE RELEASE READY, SIGNED BINARY BLOCKED**
-- Published release: `v0.1.0-beta.5`, product version `0.1.0`, bundle build `5`
-- Published source: `aa59c89cc5ce1789cb180ef2f6358d39bfae7161`
+- Published release: `v0.1.0-beta.6`, product version `0.1.0`, bundle build `6`
+- Published source: `39a0c1a596309f6ff5467be65f5059f175c03c47`
 - Release classification: public, non-draft prerelease; unsigned and not
-  notarized. Beta 5 is currently Latest.
-- Post-release branch: `codex/beta5-release-closeout`
-- Next unused identity: `v0.1.0-beta.6`, product version `0.1.0`, bundle build
-  `6`; availability must be checked before preparation or publication
+  notarized. The Beta 6 post-release snapshot was recorded before the separate
+  R10 Latest promotion; `/releases/latest` then resolved to Beta 5.
+- Post-release branch: `codex/beta6-release-closeout`
+- Next unused identity: `v0.1.0-beta.7`, product version `0.1.0`, bundle build
+  `7`; availability was rechecked after Beta 6 publication
 - Repository: public at `jianshi-codes/codex-pet-halo`
 
-## Beta 6 preparation state — 2026-09-15
+## Published Beta 6 evidence — 2026-09-15
 
-- Candidate identity: `v0.1.0-beta.6`, product version `0.1.0`, bundle build
-  `6`, unsigned and not notarized. The remote tag and GitHub Release were
-  rechecked absent before preparation.
-- The candidate is based on reviewed `main` source commit
-  `aa59c89cc5ce1789cb180ef2f6358d39bfae7161`. The source fixes are recorded in
-  `43174291707c7a72fa31763ee413f2e66e56a1c7` and
-  `bb308c09675f7fe8a9d5fd423fa34f3e53562820` on
-  `codex/ime-hud-target-guard`.
-- Accessibility following now checks trust before requesting, exposes a
-  bounded `Checking Accessibility` state, suppresses duplicate enable commands,
-  and resumes target resolution after a delayed grant.
-- Tiny transient input-method surfaces are rejected as Pet candidates. The
-  tracked Pet AX elements remain the continuity anchor, and a new Pet target
-  must be stable before fallback can replace it.
-- The local `make build` path remains launchable with the embedded framework;
-  the public release path remains an unsigned Developer Preview.
-- `make check` passed on this candidate source: 73 Core tests with 1 existing
+- PR #25 merged the Beta 6 preparation into `main`; `main` and `origin/main`
+  resolved to `39a0c1a596309f6ff5467be65f5059f175c03c47`.
+- The source fixes stabilize Accessibility authorization state, suppress
+  repeated permission prompts, reject transient input-method indicators as Pet
+  targets, preserve the tracked Pet as a continuity anchor, and require a
+  stable replacement before fallback. The local development build remains
+  launchable with its embedded framework; the public release remains unsigned.
+- `make check` passed on the candidate source: 73 Core tests with 1 existing
   local-only smoke skip, 141 application tests, and 46 Python tests, all with
-  zero failures.
-- The candidate has not been tagged or published. Beta 5 remains the current
-  public release and Latest until the Beta 6 publication and postflight gates
-  complete.
+  zero failures. The local public-exposure audit, unsigned Release build,
+  archive, checksum, verify, and isolated launch/shutdown smoke also passed.
+- Validation-only workflow
+  [34870641103](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/34870641103)
+  passed without creating release state.
+- Publication workflow
+  [34870879323](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/34870879323)
+  passed; the unsigned publish job completed and the signed/notarized job was
+  skipped.
+- GitHub published
+  [Pet Halo 0.1.0 Beta 6 — Unsigned Developer Preview](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.6)
+  at `2026-09-14T16:51:05Z` as a non-draft prerelease. At this post-release
+  documentation snapshot, `/releases/latest` still resolved to Beta 5; R10
+  promotes Beta 6 separately.
+- The tag resolves directly to the reviewed source commit
+  `39a0c1a596309f6ff5467be65f5059f175c03c47`. The complete public asset set is:
+  - `Pet-Halo-0.1.0-beta.6-unsigned-universal.zip` — 1,366,220 bytes,
+    SHA-256 `7dcf6d9845c9a6ac5cb2b78740ca83adfb8b6c330381c51e0918bed831d041d8`;
+  - `release-manifest.json` — 336 bytes,
+    SHA-256 `92f5383d42cb8b0bf4ee19fb92456cc2ec008c7176e674f2056a54bec05a877d`;
+  - `RELEASE_NOTES.md` — 2,491 bytes,
+    SHA-256 `72802b8f3be9be818678b26a649860cc2656181f58a97b1a61da96f58ddf8ada`;
+  - `SHA256SUMS` — 282 bytes,
+    SHA-256 `effc0a0b6888436de6aa9fa69258838edea84276ca55acd27fa40ee42349fa2f`.
+- A fresh public download contained exactly those four files. Every
+  `SHA256SUMS` entry and GitHub API asset digest matched.
+- The manifest and extracted bundle match version `0.1.0`, build `6`, tag,
+  source SHA, bundle identifier `io.github.jianshicodes.PetHalo`, minimum macOS
+  `14.0`, and Universal `x86_64 arm64` architectures. The manifest records
+  `signing: unsigned` and `notarization: not-submitted`.
+- Downloaded `RELEASE_NOTES.md` is byte-identical to the tagged
+  `docs/release-notes/v0.1.0-beta.6.md`.
+- The public downloaded artifact launched, created its owned local app-server,
+  quit normally, and left no owned process.
+- Developer ID signing, Apple notarization, stapling, Gatekeeper signed
+  verification, and signed clean-machine acceptance remain incomplete.
 
 ## Published Beta 5 evidence — 2026-08-30
 
@@ -50,7 +74,8 @@
 - GitHub published
   [Pet Halo 0.1.0 Beta 5 — Unsigned Developer Preview](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.5)
   at `2026-08-29T16:55:13Z` as a non-draft prerelease. The `/releases/latest`
-  endpoint resolves to Beta 5.
+  endpoint resolved to Beta 5 at this historical closeout; Beta 6 later
+  superseded it.
 - The tag resolves to the reviewed source commit
   `aa59c89cc5ce1789cb180ef2f6358d39bfae7161`. The complete public asset set is:
   - `Pet-Halo-0.1.0-beta.5-unsigned-universal.zip` — 1,352,907 bytes,
@@ -100,8 +125,8 @@
   at `2026-07-31T07:29:22Z`.
 - The live API reports `draft: false`, `prerelease: true`, and target/source
   `beb0c2c925d04fccf650205a611a1a20d22ead75`. At Beta 4 closeout time the
-  Latest endpoint resolved to Beta 3; it now resolves to Beta 5 after Beta 5
-  publication.
+  Latest endpoint resolved to Beta 3; it later resolved to Beta 5 and then
+  Beta 6 after the subsequent publications.
 - The complete public asset set is:
   - `Pet-Halo-0.1.0-beta.4-unsigned-universal.zip` — 1,344,136 bytes,
     SHA-256 `1eb6406b419b2a93df39b786714983b8df2e35c0ab8e0e36f5a48be8ed6cd212`;
