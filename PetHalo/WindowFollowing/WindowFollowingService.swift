@@ -76,10 +76,15 @@ final class WindowFollowingService: HaloWindowFollowing {
     private var windowGeneration = 0
     private var systemEventTask: Task<Void, Never>?
     private var recoveryTask: Task<Void, Never>?
+    private var permissionRequestTask: Task<Void, Never>?
     private var petMovementRetryTask: Task<Void, Never>?
+    private var petTargetResolutionTask: Task<Void, Never>?
     private var petOrientationTask: Task<Void, Never>?
     private let petOrientationDebounce: Duration
     private let petMovementRetry: Duration
+    private let petTargetResolutionDebounce: Duration
+    private let permissionCheckInterval: Duration
+    private let permissionCheckAttempts: Int
     private var started = false
     private var stopping = false
 
@@ -96,7 +101,10 @@ final class WindowFollowingService: HaloWindowFollowing {
             }
         },
         petOrientationDebounce: Duration = .milliseconds(180),
-        petMovementRetry: Duration = .milliseconds(16)
+        petMovementRetry: Duration = .milliseconds(16),
+        petTargetResolutionDebounce: Duration = .milliseconds(250),
+        permissionCheckInterval: Duration = .milliseconds(250),
+        permissionCheckAttempts: Int = 20
     ) {
         self.permissionProvider = permissionProvider
         self.applicationLocator = applicationLocator
@@ -107,6 +115,9 @@ final class WindowFollowingService: HaloWindowFollowing {
         self.screenGeometryProvider = screenGeometryProvider
         self.petOrientationDebounce = petOrientationDebounce
         self.petMovementRetry = petMovementRetry
+        self.petTargetResolutionDebounce = petTargetResolutionDebounce
+        self.permissionCheckInterval = permissionCheckInterval
+        self.permissionCheckAttempts = permissionCheckAttempts
         let pair = AsyncStream.makeStream(
             of: HaloWindowFollowingEvent.self,
             bufferingPolicy: .bufferingNewest(24)
@@ -163,8 +174,12 @@ final class WindowFollowingService: HaloWindowFollowing {
         stopping = true
         petGeneration += 1
         windowGeneration += 1
+        permissionRequestTask?.cancel()
+        permissionRequestTask = nil
         petMovementRetryTask?.cancel()
         petMovementRetryTask = nil
+        petTargetResolutionTask?.cancel()
+        petTargetResolutionTask = nil
         petOrientationTask?.cancel()
         petOrientationTask = nil
         pendingPetRingOrientation = nil
@@ -184,18 +199,19 @@ final class WindowFollowingService: HaloWindowFollowing {
     }
 
     func enable() {
-        guard acceptsCommands, state != .calibrating else { return }
+        guard acceptsCommands,
+              state != .calibrating,
+              state != .checkingPermission
+        else {
+            return
+        }
         petFollowingSuppressed = false
         if !followingEnabled {
             followingEnabled = true
             preferences.setFollowingEnabled(true)
         }
-        guard permissionProvider.request() == .granted else {
-            suspendCalibrationIfNeeded()
-            stopAccessors()
-            transition(to: .permissionRequired)
-            transitionPetDiscovery(to: .suspended)
-            transitionTarget(to: .freeFloating)
+        guard permissionProvider.state() == .granted else {
+            beginAccessibilityPermissionRequest()
             return
         }
         resolvePreferredTarget()
@@ -203,7 +219,11 @@ final class WindowFollowingService: HaloWindowFollowing {
 
     func useWindowFallback() {
         guard acceptsCommands, followingEnabled, state != .calibrating else { return }
+        permissionRequestTask?.cancel()
+        permissionRequestTask = nil
         petFollowingSuppressed = true
+        petTargetResolutionTask?.cancel()
+        petTargetResolutionTask = nil
         petGeneration += 1
         petSnapshot = nil
         petProcessIdentifier = nil
@@ -214,6 +234,8 @@ final class WindowFollowingService: HaloWindowFollowing {
 
     func disable() {
         guard acceptsCommands, followingEnabled else { return }
+        permissionRequestTask?.cancel()
+        permissionRequestTask = nil
         followingEnabled = false
         preferences.setFollowingEnabled(false)
         petFollowingSuppressed = false
@@ -265,7 +287,8 @@ final class WindowFollowingService: HaloWindowFollowing {
         guard acceptsCommands, state == .calibrating, let calibrationTarget else { return }
         switch calibrationTarget {
         case .pet:
-            guard let snapshot = petAccessor.currentSnapshot() ?? petSnapshot,
+            guard let snapshot = petAccessor.currentSnapshot(preferCurrentTarget: true)
+                    ?? petSnapshot,
                   let offset = PetAttachmentLayoutPolicy.visualCenterOffset(
                       panelReferencePoint: currentReferencePoint,
                       petFrame: snapshot.frame,
@@ -384,9 +407,57 @@ final class WindowFollowingService: HaloWindowFollowing {
         state == .calibrating && calibrationTarget == .pet
     }
 
+    private func beginAccessibilityPermissionRequest() {
+        guard acceptsCommands,
+              followingEnabled,
+              permissionRequestTask == nil
+        else {
+            return
+        }
+        suspendCalibrationIfNeeded()
+        stopAccessors()
+        transition(to: .checkingPermission)
+        transitionPetDiscovery(to: .suspended)
+        transitionTarget(to: .freeFloating)
+
+        guard permissionProvider.request() != .granted,
+              permissionProvider.state() != .granted
+        else {
+            resolvePreferredTarget()
+            return
+        }
+
+        let interval = permissionCheckInterval
+        let attempts = permissionCheckAttempts
+        permissionRequestTask = Task { @MainActor [weak self] in
+            for _ in 0 ..< attempts {
+                guard !Task.isCancelled else { return }
+                try? await Task.sleep(for: interval)
+                guard !Task.isCancelled, let self else { return }
+                guard self.permissionProvider.state() != .granted else {
+                    self.permissionRequestTask = nil
+                    self.resolvePreferredTarget()
+                    return
+                }
+            }
+            guard !Task.isCancelled, let self else { return }
+            self.permissionRequestTask = nil
+            guard self.permissionProvider.state() == .granted else {
+                self.transition(to: .permissionRequired)
+                self.transitionPetDiscovery(to: .suspended)
+                self.transitionTarget(to: .freeFloating)
+                return
+            }
+            self.resolvePreferredTarget()
+        }
+    }
+
     private func resolvePreferredTarget() {
         guard acceptsCommands, followingEnabled else { return }
+        petTargetResolutionTask?.cancel()
+        petTargetResolutionTask = nil
         guard permissionProvider.state() == .granted else {
+            guard state != .checkingPermission else { return }
             suspendCalibrationIfNeeded()
             stopAccessors()
             transition(to: .permissionRequired)
@@ -531,7 +602,7 @@ final class WindowFollowingService: HaloWindowFollowing {
         }
         switch event {
         case .geometryChanged:
-            guard let snapshot = petAccessor.currentSnapshot(),
+            guard let snapshot = petAccessor.currentSnapshot(preferCurrentTarget: true),
                   snapshot.generation == petGeneration
             else {
                 schedulePetMovementRetry(generation: generation)
@@ -543,7 +614,7 @@ final class WindowFollowingService: HaloWindowFollowing {
                 applyPetPlacement(mode: .follow)
             }
         case .activityGeometryChanged:
-            guard let snapshot = petAccessor.currentSnapshot(),
+            guard let snapshot = petAccessor.currentSnapshot(preferCurrentTarget: true),
                   snapshot.generation == petGeneration
             else {
                 return
@@ -551,10 +622,10 @@ final class WindowFollowingService: HaloWindowFollowing {
             schedulePetRingOrientation(for: snapshot)
         case .selectionChanged:
             guard petDiscoveryState == .found, petSnapshot != nil else {
-                resolvePreferredTarget()
+                schedulePetTargetResolution()
                 return
             }
-            if let snapshot = petAccessor.currentSnapshot(),
+            if let snapshot = petAccessor.currentSnapshot(preferCurrentTarget: true),
                snapshot.generation == petGeneration
             {
                 let frameChanged = snapshot.frame != petSnapshot?.frame
@@ -564,10 +635,55 @@ final class WindowFollowingService: HaloWindowFollowing {
                     applyPetPlacement(mode: .snap)
                 }
             } else {
-                resolvePreferredTarget()
+                schedulePetTargetResolution()
             }
         case .targetInvalidated:
-            resolvePreferredTarget()
+            schedulePetTargetResolution()
+        }
+    }
+
+    private func schedulePetTargetResolution() {
+        guard acceptsCommands, followingEnabled, !petFollowingSuppressed else { return }
+        petTargetResolutionTask?.cancel()
+        let delay = petTargetResolutionDebounce
+        let generation = petGeneration
+        petTargetResolutionTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            try? await Task.sleep(for: delay)
+            guard !Task.isCancelled else { return }
+            self.petTargetResolutionTask = nil
+            guard self.acceptsCommands,
+                  self.followingEnabled,
+                  !self.petFollowingSuppressed,
+                  generation == self.petGeneration
+            else {
+                return
+            }
+
+            guard let first = self.petAccessor.currentSnapshot(),
+                  first.generation == self.petGeneration
+            else {
+                self.resolvePreferredTarget()
+                return
+            }
+
+            try? await Task.sleep(for: delay)
+            guard !Task.isCancelled else { return }
+            guard self.acceptsCommands,
+                  self.followingEnabled,
+                  !self.petFollowingSuppressed,
+                  generation == self.petGeneration
+            else {
+                return
+            }
+            guard let second = self.petAccessor.currentSnapshot(),
+                  second.generation == self.petGeneration,
+                  second.frame == first.frame
+            else {
+                self.resolvePreferredTarget()
+                return
+            }
+            self.resolvePreferredTarget()
         }
     }
 
@@ -584,7 +700,7 @@ final class WindowFollowingService: HaloWindowFollowing {
             else {
                 return
             }
-            if let snapshot = self.petAccessor.currentSnapshot(),
+            if let snapshot = self.petAccessor.currentSnapshot(preferCurrentTarget: true),
                snapshot.generation == self.petGeneration
             {
                 self.petSnapshot = snapshot
@@ -593,7 +709,7 @@ final class WindowFollowingService: HaloWindowFollowing {
                     self.applyPetPlacement(mode: .follow)
                 }
             } else {
-                self.resolvePreferredTarget()
+                self.schedulePetTargetResolution()
             }
         }
     }
@@ -632,14 +748,14 @@ final class WindowFollowingService: HaloWindowFollowing {
         case .displayConfigurationChanged:
             switch targetSource {
             case .pet:
-                if let snapshot = petAccessor.currentSnapshot() {
+                if let snapshot = petAccessor.currentSnapshot(preferCurrentTarget: true) {
                     petSnapshot = snapshot
                     schedulePetRingOrientation(for: snapshot)
                     if !isPetVisualCenterCalibrationActive {
                         applyPetPlacement(mode: .snap)
                     }
                 } else {
-                    resolvePreferredTarget()
+                    schedulePetTargetResolution()
                 }
             case .codexWindowFallback:
                 if let frame = windowAccessor.currentFrame() {
@@ -657,7 +773,13 @@ final class WindowFollowingService: HaloWindowFollowing {
     }
 
     func recoverStateIfNeeded() {
-        guard acceptsCommands, followingEnabled, state != .calibrating else { return }
+        guard acceptsCommands,
+              followingEnabled,
+              state != .calibrating,
+              state != .checkingPermission
+        else {
+            return
+        }
         if permissionProvider.state() != .granted {
             suspendCalibrationIfNeeded()
             stopAccessors()
@@ -675,10 +797,10 @@ final class WindowFollowingService: HaloWindowFollowing {
                 resolvePreferredTarget()
                 return
             }
-            guard let snapshot = petAccessor.currentSnapshot(),
+            guard let snapshot = petAccessor.currentSnapshot(preferCurrentTarget: true),
                   snapshot.generation == petGeneration
             else {
-                resolvePreferredTarget()
+                schedulePetTargetResolution()
                 return
             }
             let frameChanged = snapshot.frame != petSnapshot?.frame
@@ -800,6 +922,8 @@ final class WindowFollowingService: HaloWindowFollowing {
         windowGeneration += 1
         petMovementRetryTask?.cancel()
         petMovementRetryTask = nil
+        petTargetResolutionTask?.cancel()
+        petTargetResolutionTask = nil
         petOrientationTask?.cancel()
         petOrientationTask = nil
         pendingPetRingOrientation = nil

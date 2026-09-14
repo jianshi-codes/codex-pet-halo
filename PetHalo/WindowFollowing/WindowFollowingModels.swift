@@ -20,6 +20,7 @@ enum WindowFollowingUnavailableReason: Equatable, Sendable {
 enum WindowFollowingState: Equatable, Sendable {
     case disabled
     case permissionRequired
+    case checkingPermission
     case searching
     case calibrationRequired
     case calibrating
@@ -33,6 +34,8 @@ enum WindowFollowingState: Equatable, Sendable {
             "Following: Off"
         case .permissionRequired:
             "Following: Accessibility Required"
+        case .checkingPermission:
+            "Following: Checking Accessibility"
         case .searching:
             "Following: Searching"
         case .calibrationRequired, .calibrating:

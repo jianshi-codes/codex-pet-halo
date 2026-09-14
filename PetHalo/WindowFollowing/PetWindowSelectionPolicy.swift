@@ -2,6 +2,9 @@ import CoreGraphics
 import Foundation
 
 struct PetWindowCandidate: Equatable, Sendable {
+    // Transient input-method indicators are much smaller than the Pet AX surface.
+    private static let minimumPetSurfaceDimension: CGFloat = 64
+
     let identity: Int
     let frame: CGRect
     let isMinimized: Bool
@@ -23,8 +26,13 @@ struct PetWindowCandidate: Equatable, Sendable {
         return true
     }
 
+    var isPlausiblePetScale: Bool {
+        isEligibleCoreWindow
+            && min(frame.width, frame.height) >= Self.minimumPetSurfaceDimension
+    }
+
     var isEligibleCoreGeometry: Bool {
-        guard isEligibleCoreWindow else { return false }
+        guard isPlausiblePetScale else { return false }
         return (0.8 ... 1.5).contains(frame.width / frame.height)
     }
 
@@ -37,7 +45,7 @@ struct PetWindowCandidate: Equatable, Sendable {
     }
 
     var isCompatibilityDialogWindow: Bool {
-        guard isEligibleCoreWindow, subrole == "AXDialog" else { return false }
+        guard isPlausiblePetScale, subrole == "AXDialog" else { return false }
         let aspectRatio = frame.width / frame.height
         return aspectRatio <= 2.5
     }

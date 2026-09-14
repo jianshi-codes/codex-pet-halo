@@ -82,6 +82,7 @@ private final class FakeWindowAccessor: CodexWindowAccessing {
 private final class FakePetAccessor: PetTargetAccessing {
     var result: PetTargetAccessResult
     var snapshot: PetTargetSnapshot?
+    var preservedSnapshot: PetTargetSnapshot?
     private(set) var resolveCount = 0
     private(set) var stopCount = 0
     private var generation = 0
@@ -117,6 +118,9 @@ private final class FakePetAccessor: PetTargetAccessing {
     }
 
     func currentSnapshot() -> PetTargetSnapshot? { snapshot }
+    func currentSnapshot(preferCurrentTarget: Bool) -> PetTargetSnapshot? {
+        preferCurrentTarget ? (preservedSnapshot ?? snapshot) : snapshot
+    }
     func currentTrackedFrame() -> PetTrackedFrameSample? {
         snapshot.map { PetTrackedFrameSample(generation: $0.generation, frame: $0.frame) }
     }
@@ -285,6 +289,73 @@ final class WindowFollowingServiceTests: XCTestCase {
         XCTAssertEqual(permission.requestCount, 1)
         XCTAssertEqual(context.service.state, .calibrationRequired)
         XCTAssertEqual(context.preferences.enabledWrites, [true])
+        await context.service.stop()
+    }
+
+    @MainActor
+    func testAlreadyGrantedPermissionSkipsPrompt() async {
+        let permission = FakePermissionProvider(current: .granted, requested: .notGranted)
+        let context = makeContext(
+            permission: permission,
+            petAccessResult: .selected(PetTargetSnapshot(
+                generation: 0,
+                frame: CGRect(x: 500, y: 300, width: 120, height: 110)
+            ))
+        )
+        context.service.start()
+
+        context.service.enable()
+
+        XCTAssertEqual(permission.requestCount, 0)
+        XCTAssertEqual(context.service.targetSource, .pet)
+        XCTAssertEqual(context.service.state, .following)
+        await context.service.stop()
+    }
+
+    @MainActor
+    func testPermissionPromptIsNotRepeatedWhileChecking() async {
+        let permission = FakePermissionProvider(current: .notGranted, requested: .notGranted)
+        let context = makeContext(
+            permission: permission,
+            permissionCheckAttempts: 2
+        )
+        context.service.start()
+
+        context.service.enable()
+        context.service.enable()
+
+        XCTAssertEqual(permission.requestCount, 1)
+        XCTAssertEqual(context.service.state, .checkingPermission)
+
+        try? await Task.sleep(for: .milliseconds(10))
+
+        XCTAssertEqual(permission.requestCount, 1)
+        XCTAssertEqual(context.service.state, .permissionRequired)
+        await context.service.stop()
+    }
+
+    @MainActor
+    func testGrantAfterPromptAutomaticallyResumesFollowing() async {
+        let permission = FakePermissionProvider(current: .notGranted, requested: .notGranted)
+        let context = makeContext(
+            permission: permission,
+            petAccessResult: .selected(PetTargetSnapshot(
+                generation: 0,
+                frame: CGRect(x: 500, y: 300, width: 120, height: 110)
+            ))
+        )
+        context.service.start()
+        context.service.enable()
+        XCTAssertEqual(context.service.state, .checkingPermission)
+
+        permission.current = .granted
+        for _ in 0 ..< 100 where context.service.targetSource != .pet {
+            try? await Task.sleep(for: .milliseconds(1))
+        }
+
+        XCTAssertEqual(permission.requestCount, 1)
+        XCTAssertEqual(context.service.targetSource, .pet)
+        XCTAssertEqual(context.service.state, .following)
         await context.service.stop()
     }
 
@@ -533,6 +604,68 @@ final class WindowFollowingServiceTests: XCTestCase {
         XCTAssertEqual(context.service.targetSource, .pet)
         XCTAssertEqual(context.service.petPlacementStatus, .centered)
         XCTAssertEqual(recorder.layouts.count, count)
+        recorder.stop()
+        await context.service.stop()
+    }
+
+    @MainActor
+    func testTransientInputHudCannotReplaceTheTrackedPet() async throws {
+        let petFrame = CGRect(x: 500, y: 300, width: 120, height: 110)
+        let context = makeContext(
+            petAccessResult: .selected(PetTargetSnapshot(generation: 0, frame: petFrame)),
+            enabled: true
+        )
+        let recorder = FollowingEventRecorder()
+        recorder.start(context.service.events())
+        context.service.start()
+        await waitForLayout(recorder)
+        let initial = try XCTUnwrap(recorder.layouts.last)
+        let generation = try XCTUnwrap(context.petAccessor.snapshot?.generation)
+
+        context.petAccessor.preservedSnapshot = PetTargetSnapshot(
+            generation: generation,
+            frame: petFrame
+        )
+        context.petAccessor.snapshot = PetTargetSnapshot(
+            generation: generation,
+            frame: CGRect(x: 800, y: 400, width: 32, height: 32)
+        )
+        context.petAccessor.emit(.selectionChanged)
+        for _ in 0 ..< 100 { await Task.yield() }
+
+        XCTAssertEqual(context.service.targetSource, .pet)
+        XCTAssertEqual(recorder.layouts.last, initial)
+        recorder.stop()
+        await context.service.stop()
+    }
+
+    @MainActor
+    func testInvalidatedPetWaitsForStableReplacementBeforeFallingBack() async throws {
+        let petFrame = CGRect(x: 500, y: 300, width: 120, height: 110)
+        let context = makeContext(
+            petAccessResult: .selected(PetTargetSnapshot(generation: 0, frame: petFrame)),
+            enabled: true,
+            anchor: windowAnchor()
+        )
+        let recorder = FollowingEventRecorder()
+        recorder.start(context.service.events())
+        context.service.start()
+        await waitForLayout(recorder)
+        let resolveCount = context.petAccessor.resolveCount
+
+        context.petAccessor.result = .unavailable
+        context.petAccessor.snapshot = nil
+        context.petAccessor.preservedSnapshot = nil
+        context.petAccessor.emit(.targetInvalidated)
+
+        XCTAssertEqual(context.service.targetSource, .pet)
+        XCTAssertEqual(context.petAccessor.resolveCount, resolveCount)
+        for _ in 0 ..< 100 where context.service.targetSource == .pet {
+            try await Task.sleep(for: .milliseconds(1))
+        }
+
+        XCTAssertEqual(context.service.targetSource, .codexWindowFallback)
+        XCTAssertEqual(context.service.petPlacementStatus, .unavailable)
         recorder.stop()
         await context.service.stop()
     }
@@ -858,6 +991,9 @@ final class WindowFollowingServiceTests: XCTestCase {
         context.petAccessor.result = .unavailable
         context.petAccessor.snapshot = nil
         context.petAccessor.emit(.targetInvalidated)
+        for _ in 0 ..< 100 where context.service.targetSource == .pet {
+            try await Task.sleep(for: .milliseconds(1))
+        }
         XCTAssertEqual(context.service.targetSource, .codexWindowFallback)
         XCTAssertEqual(context.service.petPlacementStatus, .unavailable)
 
@@ -989,7 +1125,10 @@ final class WindowFollowingServiceTests: XCTestCase {
         petVisualCenterOffset: PetVisualCenterOffset = .zero,
         screenGeometries: [ScreenGeometry] = [],
         orientationDebounce: Duration = .milliseconds(180),
-        movementRetry: Duration = .milliseconds(16)
+        movementRetry: Duration = .milliseconds(16),
+        petResolutionDebounce: Duration = .milliseconds(1),
+        permissionCheckInterval: Duration = .milliseconds(1),
+        permissionCheckAttempts: Int = 20
     ) -> Context {
         let locator = FakeApplicationLocator(locatorSelection)
         let petAccessor = FakePetAccessor(result: petAccessResult)
@@ -1009,7 +1148,10 @@ final class WindowFollowingServiceTests: XCTestCase {
             preferences: preferences,
             screenGeometryProvider: { screenGeometries },
             petOrientationDebounce: orientationDebounce,
-            petMovementRetry: movementRetry
+            petMovementRetry: movementRetry,
+            petTargetResolutionDebounce: petResolutionDebounce,
+            permissionCheckInterval: permissionCheckInterval,
+            permissionCheckAttempts: permissionCheckAttempts
         )
         return Context(
             service: service,

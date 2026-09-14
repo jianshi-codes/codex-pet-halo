@@ -101,8 +101,10 @@ final class SystemAccessibilityPermissionProvider: AccessibilityPermissionProvid
     }
 
     func request() -> WindowFollowingPermissionState {
+        guard state() != .granted else { return .granted }
         let options = ["AXTrustedCheckOptionPrompt": true]
-        return AXIsProcessTrustedWithOptions(options as CFDictionary) ? .granted : .notGranted
+        _ = AXIsProcessTrustedWithOptions(options as CFDictionary)
+        return state()
     }
 }
 
