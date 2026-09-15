@@ -86,7 +86,19 @@ if grep -EnR 'Logger.*(stdout|stderr|payload|JSON)|logger\.(debug|info|notice|wa
     exit 1
 fi
 
-if grep -EnR 'com\.apple\.security\.|NSAppleEventsUsageDescription|NSScreenCaptureUsageDescription' Config project.yml; then
+readonly unsigned_release_entitlements="Config/UnsignedRelease.entitlements"
+/usr/bin/plutil -lint "$unsigned_release_entitlements" >/dev/null
+unsigned_entitlement_dump="$(/usr/libexec/PlistBuddy -c Print "$unsigned_release_entitlements")"
+if [[ "$(grep -c ' = ' <<<"$unsigned_entitlement_dump")" -ne 1 ]] \
+    || ! grep -Fqx \
+        '    com.apple.security.cs.disable-library-validation = true' \
+        <<<"$unsigned_entitlement_dump"; then
+    echo "error: unsigned release entitlement escaped its exact allowlist" >&2
+    exit 1
+fi
+
+if grep -EnR 'com\.apple\.security\.|NSAppleEventsUsageDescription|NSScreenCaptureUsageDescription' Config project.yml \
+    | grep -Ev '^Config/UnsignedRelease\.entitlements:'; then
     echo "error: production must not enable unrelated sensitive entitlements or permissions" >&2
     exit 1
 fi

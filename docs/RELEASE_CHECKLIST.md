@@ -204,6 +204,8 @@ overwrite, retag, or upload with `--clobber` to an existing release identity.
 
 - [x] Confirm `v0.1.0-beta.7` and build `7` are unused after Beta 6 closeout on
   2026-09-15; both the remote tag and GitHub Release were absent.
+- [x] The user authorized an unsigned Beta 7 packaging repair and publication
+  without Developer ID signing or notarization.
 - [ ] Start the next candidate from a reviewed, clean `main` commit.
 - [ ] Record exact CLI and Desktop evidence in `docs/COMPATIBILITY.md`.
 - [ ] Generate current CLI schemas into a temporary directory and review every
@@ -227,6 +229,14 @@ make release-verify RELEASE_ARTIFACT_QUALIFIER=unsigned RELEASE_MODE=unsigned MA
 
 - [ ] Verify Release configuration and Universal `arm64 x86_64`.
 - [ ] Verify versions, identifier, minimum macOS, icons, and packaged-file allowlist.
+- [ ] Require complete post-strip ad-hoc signatures for the embedded framework
+  and App, Hardened Runtime, strict bundle verification, and no Developer ID
+  authority.
+- [ ] Confirm only the unsigned preview App carries the scoped
+  `com.apple.security.cs.disable-library-validation` entitlement required for
+  its ad-hoc embedded framework.
+- [ ] Launch the packaged App through LaunchServices and verify owned-child
+  shutdown; do not substitute direct executable launch.
 - [ ] Verify `Pet-Halo-0.1.0-beta.7-unsigned-universal.zip`, manifest
   `unsigned` / `not-submitted`, release notes, and SHA-256.
 

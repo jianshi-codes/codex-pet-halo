@@ -24,6 +24,27 @@ verify_developer_id_and_runtime() {
         || release_fail "signed application does not use hardened runtime"
 }
 
+verify_ad_hoc_and_runtime() {
+    local entitlement_details
+    local signature_details
+
+    /usr/bin/codesign --verify --deep --strict "$extracted_app"
+    signature_details="$(/usr/bin/codesign -dv --verbose=4 "$extracted_app" 2>&1)"
+    grep -Fq 'Signature=adhoc' <<<"$signature_details" \
+        || release_fail "unsigned application does not have an ad-hoc bundle signature"
+    grep -Eq 'flags=.*runtime' <<<"$signature_details" \
+        || release_fail "ad-hoc application does not use hardened runtime"
+    if grep -Fq 'Authority=Developer ID Application:' <<<"$signature_details"; then
+        release_fail "unsigned application unexpectedly uses Developer ID Application"
+    fi
+    entitlement_details="$(
+        /usr/bin/codesign -d --entitlements - "$extracted_app" 2>&1
+    )"
+    grep -A2 -F '[Key] com.apple.security.cs.disable-library-validation' \
+        <<<"$entitlement_details" | grep -Fq '[Bool] true' \
+        || release_fail "ad-hoc application does not disable library validation"
+}
+
 verify_temp_dir="$(mktemp -d "${TMPDIR:-/tmp}/pet-halo-release-verify.XXXXXX")"
 chmod 700 "$verify_temp_dir"
 cleanup() {
@@ -72,9 +93,7 @@ fi
 
 case "$release_mode" in
     unsigned)
-        if /usr/bin/codesign --verify --deep --strict "$extracted_app" >/dev/null 2>&1; then
-            release_fail "unsigned verification received a signed application"
-        fi
+        verify_ad_hoc_and_runtime
         ;;
     signed)
         verify_developer_id_and_runtime

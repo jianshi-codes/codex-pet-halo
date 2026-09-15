@@ -60,6 +60,12 @@ transient input-method indicators are rejected as Pet targets while a stable
 Pet continuity anchor is available. No new CLI or Desktop version is added to
 the reviewed table by this release.
 
+Beta 7 preserves the same runtime compatibility boundary and changes release
+packaging only. The unsigned archive now carries a complete ad-hoc application
+and framework signature so macOS receives a valid local code requirement when
+the user grants Accessibility access. The signature is build-specific and is
+neither Developer ID nor Apple notarization evidence.
+
 For Desktop `26.715.52143 (5591)`, the consolidated M9 Pet-following gate directly observed one unique Route A Pet core moving while the resolved Codex standard window remained stationary, automatic visual-center attachment, Tuck Away fallback, Wake recovery, Pet Ring selection, non-activation, and complete Pet Halo/owned-child shutdown. M5–M7 use this one live flow rather than repeating the same interaction across milestone scripts.
 
 Desktop `26.721.41059 (5848)` changed the visible-Pet Route A topology to three

@@ -17,7 +17,10 @@ app_pid=""
 child_pid=""
 release_fail_missing_child() {
     local diagnostic
-    diagnostic="$(tr -d '\r\n' < "$launch_diagnostic" 2>/dev/null || true)"
+    diagnostic=""
+    if [[ -f "$launch_diagnostic" ]]; then
+        diagnostic="$(tr -d '\r\n' < "$launch_diagnostic")"
+    fi
     case "$diagnostic" in
         executable-unavailable)
             release_fail "owned app-server unavailable: Codex executable unavailable"
@@ -44,18 +47,23 @@ trap cleanup EXIT
 
 /usr/bin/ditto -x -k "$release_archive" "$launch_temp_dir"
 launch_app="$launch_temp_dir/Pet Halo.app"
-CFFIXED_USER_HOME="$launch_user_root" \
-    PET_HALO_RELEASE_SMOKE_DIAGNOSTIC_PATH="$launch_diagnostic" \
-    "$launch_app/Contents/MacOS/Pet Halo" >/dev/null 2>&1 &
-app_pid="$!"
+/usr/bin/open \
+    -n \
+    -g \
+    --env "CFFIXED_USER_HOME=$launch_user_root" \
+    --env "PET_HALO_RELEASE_SMOKE_DIAGNOSTIC_PATH=$launch_diagnostic" \
+    "$launch_app"
 
 for _ in {1..40}; do
-    if kill -0 "$app_pid" >/dev/null 2>&1; then
+    app_pid="$(pgrep -x 'Pet Halo' | head -n 1 || true)"
+    if [[ -n "$app_pid" ]] && kill -0 "$app_pid" >/dev/null 2>&1; then
         break
     fi
     sleep 0.25
 done
-kill -0 "$app_pid" >/dev/null 2>&1 || release_fail "release application did not launch"
+[[ -n "$app_pid" ]] \
+    && kill -0 "$app_pid" >/dev/null 2>&1 \
+    || release_fail "release application did not launch through LaunchServices"
 
 for _ in {1..60}; do
     child_pid="$(pgrep -P "$app_pid" -f 'codex.*app-server' | head -n 1 || true)"
@@ -81,4 +89,4 @@ done
 app_pid=""
 trap - EXIT
 rm -rf "$launch_temp_dir"
-echo "Release isolated clean-preferences launch and shutdown: pass"
+echo "Release isolated LaunchServices clean-preferences launch and shutdown: pass"

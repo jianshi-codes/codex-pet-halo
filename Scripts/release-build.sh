@@ -7,6 +7,7 @@ release_require_command xcodebuild
 release_require_command xcodegen
 release_require_command lipo
 release_require_command strip
+release_require_command codesign
 release_require_clean_source
 
 release_safe_reset_directory "$release_derived_data"
@@ -38,10 +39,25 @@ xcodebuild \
     "$release_app/Contents/Frameworks/PetHaloCore.framework/Versions/A/PetHaloCore" \
     "$release_app/Contents/MacOS/Pet Halo"
 
+/usr/bin/codesign \
+    --force \
+    --options runtime \
+    --timestamp=none \
+    --sign - \
+    "$release_app/Contents/Frameworks/PetHaloCore.framework"
+/usr/bin/codesign \
+    --force \
+    --options runtime \
+    --timestamp=none \
+    --entitlements "$release_repository_root/Config/UnsignedRelease.entitlements" \
+    --sign - \
+    "$release_app"
+/usr/bin/codesign --verify --deep --strict "$release_app"
+
 EXPECTED_MARKETING_VERSION="$release_marketing_version" \
 EXPECTED_BUILD_NUMBER="$release_build_number" \
 CONFIGURATION=Release \
 DERIVED_DATA_PATH="$release_derived_data" \
     ./Scripts/validate-bundle.sh >/dev/null
 
-echo "Release build: unsigned universal application ready"
+echo "Release build: ad-hoc signed unsigned universal application ready"
