@@ -3,6 +3,12 @@ set -euo pipefail
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/release-common.sh"
 
+readonly release_allow_missing_codex="${PET_HALO_RELEASE_SMOKE_ALLOW_MISSING_CODEX:-0}"
+case "$release_allow_missing_codex" in
+    0|1) ;;
+    *) release_fail "PET_HALO_RELEASE_SMOKE_ALLOW_MISSING_CODEX must be 0 or 1" ;;
+esac
+
 release_require_archive
 if pgrep -x 'Pet Halo' >/dev/null 2>&1; then
     release_fail "quit any existing Pet Halo process before release launch verification"
@@ -23,6 +29,10 @@ release_fail_missing_child() {
     fi
     case "$diagnostic" in
         executable-unavailable)
+            if [[ "$release_allow_missing_codex" == "1" ]]; then
+                echo "Codex executable unavailable; validating LaunchServices app lifecycle only"
+                return
+            fi
             release_fail "owned app-server unavailable: Codex executable unavailable"
             ;;
         version-blocked)
@@ -72,9 +82,10 @@ for _ in {1..60}; do
 done
 if [[ -z "$child_pid" ]]; then
     release_fail_missing_child
+else
+    sleep 1
+    kill -0 "$child_pid" >/dev/null 2>&1 || release_fail_missing_child
 fi
-sleep 1
-kill -0 "$child_pid" >/dev/null 2>&1 || release_fail_missing_child
 
 /usr/bin/osascript -e 'tell application id "io.github.jianshicodes.PetHalo" to quit'
 for _ in {1..40}; do
@@ -84,7 +95,9 @@ for _ in {1..40}; do
     sleep 0.25
 done
 ! kill -0 "$app_pid" >/dev/null 2>&1 || release_fail "release application did not quit"
-! kill -0 "$child_pid" >/dev/null 2>&1 || release_fail "owned app-server remained after quit"
+if [[ -n "$child_pid" ]]; then
+    ! kill -0 "$child_pid" >/dev/null 2>&1 || release_fail "owned app-server remained after quit"
+fi
 
 app_pid=""
 trap - EXIT

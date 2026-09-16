@@ -64,6 +64,8 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("/usr/bin/open", source)
         self.assertIn("--env", source)
         self.assertIn("through LaunchServices", source)
+        self.assertIn("PET_HALO_RELEASE_SMOKE_ALLOW_MISSING_CODEX", source)
+        self.assertIn("validating LaunchServices app lifecycle only", source)
         self.assertNotIn('"$launch_app/Contents/MacOS/Pet Halo"', source)
 
     def test_unsigned_release_is_ad_hoc_signed_after_stripping(self) -> None:
@@ -190,6 +192,13 @@ class ReleaseReadinessTests(unittest.TestCase):
             "make release-launch-smoke",
         ):
             self.assertIn(release_gate, workflow)
+        self.assertEqual(
+            workflow.count(
+                "PET_HALO_RELEASE_SMOKE_ALLOW_MISSING_CODEX=1 "
+                "make release-launch-smoke"
+            ),
+            2,
+        )
         all_workflows = "\n".join(
             path.read_text(encoding="utf-8")
             for path in sorted((ROOT / ".github/workflows").glob("*.yml"))

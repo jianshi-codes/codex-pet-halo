@@ -207,6 +207,13 @@ Wait for the dispatched run and require the `Validate unsigned source release`
 job to pass. Confirm no tag or GitHub Release was created. Record the run URL,
 source SHA, inputs, and conclusion without copying sensitive logs.
 
+GitHub-hosted macOS runners may not have Codex CLI installed. Their release
+launch smoke must still open and quit the packaged App through LaunchServices;
+only the owned app-server assertion may be skipped after the App reports the
+typed `executable-unavailable` diagnostic. Local validation and public
+postflight on a supported Codex installation still require the owned child to
+start and terminate cleanly.
+
 Completion of R1–R5 reaches `VALIDATED`; it does not authorize R6.
 
 ## R6 — Distribution gate
