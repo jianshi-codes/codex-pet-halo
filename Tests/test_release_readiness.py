@@ -304,24 +304,35 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("# Pet Halo for Codex", readme)
         self.assertIn("docs/assets/screenshots/pet-halo-activity-above.png", readme)
         self.assertIn("docs/assets/screenshots/pet-halo-activity-below.png", readme)
+        self.assertIn("Task card above · Weekly label on the right", readme)
+        self.assertIn("Task card below · Weekly label on the left", readme)
+        self.assertIn("These screenshots show current source behavior", readme)
         self.assertIn("## Download", readme)
         self.assertIn("not Developer ID-signed and not notarized", readme)
         self.assertIn("Only override Gatekeeper after independently verifying", readme)
         self.assertIn("jianshi-codes/codex-pet-halo", readme)
         self.assertIn("Download v0.1.0-beta.7", readme)
         self.assertIn("Pet-Halo-0.1.0-beta.7-unsigned-universal.zip", readme)
+        self.assertIn("shasum -a 256 -c SHA256SUMS", readme)
+        self.assertIn(
+            "System Settings → Privacy & Security → Security → Open → Open Anyway",
+            readme,
+        )
+        self.assertIn(
+            "https://support.apple.com/en-gb/guide/mac-help/mh40616/mac",
+            readme,
+        )
+        self.assertIn("about an hour after an attempted launch", readme)
+        self.assertIn("Do not use this exception for a malware warning", readme)
 
-    def test_readme_release_link_ring_meanings_and_reserved_slot_are_explicit(self) -> None:
+    def test_readme_keeps_user_facing_ring_meanings_and_technical_links(self) -> None:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         release_url = (
             "https://github.com/jianshi-codes/codex-pet-halo/releases/tag/"
             "v0.1.0-beta.7"
         )
         self.assertIn(release_url, readme)
-        self.assertLess(
-            readme.index("## What the rings mean"),
-            readme.index("### System requirements"),
-        )
+        self.assertLess(readme.index("## Preview"), readme.index("## Download"))
         for metric in (
             "Outer ring — Weekly remaining",
             "Middle ring — optional 5h remaining",
@@ -329,18 +340,19 @@ class ReleaseReadinessTests(unittest.TestCase):
         ):
             self.assertIn(metric, readme)
         for threshold in (
-            "healthy: `>= 50%`",
-            "warning: `20%` through `49%`",
-            "critical: `< 20%`",
+            "healthy `>= 50%`",
+            "warning `20%` through `49%`",
+            "critical `< 20%`",
         ):
             self.assertIn(threshold, readme)
-        self.assertIn("cannot truthfully infer Live Activity from geometry", readme)
-        self.assertIn("not treated as an idle/working signal", readme)
-        self.assertIn("reserved for a future exact Context Remaining metric", readme)
-        self.assertIn("current default baseline of `(-25.5, -1.5)` points", readme)
+        self.assertIn("cannot truthfully infer Live Activity from window geometry", readme)
+        self.assertIn("not an idle/working signal", readme)
+        self.assertIn("safe, exact Context Remaining metric", readme)
+        self.assertIn("Adjust Ring Center", readme)
         self.assertIn("codex --version", readme)
-        self.assertIn("The reviewed baseline remains the strongest evidence", readme)
-        self.assertIn("Session-only acceptance after required runtime capability validation", readme)
+        self.assertIn("[Compatibility](docs/COMPATIBILITY.md)", readme)
+        self.assertIn("[Privacy](docs/PRIVACY.md)", readme)
+        self.assertLess(len(readme.splitlines()), 100)
 
     def test_beta_one_is_released_and_current_docs_have_no_prepublication_state(self) -> None:
         changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
@@ -429,10 +441,8 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("Pet-Halo-0.1.0-beta.7-unsigned-universal.zip", readme)
         self.assertIn("not Developer ID-signed and not notarized", readme)
         self.assertIn("`0.145.0-alpha.18`", readme)
-        self.assertIn("`>= 0.145.0-alpha.18` and `< 1.0.0`", readme)
-        self.assertIn("required runtime capability validation", readme)
-        self.assertIn("known-broken versions may be denied", readme)
-        self.assertIn("Provisional compatibility does not claim schema review", readme)
+        self.assertIn("newer versions below 1.0 are checked at runtime", readme)
+        self.assertIn("[Compatibility](docs/COMPATIBILITY.md)", readme)
 
         unreleased = changelog.split("## [Unreleased]", maxsplit=1)[1]
         unreleased = unreleased.split("## [0.1.0-beta.7]", maxsplit=1)[0]

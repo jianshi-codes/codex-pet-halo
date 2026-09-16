@@ -1,10 +1,10 @@
 # Pet Halo for Codex
 
 <p align="center">
-  <img src="PetHalo/Assets.xcassets/AppIcon.appiconset/app-icon-256.png" width="128" height="128" alt="Pet Halo original three-ring app icon">
+  <img src="PetHalo/Assets.xcassets/AppIcon.appiconset/app-icon-256.png" width="128" height="128" alt="Pet Halo app icon">
 </p>
 
-Pet Halo is a macOS menu-bar companion that places a transparent Usage ring around Codex Pet, with safe Codex-window and free-floating fallbacks.
+Pet Halo is an unofficial macOS menu-bar companion that shows Codex Usage around Codex Pet. It can fall back to the Codex window or a free-floating display.
 
 [![Download v0.1.0-beta.7](https://img.shields.io/badge/download-v0.1.0--beta.7-5865F2)](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.7)
 [![CI](https://github.com/jianshi-codes/codex-pet-halo/actions/workflows/ci.yml/badge.svg)](https://github.com/jianshi-codes/codex-pet-halo/actions/workflows/ci.yml)
@@ -34,171 +34,42 @@ Codex Pet is shown only to demonstrate integration. It is not Pet Halo project b
 > 5h ring is omitted when unavailable, and the inner layout slot stays hidden for
 > a future exact Context Remaining metric.
 
-## What the rings mean
-
-- **Outer ring — Weekly remaining:** the remaining percentage for the exact 10,080-minute Codex rate-limit window. When Codex provides its reset timestamp, the capsule also shows that date in the user's local timezone, for example `W 39% · Jul 27`.
-- **Middle ring — optional 5h remaining:** the remaining percentage for an exact 300-minute window. It is omitted when Codex does not provide one.
-- **Inner slot — reserved:** current Codex Accessibility surfaces persist across both idle and working states, so Pet Halo cannot truthfully infer Live Activity from geometry. The slot stays hidden rather than showing a false positive.
-
-Weekly and 5h remaining use these status thresholds:
-
-- healthy: `>= 50%`;
-- warning: `20%` through `49%`;
-- critical: `< 20%`.
-
-The `W` and `5h` capsule text and fixed identity dots identify each visible ring.
-Weekly and 5h use rate-limit freshness. Wide Accessibility geometry may still choose
-the shared arc opening; without an activity surface, the selected display's visible
-frame chooses whether the visible arc sits above or below the Pet. Activity geometry
-overrides that default, but it is not treated as an idle/working signal. The
-inner layout slot is reserved for a future exact Context Remaining metric if Codex
-exposes the selected task safely to Pet Halo.
-
 ## Download
 
-[Download Pet Halo v0.1.0-beta.7 from its tag-specific GitHub Release page.](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.7)
+Get `Pet-Halo-0.1.0-beta.7-unsigned-universal.zip` from the [v0.1.0-beta.7 release](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.7). It supports Apple silicon and Intel Macs running macOS 14 or later. You also need Codex Desktop for following, plus a signed-in Codex CLI for Usage. The reviewed CLI baseline is `0.145.0-alpha.18`; newer versions below 1.0 are checked at runtime. See [Compatibility](docs/COMPATIBILITY.md).
 
-> **Unsigned preview warning:** `Pet-Halo-0.1.0-beta.7-unsigned-universal.zip` has a complete ad-hoc bundle signature but is not Developer ID-signed and not notarized by Apple. macOS may block its first launch. Only override Gatekeeper after independently verifying the GitHub source, release checksum, and repository provenance. An ad-hoc update may require Accessibility access to be granted again.
+> **Unsigned Developer Preview:** the app has a complete ad-hoc bundle signature, but is **not Developer ID-signed and not notarized** by Apple. macOS may block the first launch. Only override Gatekeeper after independently verifying the GitHub source, release checksum, and repository provenance. A later ad-hoc update may require granting Accessibility access again.
 
-Before downloading, confirm the installed CLI version:
+1. Download the ZIP, `SHA256SUMS`, `release-manifest.json`, and `RELEASE_NOTES.md` from the same release page. In their download folder, run `shasum -a 256 -c SHA256SUMS` to check the files. A matching checksum detects changes relative to that release's checksum file; it does not establish publisher identity.
+2. Unzip and move **Pet Halo.app** to Applications. Open it from there. Pet Halo appears in the menu bar, not the Dock.
+3. Start Codex Desktop, make Pet visible, and check that the Pet Halo menu says `Usage: Connected`. Select **Enable Pet Following** if you want the Ring to follow Pet.
 
-```sh
-codex --version
-```
+### If macOS blocks the first launch
 
-The reviewed baseline remains the strongest evidence. Newer pre-1.0 CLI versions at or above the minimum may run provisionally after Pet Halo validates the required read-only capabilities for that session. Malformed, too-old, explicitly denied, and 1.x versions fail closed before app-server launch.
+Follow these steps only for the **unverified developer** warning, after checking the download. Do not use this exception for a malware warning or a download you do not trust.
 
-## Supported Codex versions
+1. Try opening **Pet Halo.app** once, then dismiss the warning.
+2. Go to **Apple menu → System Settings → Privacy & Security → Security → Open → Open Anyway**. On macOS versions without a separate **Open** step, use **Open Anyway** in Security.
+3. Enter your Mac login password and confirm. The control appears for about an hour after an attempted launch; if missing, try opening the app once more. See [Apple's current instructions](https://support.apple.com/en-gb/guide/mac-help/mh40616/mac).
 
-| Component | Supported version | Scope |
-| --- | --- | --- |
-| Codex CLI reviewed baseline | `0.145.0-alpha.18` | Exact schema and production-semantic review |
-| Codex CLI provisional range | `>= 0.145.0-alpha.18` and `< 1.0.0` | Session-only acceptance after required runtime capability validation; known-broken versions may be denied |
-| Codex Desktop | `26.715.31925 (5551)` | Previously validated Pet Accessibility geometry |
-| Codex Desktop | `26.715.52143 (5591)` | Current M9 Route A and complete Pet-following gate validated |
-| Codex Desktop | `26.721.41059 (5848)` | Current multi-surface topology validated and included in Beta 3 |
-| Codex Desktop | `26.727.40816 (6067)` | Published in Beta 4; geometry, mirrored activity-direction tests, and user-confirmed two-sided opening behavior |
+## Enable following
 
-Only exact registry entries carry reviewed semantic evidence. Provisional compatibility does not claim schema review: initialize/initialized, JSON-RPC envelopes, account behavior, rate-limit decoding, and a usable exact 10,080-minute Weekly window must succeed at runtime. See [Compatibility](docs/COMPATIBILITY.md).
+Following is optional; Usage works without Accessibility access. After choosing **Enable Pet Following**, allow **Pet Halo** in **System Settings → Privacy & Security → Accessibility**. Return to Pet Halo and wait briefly while macOS updates the permission state. If Pet is unavailable, the calibrated Codex-window fallback or free-floating mode remains available. Use **Adjust Ring Center** to correct visual alignment; it changes only the Ring offset, not Pet detection.
 
-### System requirements
+## What the rings mean
 
-- macOS 14.0 or later;
-- Apple silicon or Intel Mac (`arm64` and `x86_64` are included in the ZIP);
-- Codex Desktop installed for Pet or window following;
-- a reviewed or provisionally accepted Codex CLI installed; sign-in is required for account-scoped Usage data;
-- Accessibility permission only if you enable following.
+- **Outer ring — Weekly remaining:** the exact 10,080-minute rate-limit window. The capsule can show its local reset date, for example `W 39% · Jul 27`.
+- **Middle ring — optional 5h remaining:** the exact 300-minute window, hidden when Codex does not provide it.
+- **Inner slot — reserved:** hidden until Codex provides a safe, exact Context Remaining metric. Pet Halo cannot truthfully infer Live Activity from window geometry; activity geometry only controls the arc opening, not an idle/working signal.
 
-## Installation and first run
+Ring colors indicate remaining capacity: healthy `>= 50%`, warning `20%` through `49%`, critical `< 20%`. No missing value is estimated.
 
-1. Download `Pet-Halo-0.1.0-beta.7-unsigned-universal.zip`, `SHA256SUMS`, `release-manifest.json`, and `RELEASE_NOTES.md` from the [Beta 7 Release](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.7).
-2. In the directory containing all four assets, verify the archive, manifest, and release notes:
+## Help and privacy
 
-   ```sh
-   shasum -a 256 -c SHA256SUMS
-   ```
+- `Usage` is disconnected: check `codex --version` and your Codex sign-in, then choose **Refresh Usage**. See [Compatibility](docs/COMPATIBILITY.md) for supported versions and sanitized issue reports.
+- `Following: Accessibility Required`: check Pet Halo's Accessibility switch; after a new grant, allow a moment for `Following: Checking Accessibility` to finish.
+- `Pet: Unavailable or Tucked Away`: wake Pet or select **Use Codex Window Fallback**.
 
-3. Extract the ZIP and move **Pet Halo.app** to Applications.
-4. Start Codex Desktop and make Pet visible.
-5. Open Pet Halo. It appears in the menu bar and does not create a Dock app or normal window.
-6. Confirm the menu says `Usage: Connected`. If it does not, use the troubleshooting table below.
-7. Select **Enable Pet Following** only when you want Pet Halo to request Accessibility access.
+Pet Halo uses a local read-only `codex app-server --stdio` connection. It does not read conversation content, use Screen Recording, or send telemetry. See [Privacy](docs/PRIVACY.md) and [Security](SECURITY.md).
 
-Usage display does not require Accessibility. Following does. Do not bypass Gatekeeper for an artifact presented as signed/notarized that fails verification.
-
-## Accessibility and following
-
-Pet Halo uses macOS Accessibility only after an explicit enable action. It inspects the exact `com.openai.codex` application and only role/subrole, minimized/hidden state, position, size, and geometry/lifecycle notifications needed to identify and follow Pet or the standard Codex window.
-
-It does not read titles, labels, document text, prompts, responses, conversation content, or selected text. It does not use Screen Recording, screenshots, or OCR. If permission is denied or revoked, Usage remains available and following fails closed.
-
-To enable following:
-
-1. Choose **Enable Pet Following** from the Pet Halo menu.
-2. Grant Pet Halo access in **System Settings → Privacy & Security → Accessibility**.
-3. Return to Pet Halo. A unique visible Pet is preferred automatically.
-
-After the grant, the menu may briefly show `Following: Checking Accessibility`
-while macOS publishes the updated trust state. Pet Halo does not repeat the
-prompt during this interval and resumes following automatically once the grant
-is visible. If the bounded check expires, the state returns to
-`Following: Accessibility Required` without affecting Usage or application
-launch.
-
-Target priority is Pet, then an explicitly calibrated Codex standard-window fallback, then free-floating placement. Ambiguous Pet geometry is never guessed. When Pet is tucked away or unavailable, Pet Halo hides by default; **Use Codex Window Fallback** restores the calibrated card, and Wake returns to a unique supported Pet target.
-
-Small transient input-method indicator surfaces are not Pet candidates. While a
-Pet is already tracked, a window-created or selection event cannot move the
-Halo to an `A`, `中`, or `拼` indicator; a replacement target must first remain
-stable.
-
-### Adjust Ring Center
-
-When Pet is selected, choose **Adjust Ring Center**. Drag the Ring or use the four-point nudge commands, then choose **Save Ring Center**. **Cancel** restores the prior value and **Reset Visual Center** returns to the current default baseline of `(-25.5, -1.5)` points.
-
-This setting moves the complete Ring surface by one bounded local offset. It does not change Pet discovery or persist Pet coordinates.
-
-## Privacy
-
-Pet Halo launches one owned local `codex app-server --stdio` child and makes only read-only account/rate-limit/Usage requests. It stores no account identity or Usage data, makes no direct network request, and includes no telemetry, analytics, crash upload, updater, or cloud service. Local preferences contain only following enablement, a Codex-window anchor, and the bounded Ring visual-center offset.
-
-See [Privacy](docs/PRIVACY.md) and [Security](SECURITY.md).
-
-## Troubleshooting
-
-| Menu state | What it means | Safe next step |
-| --- | --- | --- |
-| `Usage: Codex CLI not found` | No supported executable was found | Install or repair the Codex CLI, then relaunch Pet Halo |
-| `Usage: Unsupported Codex CLI version` | The detected CLI is malformed, too old, explicitly denied, or at the 1.x boundary | Check the compatibility policy and file a sanitized compatibility report |
-| `Usage: CLI runtime incompatible` | A provisional CLI failed a required runtime capability | Use **Refresh Usage** to retry once, or restart after updating Codex/Pet Halo; automatic reconnect stays disabled for that version failure |
-| `Usage: Sign in to Codex` | Authentication is unavailable | Sign in through Codex, then refresh Usage |
-| `Usage: Rate limits temporarily unavailable` | The read-only rate snapshot failed | Wait and use **Refresh Usage**; no value is estimated |
-| `Usage: Today temporarily unavailable` | Account Usage is unsupported or temporarily failed | Weekly may remain current; Today stays omitted/unavailable |
-| `Following: Codex Not Running` | Codex Desktop is not available | Start Codex Desktop |
-| `Following: Checking Accessibility` | macOS is still publishing the result of the explicit permission request | Wait briefly; do not click Enable again; following resumes automatically after a grant |
-| `Following: Accessibility Required` | Permission is absent or was revoked | Re-enable Pet Halo in Accessibility settings |
-| `Pet: Unavailable or Tucked Away` | No supported visible Pet target exists | Wake Pet, or use the Codex window fallback |
-| `Pet: Target Ambiguous` | More than one eligible target remains | Tuck Away/Wake Pet; Pet Halo will not guess |
-
-Public issue reports must not contain raw protocol payloads, tokens, account identity, conversation content, executable paths, raw Accessibility errors, or private screenshots. Follow the [sanitized compatibility-report instructions](docs/COMPATIBILITY.md#sanitized-compatibility-reports).
-
-## Uninstall
-
-1. Quit Pet Halo.
-2. Move **Pet Halo.app** to Trash.
-3. Optionally remove its local UI preferences:
-
-   ```sh
-   defaults delete io.github.jianshicodes.PetHalo
-   ```
-
-4. Optionally remove Pet Halo from **System Settings → Privacy & Security → Accessibility**.
-
-No Usage database, account cache, updater, or background service is installed.
-
-## Build from source
-
-Xcode 26.4.1, Swift 6.3.1, and XcodeGen 2.46.0 are the current reviewed toolchain. `project.yml` is the editable Xcode project source of truth.
-
-```sh
-make bootstrap
-make check
-make release-unsigned-preview MARKETING_VERSION=0.1.0 BUILD_NUMBER=8 RELEASE_TAG=v0.1.0-beta.8
-```
-
-After the next candidate's release notes are created and reviewed, the unsigned
-preview target requires a clean source tree and produces a local
-`Pet-Halo-0.1.0-beta.8-unsigned-universal.zip` candidate. It does not create a
-tag or GitHub Release. Developer ID signing, Apple notarization, clean-machine
-acceptance, and publication remain separate hold points described in the
-[Release checklist](docs/RELEASE_CHECKLIST.md). The Download section points to
-the immutable published Beta 7 artifact; a later candidate must use a new tag
-and build number.
-
-## Contributing and security
-
-Read [Contributing](CONTRIBUTING.md), the [Code of Conduct](CODE_OF_CONDUCT.md), and the [Security Policy](SECURITY.md). Contributor/operator references include [GitHub settings](docs/GITHUB_SETTINGS.md), the [public-exposure audit](docs/PUBLIC_EXPOSURE_AUDIT.md), the [release runbook](docs/RELEASE_RUNBOOK.md), and the [release checklist](docs/RELEASE_CHECKLIST.md). Architecture decisions, compatibility evidence, and milestone reports remain under [`docs/`](docs/).
-
-## License
-
-MIT. See [LICENSE](LICENSE).
+For source builds and release procedures, see [Contributing](CONTRIBUTING.md), the [Release runbook](docs/RELEASE_RUNBOOK.md), and the [Release checklist](docs/RELEASE_CHECKLIST.md). To uninstall, quit Pet Halo, move it to Trash, and optionally remove its Accessibility entry. Licensed under [MIT](LICENSE).
