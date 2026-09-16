@@ -2,16 +2,49 @@
 
 - Milestone: M9 — Public Beta Release Readiness
 - Status: **PARTIAL — SOURCE RELEASE READY, SIGNED BINARY BLOCKED**
-- Published release: `v0.1.0-beta.6`, product version `0.1.0`, bundle build `6`
-- Published source: `39a0c1a596309f6ff5467be65f5059f175c03c47`
-- Release classification: public, non-draft release; unsigned and not
-  notarized. Beta 6 is currently Latest.
-- Post-release branch: `codex/beta6-release-closeout`
-- Next unused identity: `v0.1.0-beta.7`, product version `0.1.0`, bundle build
-  `7`; availability was rechecked after Beta 6 publication
+- Published release: `v0.1.0-beta.7`, product version `0.1.0`, bundle build `7`
+- Published source: `d8feb391f0144d23c4136c73782c6d750c6842b8`
+- Release classification: public, non-draft prerelease; ad-hoc signed, not
+  Developer ID-signed or notarized. Beta 6 remains Latest pending Beta 7 closeout.
+- Post-release branch: `codex/beta7-release-closeout`
+- Next unused identity: `v0.1.0-beta.8`, product version `0.1.0`, bundle build
+  `8`; remote tag and GitHub Release were absent on 2026-09-16
 - Repository: public at `jianshi-codes/codex-pet-halo`
 
-## Beta 7 preparation
+## Published Beta 7 evidence — 2026-09-16
+
+- PRs #28 and #29 merged into `main` at
+  `d8feb391f0144d23c4136c73782c6d750c6842b8`. Validation-only workflow
+  [35099383003](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/35099383003)
+  and unsigned publication workflow
+  [35099614348](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/35099614348)
+  passed at that same SHA; signed/notarized publication was skipped.
+- Tag `v0.1.0-beta.7` resolves directly to that commit. The
+  [Beta 7 Release](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.7)
+  was published at `2026-09-16T13:07:43Z` as a non-draft prerelease; Beta 6
+  remains the `/releases/latest` result.
+- Exactly four public assets were freshly downloaded and their SHA-256 values
+  matched both `SHA256SUMS` and GitHub digests:
+  - `Pet-Halo-0.1.0-beta.7-unsigned-universal.zip` — 1,388,050 bytes,
+    `e2d22115ab15e52d18e4ee6cd9d98c8948c0d1cbcb0c19de272094f14bd49f39`;
+  - `release-manifest.json` — 336 bytes,
+    `37a789ea445d5459bb4020c8d723f2bc0d06259019d3b438ff98a0a2a247962c`;
+  - `RELEASE_NOTES.md` — 2,667 bytes,
+    `806e4a69a22aab4888cfd9752e09c6a03bfdaa9063da116b97d6760e46811216`;
+  - `SHA256SUMS` — 282 bytes,
+    `76cbfeb9cd1f0d58b66bdc9fd4aeb07a6f98dd0989262c8e1f95a73b0ad344a1`.
+- Manifest and extracted App match version `0.1.0`, build `7`, tag, source SHA,
+  identifier `io.github.jianshicodes.PetHalo`, macOS `14.0` minimum, and
+  `x86_64 arm64`. Public notes are byte-identical to tagged source.
+  `codesign --verify --deep --strict` passes for the complete ad-hoc framework
+  and App with Hardened Runtime. Only the App carries the unsigned-preview
+  Library Validation exception; no Developer ID or notarization is claimed.
+- The downloaded ZIP passed isolated LaunchServices startup, owned Codex
+  app-server startup, normal App quit, and owned-child cleanup on this Mac.
+  Clean-machine first launch, Gatekeeper, and Accessibility granted/denied
+  acceptance remain **not run**, not PASS. Promotion to Latest is pending.
+
+## Beta 7 packaging diagnosis
 
 - The Beta 6 public ZIP has correct checksums, metadata, and Universal
   architectures, but its application bundle lacks a complete code signature.

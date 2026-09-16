@@ -4,6 +4,10 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 
 ## [Unreleased]
 
+No changes yet.
+
+## [0.1.0-beta.7] - 2026-09-16
+
 ### Fixed
 
 - Added a complete post-strip ad-hoc signature to unsigned release bundles so
@@ -15,6 +19,15 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
   ad-hoc signature with Hardened Runtime and no Developer ID authority.
 - Changed release launch smoke to use LaunchServices and added it to the
   validation-only and unsigned publication workflows.
+- Allowed the GitHub release runner to omit only the owned-child assertion
+  when Codex CLI is unavailable, while still checking App launch and quit.
+
+### Release
+
+- Published as an unsigned, non-notarized Developer Preview from
+  `d8feb391f0144d23c4136c73782c6d750c6842b8` with a complete ad-hoc
+  App and framework signature. Clean-machine Gatekeeper and Accessibility
+  acceptance remain unverified.
 
 ## [0.1.0-beta.6] - 2026-09-15
 

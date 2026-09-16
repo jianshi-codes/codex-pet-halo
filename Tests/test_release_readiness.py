@@ -272,11 +272,11 @@ class ReleaseReadinessTests(unittest.TestCase):
         common = (ROOT / "Scripts/release-common.sh").read_text(encoding="utf-8")
         validator = (ROOT / "Scripts/validate-bundle.sh").read_text(encoding="utf-8")
         self.assertIn("MARKETING_VERSION: 0.1.0", project)
-        self.assertIn("CURRENT_PROJECT_VERSION: 6", project)
+        self.assertIn("CURRENT_PROJECT_VERSION: 7", project)
         self.assertNotIn("beta", info.lower())
-        self.assertIn('BUILD_NUMBER:-7', common)
-        self.assertIn("v0.1.0-beta.7", common)
-        self.assertIn("EXPECTED_BUILD_NUMBER:-6", validator)
+        self.assertIn('BUILD_NUMBER:-8', common)
+        self.assertIn("v0.1.0-beta.8", common)
+        self.assertIn("EXPECTED_BUILD_NUMBER:-7", validator)
 
     def test_public_preview_screenshots_are_metadata_free_png_files(self) -> None:
         signature = b"\x89PNG\r\n\x1a\n"
@@ -305,17 +305,17 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("docs/assets/screenshots/pet-halo-activity-above.png", readme)
         self.assertIn("docs/assets/screenshots/pet-halo-activity-below.png", readme)
         self.assertIn("## Download", readme)
-        self.assertIn("unsigned and not notarized", readme)
+        self.assertIn("not Developer ID-signed and not notarized", readme)
         self.assertIn("Only override Gatekeeper after independently verifying", readme)
         self.assertIn("jianshi-codes/codex-pet-halo", readme)
-        self.assertIn("Download v0.1.0-beta.6", readme)
-        self.assertIn("Pet-Halo-0.1.0-beta.6-unsigned-universal.zip", readme)
+        self.assertIn("Download v0.1.0-beta.7", readme)
+        self.assertIn("Pet-Halo-0.1.0-beta.7-unsigned-universal.zip", readme)
 
     def test_readme_release_link_ring_meanings_and_reserved_slot_are_explicit(self) -> None:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         release_url = (
             "https://github.com/jianshi-codes/codex-pet-halo/releases/tag/"
-            "v0.1.0-beta.6"
+            "v0.1.0-beta.7"
         )
         self.assertIn(release_url, readme)
         self.assertLess(
@@ -411,23 +411,23 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("Do not treat this artifact as a signed or notarized release", notes)
         self.assertIn("will use a new Beta version", notes)
 
-    def test_beta_six_release_closeout_documents_published_state(self) -> None:
+    def test_beta_seven_release_closeout_documents_published_state(self) -> None:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
         current_state = (ROOT / "docs/CURRENT_STATE.md").read_text(encoding="utf-8")
         checklist = (ROOT / "docs/RELEASE_CHECKLIST.md").read_text(encoding="utf-8")
         settings = (ROOT / "docs/GITHUB_SETTINGS.md").read_text(encoding="utf-8")
 
-        self.assertIn("CURRENT_PROJECT_VERSION: 6", (ROOT / "project.yml").read_text())
+        self.assertIn("CURRENT_PROJECT_VERSION: 7", (ROOT / "project.yml").read_text())
         self.assertIn("W 39% · Jul 27", readme)
-        self.assertIn("download-v0.1.0--beta.6", readme)
+        self.assertIn("download-v0.1.0--beta.7", readme)
         self.assertIn(
             "https://github.com/jianshi-codes/codex-pet-halo/releases/tag/"
-            "v0.1.0-beta.6",
+            "v0.1.0-beta.7",
             readme,
         )
-        self.assertIn("Pet-Halo-0.1.0-beta.6-unsigned-universal.zip", readme)
-        self.assertIn("unsigned and not notarized", readme)
+        self.assertIn("Pet-Halo-0.1.0-beta.7-unsigned-universal.zip", readme)
+        self.assertIn("not Developer ID-signed and not notarized", readme)
         self.assertIn("`0.145.0-alpha.18`", readme)
         self.assertIn("`>= 0.145.0-alpha.18` and `< 1.0.0`", readme)
         self.assertIn("required runtime capability validation", readme)
@@ -435,13 +435,17 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("Provisional compatibility does not claim schema review", readme)
 
         unreleased = changelog.split("## [Unreleased]", maxsplit=1)[1]
-        unreleased = unreleased.split("## [0.1.0-beta.6]", maxsplit=1)[0]
+        unreleased = unreleased.split("## [0.1.0-beta.7]", maxsplit=1)[0]
+        self.assertIn("No changes yet.", unreleased)
+        beta_seven = changelog.split("## [0.1.0-beta.7]", maxsplit=1)[1]
+        beta_seven = beta_seven.split("## [0.1.0-beta.6]", maxsplit=1)[0]
         for pending_change in (
             "post-strip ad-hoc signature",
             "strict bundle-valid",
             "LaunchServices",
         ):
-            self.assertIn(pending_change, unreleased)
+            self.assertIn(pending_change, beta_seven)
+        self.assertIn("d8feb391f0144d23c4136c73782c6d750c6842b8", beta_seven)
         beta_six = changelog.split("## [0.1.0-beta.6]", maxsplit=1)[1]
         beta_six = beta_six.split("## [0.1.0-beta.5]", maxsplit=1)[0]
         for shipped_change in (
@@ -493,11 +497,16 @@ class ReleaseReadinessTests(unittest.TestCase):
 
         for merged_pr in ("PR #17", "PR #18", "PR #20", "PR #22", "PR #25"):
             self.assertIn(merged_pr, current_state)
-        self.assertIn("Published release: `v0.1.0-beta.6`", current_state)
+        self.assertIn("Published release: `v0.1.0-beta.7`", current_state)
+        self.assertIn("Published Beta 7 evidence", current_state)
+        self.assertIn("2026-09-16T13:07:43Z", current_state)
+        self.assertIn("d8feb391f0144d23c4136c73782c6d750c6842b8", current_state)
+        self.assertIn("e2d22115ab15e52d18e4ee6cd9d98c8948c0d1cbcb0c19de272094f14bd49f39", current_state)
+        self.assertIn("Clean-machine first launch", current_state)
         self.assertIn("2026-09-14T16:51:05Z", current_state)
-        self.assertIn("bundle build `6`", current_state)
+        self.assertIn("bundle build `7`", current_state)
         self.assertIn("39a0c1a596309f6ff5467be65f5059f175c03c47", current_state)
-        self.assertIn("Beta 6 is currently Latest", current_state)
+        self.assertIn("Beta 6 remains Latest", current_state)
         self.assertIn("draft: false", current_state)
         self.assertIn("prerelease: true", current_state)
         self.assertIn("signing: unsigned", current_state)
@@ -509,17 +518,18 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("## Published Beta 6 record — 2026-09-15", checklist)
         self.assertIn("- [x] PR #25 merged", checklist)
         self.assertIn("34870879323", checklist)
+        self.assertIn("## Published Beta 7 record — 2026-09-16", checklist)
         future = checklist.split("## Source and compatibility for a future Beta", maxsplit=1)[1]
-        self.assertIn("v0.1.0-beta.7", future)
-        self.assertIn("BUILD_NUMBER=7", future)
-        self.assertIn("Pet-Halo-0.1.0-beta.7-unsigned-universal.zip", future)
-        self.assertNotIn("BUILD_NUMBER=6", future)
+        self.assertIn("v0.1.0-beta.8", future)
+        self.assertIn("BUILD_NUMBER=8", future)
+        self.assertIn("Pet-Halo-0.1.0-beta.8-unsigned-universal.zip", future)
+        self.assertNotIn("BUILD_NUMBER=7", future)
 
-        self.assertIn("`v0.1.0-beta.6` resolves to", settings)
-        self.assertIn("2026-09-14T16:51:05Z", settings)
-        self.assertIn("non-draft unsigned release", settings)
-        self.assertIn("v0.1.0-beta.4", settings)
-        self.assertIn("current Latest", settings)
+        self.assertIn("`v0.1.0-beta.7` resolves directly to", settings)
+        self.assertIn("2026-09-16T13:07:43Z", settings)
+        self.assertIn("non-draft unsigned prerelease", settings)
+        self.assertIn("v0.1.0-beta.6", settings)
+        self.assertIn("/releases/latest", settings)
         self.assertNotIn("Beta 4 remains", settings)
         self.assertNotIn("Beta 3 remains", settings)
 
@@ -565,6 +575,10 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertRegex(notes, r"not notarized by\s+Apple")
         self.assertNotIn("Beta 7 was published", notes)
         self.assertNotIn("Beta 7 is published", notes)
+        self.assertEqual(
+            hashlib.sha256(notes.encode("utf-8")).hexdigest(),
+            "806e4a69a22aab4888cfd9752e09c6a03bfdaa9063da116b97d6760e46811216",
+        )
 
     def test_beta_five_release_notes_are_frozen_and_unsigned(self) -> None:
         notes = (ROOT / "docs/release-notes/v0.1.0-beta.5.md").read_text(
@@ -773,7 +787,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         )
         self.assertEqual(
             Path(result.stdout.strip()).name,
-            "Pet-Halo-0.1.0-beta.7-unsigned-universal.zip",
+            "Pet-Halo-0.1.0-beta.8-unsigned-universal.zip",
         )
         environment.pop("RELEASE_ARTIFACT_QUALIFIER")
         default_result = subprocess.run(
@@ -790,7 +804,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         )
         self.assertEqual(
             Path(default_result.stdout.strip()).name,
-            "Pet-Halo-0.1.0-beta.7-universal.zip",
+            "Pet-Halo-0.1.0-beta.8-universal.zip",
         )
         makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
         target = makefile.split("release-unsigned-preview:", maxsplit=1)[1]

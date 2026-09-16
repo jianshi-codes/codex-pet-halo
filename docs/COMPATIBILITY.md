@@ -64,7 +64,11 @@ Beta 7 preserves the same runtime compatibility boundary and changes release
 packaging only. The unsigned archive now carries a complete ad-hoc application
 and framework signature so macOS receives a valid local code requirement when
 the user grants Accessibility access. The signature is build-specific and is
-neither Developer ID nor Apple notarization evidence.
+neither Developer ID nor Apple notarization evidence. The published Beta 7 ZIP
+passed LaunchServices launch and owned app-server cleanup on a host with CLI
+`0.154.0-alpha.6.2`; that proves only the launch/child lifecycle, not a new
+reviewed CLI schema, all runtime Usage capabilities, or direct Pet interaction.
+Clean-machine Accessibility and Gatekeeper acceptance remain unverified.
 
 For Desktop `26.715.52143 (5591)`, the consolidated M9 Pet-following gate directly observed one unique Route A Pet core moving while the resolved Codex standard window remained stationary, automatic visual-center attachment, Tuck Away fallback, Wake recovery, Pet Ring selection, non-activation, and complete Pet Halo/owned-child shutdown. M5–M7 use this one live flow rather than repeating the same interaction across milestone scripts.
 

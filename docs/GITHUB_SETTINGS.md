@@ -2,8 +2,9 @@
 
 Repository settings were observed on 2026-07-21 with `gh repo view` and GitHub
 REST API calls against `jianshi-codes/codex-pet-halo`. Environment, tag, and
-Release, tag, and Latest state were refreshed after the Beta 6 publication on
-2026-09-15; the remaining settings observations are from 2026-07-31. “Observed” means the API confirmed
+Release, tag, environment, and Latest state were refreshed after the Beta 7
+publication on 2026-09-16; the remaining settings observations are from
+2026-07-31. “Observed” means the API confirmed
 the state; “Recommended” is a manual action and is not claimed as enabled.
 
 ## Observed state
@@ -28,9 +29,9 @@ the state; “Recommended” is a manual action and is not claimed as enabled.
 | Private vulnerability reporting | Disabled |
 | Environments | None returned; `public-beta` does not currently exist |
 | Pages | No Pages site returned (HTTP 404) |
-| Tags | `v0.1.0-beta.6` resolves to `39a0c1a596309f6ff5467be65f5059f175c03c47`; `v0.1.0-beta.5` resolves to `aa59c89cc5ce1789cb180ef2f6358d39bfae7161`; `v0.1.0-beta.4` resolves directly to `beb0c2c925d04fccf650205a611a1a20d22ead75`; earlier tags remain unchanged |
-| Releases | `v0.1.0-beta.6`: target/source `39a0c1a596309f6ff5467be65f5059f175c03c47`, published `2026-09-14T16:51:05Z`, non-draft unsigned release and current Latest; the `/releases/latest` endpoint resolves to `v0.1.0-beta.6` |
-| Next identity | `v0.1.0-beta.7` / build `7` is the next candidate; `git ls-remote` and `gh release view` both reported it absent on 2026-09-15 |
+| Tags | `v0.1.0-beta.7` resolves directly to `d8feb391f0144d23c4136c73782c6d750c6842b8`; earlier tags remain unchanged |
+| Releases | `v0.1.0-beta.7`: target/source `d8feb391f0144d23c4136c73782c6d750c6842b8`, published `2026-09-16T13:07:43Z`, non-draft unsigned prerelease with four assets; `/releases/latest` still resolves to `v0.1.0-beta.6` |
+| Next identity | `v0.1.0-beta.8` / build `8` is the next candidate; `git ls-remote` and `gh release view` both reported it absent on 2026-09-16 |
 
 The complete observed label list includes the `bug` and `compatibility` labels required by the issue forms.
 
@@ -45,7 +46,7 @@ The complete observed label list includes the `bug` and `compatibility` labels r
 
 The 2026-07-25 refresh confirmed zero environments, including no `public-beta`.
 The active ruleset details above were not re-audited in that narrower refresh.
-The Beta 6 publication workflow created the tag and four-asset unsigned
-release, and the R10 promotion set it as Latest. No
+The Beta 7 publication workflow created the tag and four-asset unsigned
+prerelease. No
 branch-protection/ruleset, environment, vulnerability-reporting, Pages, or
 visibility setting was changed during this release.

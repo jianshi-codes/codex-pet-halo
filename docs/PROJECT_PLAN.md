@@ -86,8 +86,14 @@ public-download postflight. It hardens the Accessibility permission state
 machine against repeated prompts, ignores transient input-method indicator
 surfaces during Pet following, and waits for a stable replacement before
 falling back. It preserves the existing target hierarchy, privacy boundary, and
-unsigned-only distribution gate. The next unused candidate is
+unsigned-only distribution gate. Its then-next candidate was
 `v0.1.0-beta.7` / build `7`.
+
+Beta 7 was published from `d8feb391f0144d23c4136c73782c6d750c6842b8`
+as an unsigned, non-notarized prerelease with complete ad-hoc bundle sealing.
+Downloaded-asset checks and local LaunchServices/owned-child postflight passed.
+Clean-machine Gatekeeper and Accessibility acceptance have not been run;
+the next unused candidate is `v0.1.0-beta.8` / build `8`.
 
 Beta 7 is authorized as an unsigned packaging repair. It adds a complete
 post-strip ad-hoc bundle signature, strict unsigned bundle verification, and a
