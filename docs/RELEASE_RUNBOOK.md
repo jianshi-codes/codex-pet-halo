@@ -9,12 +9,12 @@ The next reserved defaults are:
 | Input | Value |
 | --- | --- |
 | Product version | `0.1.0` |
-| Bundle build | `6` |
-| Tag | `v0.1.0-beta.6` |
+| Bundle build | `7` |
+| Tag | `v0.1.0-beta.7` |
 | Distribution | `unsigned` |
-| Release notes | `docs/release-notes/v0.1.0-beta.6.md` — create and review before `PREPARED` |
-| Signed artifact | `Pet-Halo-0.1.0-beta.6-universal.zip` |
-| Local unsigned evidence | `Pet-Halo-0.1.0-beta.6-unsigned-universal.zip` |
+| Release notes | `docs/release-notes/v0.1.0-beta.7.md` — create and review before `PREPARED` |
+| Signed artifact | `Pet-Halo-0.1.0-beta.7-universal.zip` |
+| Local unsigned evidence | `Pet-Halo-0.1.0-beta.7-unsigned-universal.zip` |
 
 Every execution must re-read these values from the reviewed source. Do not reuse
 this table after a release closeout advances the next candidate identity.
@@ -97,8 +97,8 @@ Run both checks and treat any result other than the documented “not found” s
 as a blocker:
 
 ```sh
-git ls-remote --exit-code --refs origin refs/tags/v0.1.0-beta.6
-gh release view v0.1.0-beta.6 --json tagName,name,isDraft,isPrerelease,url
+git ls-remote --exit-code --refs origin refs/tags/v0.1.0-beta.7
+gh release view v0.1.0-beta.7 --json tagName,name,isDraft,isPrerelease,url
 ```
 
 For an unused identity, `git ls-remote --exit-code` returns status `2` and
@@ -142,24 +142,29 @@ make public-exposure-audit
 make release-build \
   RELEASE_ARTIFACT_QUALIFIER=unsigned \
   MARKETING_VERSION=0.1.0 \
-  BUILD_NUMBER=6 \
-  RELEASE_TAG=v0.1.0-beta.6
+  BUILD_NUMBER=7 \
+  RELEASE_TAG=v0.1.0-beta.7
 make release-archive \
   RELEASE_ARTIFACT_QUALIFIER=unsigned \
   MARKETING_VERSION=0.1.0 \
-  BUILD_NUMBER=6 \
-  RELEASE_TAG=v0.1.0-beta.6
+  BUILD_NUMBER=7 \
+  RELEASE_TAG=v0.1.0-beta.7
 make release-checksum \
   RELEASE_ARTIFACT_QUALIFIER=unsigned \
   MARKETING_VERSION=0.1.0 \
-  BUILD_NUMBER=6 \
-  RELEASE_TAG=v0.1.0-beta.6
+  BUILD_NUMBER=7 \
+  RELEASE_TAG=v0.1.0-beta.7
 make release-verify \
   RELEASE_ARTIFACT_QUALIFIER=unsigned \
   RELEASE_MODE=unsigned \
   MARKETING_VERSION=0.1.0 \
-  BUILD_NUMBER=6 \
-  RELEASE_TAG=v0.1.0-beta.6
+  BUILD_NUMBER=7 \
+  RELEASE_TAG=v0.1.0-beta.7
+make release-launch-smoke \
+  RELEASE_ARTIFACT_QUALIFIER=unsigned \
+  MARKETING_VERSION=0.1.0 \
+  BUILD_NUMBER=7 \
+  RELEASE_TAG=v0.1.0-beta.7
 ```
 
 Keep deterministic tests, live smoke, user interaction, and clean-machine
@@ -167,7 +172,7 @@ evidence as separate rows in the release record. Evidence reuse must name the
 exact source and environment. The release workflow repeats only release-specific
 validation and must not call `make check`.
 
-The unsigned command must produce, under `dist/v0.1.0-beta.6/`, only:
+The unsigned command must produce, under `dist/v0.1.0-beta.7/`, only:
 
 - the local unsigned Universal ZIP;
 - `release-manifest.json`;
@@ -177,7 +182,12 @@ The unsigned command must produce, under `dist/v0.1.0-beta.6/`, only:
 
 Verify the manifest version/build/tag/source commit, `arm64` and `x86_64`,
 minimum macOS, packaged-file allowlist, checksum set, `signing: unsigned`, and
-`notarization: not-submitted`. Do not upload the unsigned candidate.
+`notarization: not-submitted`. The final embedded framework and application
+must have complete ad-hoc signatures, use Hardened Runtime, and pass
+`codesign --verify --deep --strict` without a Developer ID authority. Because
+ad-hoc code has no shared Team ID, only the unsigned preview App must carry the
+scoped `com.apple.security.cs.disable-library-validation` entitlement required
+to load its embedded framework. Do not upload the unsigned candidate.
 
 ## R5 — GitHub validation workflow (`publish=false`)
 
@@ -187,8 +197,8 @@ The manual workflow must run from the same reviewed `main` commit:
 gh workflow run release.yml \
   --ref main \
   -f marketing_version=0.1.0 \
-  -f build_number=6 \
-  -f release_tag=v0.1.0-beta.6 \
+  -f build_number=7 \
+  -f release_tag=v0.1.0-beta.7 \
   -f distribution=unsigned \
   -f publish=false
 ```
@@ -211,8 +221,8 @@ For every publication:
 
 For `unsigned`, confirm the user accepts an **Unsigned Developer Preview**,
 `signing: unsigned`, `notarization: not-submitted`, and possible Gatekeeper
-blocking. This path requires no Developer ID or Apple credentials and must never
-claim Apple trust.
+blocking. The artifact must have a valid ad-hoc bundle signature, but this path
+requires no Developer ID or Apple credentials and must never claim Apple trust.
 
 For `signed-notarized`, also require:
 
@@ -236,8 +246,8 @@ For an unsigned developer preview:
 gh workflow run release.yml \
   --ref main \
   -f marketing_version=0.1.0 \
-  -f build_number=6 \
-  -f release_tag=v0.1.0-beta.6 \
+  -f build_number=7 \
+  -f release_tag=v0.1.0-beta.7 \
   -f distribution=unsigned \
   -f publish=true
 ```
@@ -252,8 +262,8 @@ For a signed and notarized prerelease:
 gh workflow run release.yml \
   --ref main \
   -f marketing_version=0.1.0 \
-  -f build_number=6 \
-  -f release_tag=v0.1.0-beta.6 \
+  -f build_number=7 \
+  -f release_tag=v0.1.0-beta.7 \
   -f distribution=signed-notarized \
   -f publish=true
 ```
@@ -278,7 +288,7 @@ Download into a new temporary directory; never verify against local build output
 
 ```sh
 release_tmp="$(mktemp -d "${TMPDIR:-/tmp}/pet-halo-release-postflight.XXXXXX")"
-gh release download v0.1.0-beta.6 --dir "$release_tmp"
+gh release download v0.1.0-beta.7 --dir "$release_tmp"
 (
   cd "$release_tmp"
   shasum -a 256 -c SHA256SUMS
@@ -293,7 +303,7 @@ Verify:
 - manifest version/build/tag/identifier/minimum macOS/architectures are exact;
 - the extracted executable is Universal;
 - the downloaded `RELEASE_NOTES.md` is byte-identical to the tagged source;
-- launch/quit and owned-child cleanup pass.
+- LaunchServices launch/quit and owned-child cleanup pass.
 
 For `signed-notarized`, additionally require:
 
@@ -301,9 +311,11 @@ For `signed-notarized`, additionally require:
 - `spctl --assess --type execute` passes;
 - `xcrun stapler validate` passes.
 
-For `unsigned`, require that strict Developer ID verification does not pass,
+For `unsigned`, require that strict bundle verification passes with an ad-hoc
+signature and Hardened Runtime, no Developer ID authority is present, the
 manifest states `signing: unsigned` and `notarization: not-submitted`, and the
-release is visibly labeled **Unsigned Developer Preview**.
+release is visibly labeled **Unsigned Developer Preview**. This does not claim
+Gatekeeper acceptance.
 
 Then perform clean-machine acceptance using only sanitized PASS/FAIL results:
 first launch, Gatekeeper, bundle metadata/architectures/icons, CLI states,
@@ -365,7 +377,7 @@ trust level, and assets. Promotion is a separate public metadata change: require
 the user's explicit approval, recheck tag/source and assets, then run:
 
 ```sh
-gh release edit v0.1.0-beta.6 --prerelease=false --latest
+gh release edit v0.1.0-beta.7 --prerelease=false --latest
 ```
 
 Requery the Release and `/releases/latest`. Require non-draft,

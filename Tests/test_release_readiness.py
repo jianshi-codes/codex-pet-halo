@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import plistlib
 import re
 import subprocess
 import tempfile
@@ -60,6 +61,60 @@ class ReleaseReadinessTests(unittest.TestCase):
             self.assertIn(diagnostic, source)
         for unsafe in ("$PATH", "raw logs", "payload"):
             self.assertNotIn(unsafe, source)
+        self.assertIn("/usr/bin/open", source)
+        self.assertIn("--env", source)
+        self.assertIn("through LaunchServices", source)
+        self.assertNotIn('"$launch_app/Contents/MacOS/Pet Halo"', source)
+
+    def test_unsigned_release_is_ad_hoc_signed_after_stripping(self) -> None:
+        build = (ROOT / "Scripts/release-build.sh").read_text(encoding="utf-8")
+        verify = (ROOT / "Scripts/release-verify.sh").read_text(encoding="utf-8")
+
+        strip_index = build.index("/usr/bin/strip -S")
+        framework_sign_index = build.index(
+            '"$release_app/Contents/Frameworks/PetHaloCore.framework"',
+            strip_index,
+        )
+        app_sign_index = build.index('    "$release_app"', framework_sign_index)
+        strict_verify_index = build.index(
+            "/usr/bin/codesign --verify --deep --strict",
+            app_sign_index,
+        )
+        self.assertLess(strip_index, framework_sign_index)
+        self.assertLess(framework_sign_index, app_sign_index)
+        self.assertLess(app_sign_index, strict_verify_index)
+        self.assertGreaterEqual(build.count("--sign -"), 2)
+        self.assertGreaterEqual(build.count("--options runtime"), 2)
+        self.assertGreaterEqual(build.count("--timestamp=none"), 2)
+        self.assertIn("Config/UnsignedRelease.entitlements", build)
+
+        entitlements_path = ROOT / "Config/UnsignedRelease.entitlements"
+        with entitlements_path.open("rb") as stream:
+            entitlements = plistlib.load(stream)
+        self.assertEqual(
+            entitlements,
+            {"com.apple.security.cs.disable-library-validation": True},
+        )
+
+        source_boundary = (
+            ROOT / "Scripts/validate-source-boundaries.sh"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            'unsigned_release_entitlements="Config/UnsignedRelease.entitlements"',
+            source_boundary,
+        )
+        self.assertIn(
+            "unsigned release entitlement escaped its exact allowlist",
+            source_boundary,
+        )
+
+        unsigned_case = verify.split('    unsigned)', maxsplit=1)[1]
+        unsigned_case = unsigned_case.split("        ;;", maxsplit=1)[0]
+        self.assertIn("verify_ad_hoc_and_runtime", unsigned_case)
+        self.assertIn("Signature=adhoc", verify)
+        self.assertIn("flags=.*runtime", verify)
+        self.assertIn("unexpectedly uses Developer ID Application", verify)
+        self.assertIn("does not disable library validation", verify)
 
     def test_make_exposes_complete_release_surface(self) -> None:
         makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
@@ -132,6 +187,7 @@ class ReleaseReadinessTests(unittest.TestCase):
             "make release-archive",
             "make release-checksum",
             "make release-verify",
+            "make release-launch-smoke",
         ):
             self.assertIn(release_gate, workflow)
         all_workflows = "\n".join(
@@ -371,7 +427,12 @@ class ReleaseReadinessTests(unittest.TestCase):
 
         unreleased = changelog.split("## [Unreleased]", maxsplit=1)[1]
         unreleased = unreleased.split("## [0.1.0-beta.6]", maxsplit=1)[0]
-        self.assertIn("No changes yet.", unreleased)
+        for pending_change in (
+            "post-strip ad-hoc signature",
+            "strict bundle-valid",
+            "LaunchServices",
+        ):
+            self.assertIn(pending_change, unreleased)
         beta_six = changelog.split("## [0.1.0-beta.6]", maxsplit=1)[1]
         beta_six = beta_six.split("## [0.1.0-beta.5]", maxsplit=1)[0]
         for shipped_change in (
@@ -476,6 +537,25 @@ class ReleaseReadinessTests(unittest.TestCase):
             hashlib.sha256(notes.encode("utf-8")).hexdigest(),
             "72802b8f3be9be818678b26a649860cc2656181f58a97b1a61da96f58ddf8ada",
         )
+
+    def test_beta_seven_release_notes_define_ad_hoc_unsigned_boundary(self) -> None:
+        notes = (ROOT / "docs/release-notes/v0.1.0-beta.7.md").read_text(
+            encoding="utf-8"
+        )
+        for expected in (
+            "# Pet Halo 0.1.0 Beta 7",
+            "complete ad-hoc signature",
+            "Hardened Runtime",
+            "LaunchServices",
+            "not a Developer ID signature",
+            "Pet-Halo-0.1.0-beta.7-unsigned-universal.zip",
+            "Do not disable Gatekeeper globally",
+            "new tag and build",
+        ):
+            self.assertIn(expected, notes)
+        self.assertRegex(notes, r"not notarized by\s+Apple")
+        self.assertNotIn("Beta 7 was published", notes)
+        self.assertNotIn("Beta 7 is published", notes)
 
     def test_beta_five_release_notes_are_frozen_and_unsigned(self) -> None:
         notes = (ROOT / "docs/release-notes/v0.1.0-beta.5.md").read_text(

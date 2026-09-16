@@ -88,3 +88,8 @@ surfaces during Pet following, and waits for a stable replacement before
 falling back. It preserves the existing target hierarchy, privacy boundary, and
 unsigned-only distribution gate. The next unused candidate is
 `v0.1.0-beta.7` / build `7`.
+
+Beta 7 is authorized as an unsigned packaging repair. It adds a complete
+post-strip ad-hoc bundle signature, strict unsigned bundle verification, and a
+LaunchServices release smoke without changing Pet behavior or claiming
+Developer ID, notarization, or Gatekeeper trust.

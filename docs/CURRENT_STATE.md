@@ -11,6 +11,23 @@
   `7`; availability was rechecked after Beta 6 publication
 - Repository: public at `jianshi-codes/codex-pet-halo`
 
+## Beta 7 preparation
+
+- The Beta 6 public ZIP has correct checksums, metadata, and Universal
+  architectures, but its application bundle lacks a complete code signature.
+  The executable has only a linker-level ad-hoc marker; strict bundle
+  verification fails because the Info.plist and resources are not sealed.
+- The equivalent local Release build has a complete ad-hoc signature and passes
+  strict verification. Beta 7 therefore changes only release packaging and
+  validation: sign the embedded framework and App ad hoc after stripping,
+  preserve Hardened Runtime, disable Library Validation only for the unsigned
+  preview App so its ad-hoc framework can load, require strict verification,
+  and launch the packaged App through LaunchServices.
+- This remains an unsigned, non-notarized Developer Preview. Gatekeeper may
+  require one explicit Finder **Open** or **Open Anyway**, and Accessibility may
+  need to be re-granted after future builds because ad-hoc requirements are
+  build-specific.
+
 ## Published Beta 6 evidence — 2026-09-15
 
 - PR #25 merged the Beta 6 preparation into `main`; `main` and `origin/main`

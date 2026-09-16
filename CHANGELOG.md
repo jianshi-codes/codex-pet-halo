@@ -4,7 +4,17 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 
 ## [Unreleased]
 
-No changes yet.
+### Fixed
+
+- Added a complete post-strip ad-hoc signature to unsigned release bundles so
+  macOS receives a valid application and embedded-framework code requirement.
+- Scoped `disable-library-validation` to the unsigned preview App so its
+  ad-hoc embedded framework can load while other Hardened Runtime protections
+  remain enabled.
+- Changed unsigned release verification to require a strict bundle-valid
+  ad-hoc signature with Hardened Runtime and no Developer ID authority.
+- Changed release launch smoke to use LaunchServices and added it to the
+  validation-only and unsigned publication workflows.
 
 ## [0.1.0-beta.6] - 2026-09-15
 
