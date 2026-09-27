@@ -226,9 +226,10 @@ overwrite, retag, or upload with `--clobber` to an existing release identity.
 
 ## Source and compatibility for a future Beta
 
-- [x] Confirm `v0.1.0-beta.8` and build `8` were unused on 2026-09-16; both
+- [x] Confirm `v0.1.0-beta.8` and build `8` were unused on 2026-09-27; both
   the remote tag and GitHub Release were absent.
-- [ ] Obtain separate authorization for the next candidate and distribution.
+- [x] Obtain authorization for the minimal CLI discovery fix and unsigned Beta 8
+  publication, documentation closeout, Latest promotion, and local replacement.
 - [ ] Start the next candidate from a reviewed, clean `main` commit.
 - [ ] Record exact CLI and Desktop evidence in `docs/COMPATIBILITY.md`.
 - [ ] Generate current CLI schemas into a temporary directory and review every

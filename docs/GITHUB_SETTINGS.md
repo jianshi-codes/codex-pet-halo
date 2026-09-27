@@ -1,9 +1,9 @@
 # GitHub Repository Settings
 
 Repository settings were observed on 2026-07-21 with `gh repo view` and GitHub
-REST API calls against `jianshi-codes/codex-pet-halo`. Environment, tag, and
-Release, tag, environment, and Latest state were refreshed after the Beta 7
-publication on 2026-09-16; the remaining settings observations are from
+REST API calls against `jianshi-codes/codex-pet-halo`. Tag, Release, and Latest
+state were refreshed after the Beta 7 publication on 2026-09-16 and the Beta 8
+preparation on 2026-09-27; the remaining settings observations are from
 2026-07-31. “Observed” means the API confirmed
 the state; “Recommended” is a manual action and is not claimed as enabled.
 
@@ -30,10 +30,14 @@ the state; “Recommended” is a manual action and is not claimed as enabled.
 | Environments | None returned; `public-beta` does not currently exist |
 | Pages | No Pages site returned (HTTP 404) |
 | Tags | `v0.1.0-beta.7` resolves directly to `d8feb391f0144d23c4136c73782c6d750c6842b8`; earlier tags remain unchanged |
-| Releases | `v0.1.0-beta.7`: target/source `d8feb391f0144d23c4136c73782c6d750c6842b8`, published `2026-09-16T13:07:43Z`, non-draft unsigned prerelease with four assets; `/releases/latest` still resolves to `v0.1.0-beta.6` |
-| Next identity | `v0.1.0-beta.8` / build `8` is the next candidate; `git ls-remote` and `gh release view` both reported it absent on 2026-09-16 |
+| Releases | `v0.1.0-beta.7`: target/source `d8feb391f0144d23c4136c73782c6d750c6842b8`, published `2026-09-16T13:07:43Z`, non-draft, non-prerelease unsigned Developer Preview with four assets; `/releases/latest` resolves to `v0.1.0-beta.7` on 2026-09-27 |
+| Next identity | `v0.1.0-beta.8` / build `8` is the next candidate; `git ls-remote` and `gh release view` both reported it absent on 2026-09-27 |
 
 The complete observed label list includes the `bug` and `compatibility` labels required by the issue forms.
+
+Beta 7 was initially published as a non-draft unsigned prerelease while
+`v0.1.0-beta.6` remained Latest. Its non-prerelease/Latest state above is a fresh
+metadata observation; it is not clean-machine acceptance evidence.
 
 ## Recommended manual settings
 
