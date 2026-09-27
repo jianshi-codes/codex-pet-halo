@@ -4,11 +4,25 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 
 ## [Unreleased]
 
+No changes yet.
+
+## [0.1.0-beta.8] - 2026-09-27
+
 ### Fixed
 
 - Discover the nested Codex CLI bundled with current Codex and ChatGPT macOS
   applications when launched without a shell `PATH`. Existing standalone CLI
   and legacy application paths retain their priority and executable checks.
+
+### Release
+
+- Published the unsigned Universal Developer Preview from
+  `8ea5000ce07ef6507ad95983aff6701138ffc25c`; fresh public asset checks,
+  strict ad-hoc verification, LaunchServices lifecycle, and current Weekly
+  runtime validation passed without a manual CLI compatibility link.
+- The user accepted local verification for this publication and Latest
+  promotion. Independent clean-machine acceptance remains not run; Developer
+  ID signing and Apple notarization remain incomplete.
 
 ## [0.1.0-beta.7] - 2026-09-16
 

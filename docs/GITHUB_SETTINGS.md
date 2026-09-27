@@ -2,8 +2,9 @@
 
 Repository settings were observed on 2026-07-21 with `gh repo view` and GitHub
 REST API calls against `jianshi-codes/codex-pet-halo`. Tag, Release, and Latest
-state were refreshed after the Beta 7 publication on 2026-09-16 and the Beta 8
-preparation on 2026-09-27; the remaining settings observations are from
+state were refreshed after the Beta 8 publication on 2026-09-27, before R10
+promotion. The active ruleset and empty environment list were also rechecked
+on 2026-09-27; the remaining settings observations are from
 2026-07-31. “Observed” means the API confirmed
 the state; “Recommended” is a manual action and is not claimed as enabled.
 
@@ -29,15 +30,25 @@ the state; “Recommended” is a manual action and is not claimed as enabled.
 | Private vulnerability reporting | Disabled |
 | Environments | None returned; `public-beta` does not currently exist |
 | Pages | No Pages site returned (HTTP 404) |
-| Tags | `v0.1.0-beta.7` resolves directly to `d8feb391f0144d23c4136c73782c6d750c6842b8`; earlier tags remain unchanged |
-| Releases | `v0.1.0-beta.7`: target/source `d8feb391f0144d23c4136c73782c6d750c6842b8`, published `2026-09-16T13:07:43Z`, non-draft, non-prerelease unsigned Developer Preview with four assets; `/releases/latest` resolves to `v0.1.0-beta.7` on 2026-09-27 |
-| Next identity | `v0.1.0-beta.8` / build `8` is the next candidate; `git ls-remote` and `gh release view` both reported it absent on 2026-09-27 |
+| Tags | `v0.1.0-beta.8` resolves directly to `8ea5000ce07ef6507ad95983aff6701138ffc25c`; earlier tags remain unchanged |
+| Releases at publication | `v0.1.0-beta.8`: target/source `8ea5000ce07ef6507ad95983aff6701138ffc25c`, published `2026-09-27T13:36:27Z`, non-draft unsigned prerelease with four assets; `/releases/latest` returned `v0.1.0-beta.7` before R10 promotion |
+| Next identity | `v0.1.0-beta.9` / build `9` is the next candidate; `git ls-remote` and `gh release view` both reported it absent on 2026-09-27 |
 
 The complete observed label list includes the `bug` and `compatibility` labels required by the issue forms.
 
 Beta 7 was initially published as a non-draft unsigned prerelease while
-`v0.1.0-beta.6` remained Latest. Its non-prerelease/Latest state above is a fresh
-metadata observation; it is not clean-machine acceptance evidence.
+`v0.1.0-beta.6` remained Latest. Its later non-prerelease/Latest state was a fresh
+2026-09-27 metadata observation before Beta 8 promotion; it is not clean-machine acceptance
+evidence. Historical tag `v0.1.0-beta.7` resolves directly to
+`d8feb391f0144d23c4136c73782c6d750c6842b8` and was published at
+`2026-09-16T13:07:43Z`.
+
+The user explicitly authorized Beta 8 Latest promotion after the separate
+post-release documentation merge, with independent clean-machine acceptance
+recorded as not run. PR #30 was administrator-merged after both required checks
+passed, bypassing the approving reviewer under the user's explicit instruction.
+The same authorization covers the post-release documentation merge; the ruleset
+itself remains unchanged.
 
 ## Recommended manual settings
 
@@ -50,7 +61,7 @@ metadata observation; it is not clean-machine acceptance evidence.
 
 The 2026-07-25 refresh confirmed zero environments, including no `public-beta`.
 The active ruleset details above were not re-audited in that narrower refresh.
-The Beta 7 publication workflow created the tag and four-asset unsigned
+The Beta 8 publication workflow created the new tag and four-asset unsigned
 prerelease. No
 branch-protection/ruleset, environment, vulnerability-reporting, Pages, or
 visibility setting was changed during this release.

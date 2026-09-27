@@ -70,6 +70,16 @@ passed LaunchServices launch and owned app-server cleanup on a host with CLI
 reviewed CLI schema, all runtime Usage capabilities, or direct Pet interaction.
 Clean-machine Accessibility and Gatekeeper acceptance remain unverified.
 
+Beta 8 changes executable discovery only. Its freshly downloaded public ZIP
+passed local LaunchServices launch and owned-child cleanup without a manual CLI
+link. A sanitized probe using its embedded framework and the default locator
+with a GUI-style `PATH` confirmed provisional CLI `0.158.0-alpha.2.1`, a connected
+bridge, and current usable Weekly data after the asynchronous initial refresh.
+The optional 5h capability was unavailable and remained unestimated. This is
+session evidence, not a reviewed CLI schema or new Desktop/Pet acceptance. The
+user accepted this local boundary for Beta 8 publication and Latest promotion;
+independent clean-machine acceptance remains not run.
+
 For Desktop `26.715.52143 (5591)`, the consolidated M9 Pet-following gate directly observed one unique Route A Pet core moving while the resolved Codex standard window remained stationary, automatic visual-center attachment, Tuck Away fallback, Wake recovery, Pet Ring selection, non-activation, and complete Pet Halo/owned-child shutdown. M5–M7 use this one live flow rather than repeating the same interaction across milestone scripts.
 
 Desktop `26.721.41059 (5848)` changed the visible-Pet Route A topology to three
@@ -157,7 +167,7 @@ For a provisional version, Pet Halo requires a valid initialize response, initia
 
 Required method-not-found errors, invalid required envelopes or response shapes, and rate-limit semantics without a usable Weekly capability make a provisional version runtime incompatible for the current connection. Pet Halo closes the owned child, cancels periodic/debounce/reconnect work, and does not automatically reconnect for that failure. A user-initiated **Refresh Usage** or application restart may retry. Transport closure, timeout, and process-start failures retain their existing transient reconnect treatment. Only safe state names and the parsed CLI version may be surfaced; raw errors, payloads, account data, environment values, and executable paths remain private.
 
-The executable locator accepts an injected URL for tests, absolute executable entries from inherited `PATH`, standard Homebrew prefixes, and the resource directories of installed Codex or ChatGPT applications. The Beta 8 candidate additionally checks their nested `codex-cli/CodexCLI.app/Contents/MacOS` directories after every existing common prefix, so application launch does not require a shell-provided CLI path or a manually installed compatibility symlink. Relative entries such as `.` and `relative/bin` are ignored. Candidates are resolved and checked as executable files. Version detection and app-server launch use `Foundation.Process` directly with argument arrays and working directory `/`; no shell command is constructed. The version probe defaults to 5 seconds and 4 KiB stdout, discards stderr, and confirms child exit after termination or SIGKILL before returning.
+The executable locator accepts an injected URL for tests, absolute executable entries from inherited `PATH`, standard Homebrew prefixes, and the resource directories of installed Codex or ChatGPT applications. Beta 8 additionally checks their nested `codex-cli/CodexCLI.app/Contents/MacOS` directories after every existing common prefix, so application launch does not require a shell-provided CLI path or a manually installed compatibility symlink. Relative entries such as `.` and `relative/bin` are ignored. Candidates are resolved and checked as executable files. Version detection and app-server launch use `Foundation.Process` directly with argument arrays and working directory `/`; no shell command is constructed. The version probe defaults to 5 seconds and 4 KiB stdout, discards stderr, and confirms child exit after termination or SIGKILL before returning.
 
 The production method allowlist is limited to `initialize`, `initialized`, `account/read` with `refreshToken: false`, `account/rateLimits/read`, and `account/usage/read`. The bridge observes only `account/rateLimits/updated` and `account/updated`; payloads are invalidation hints only. Rate-limit updates request a complete rate snapshot. Account updates clear cached account data and request account, rate-limit, and Usage snapshots. New app-server connections also clear old account data because identity continuity cannot be established.
 
