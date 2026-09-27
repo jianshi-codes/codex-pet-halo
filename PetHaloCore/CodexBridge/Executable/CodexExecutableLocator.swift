@@ -11,6 +11,15 @@ public protocol CodexExecutableLocating: Sendable {
 }
 
 public struct CodexExecutableLocator: CodexExecutableLocating, Sendable {
+    public static let defaultCommonPrefixes: [URL] = [
+        URL(fileURLWithPath: "/opt/homebrew/bin", isDirectory: true),
+        URL(fileURLWithPath: "/usr/local/bin", isDirectory: true),
+        URL(fileURLWithPath: "/Applications/Codex.app/Contents/Resources", isDirectory: true),
+        URL(fileURLWithPath: "/Applications/ChatGPT.app/Contents/Resources", isDirectory: true),
+        URL(fileURLWithPath: "/Applications/Codex.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS", isDirectory: true),
+        URL(fileURLWithPath: "/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS", isDirectory: true),
+    ]
+
     private let explicitExecutableURL: URL?
     private let environmentPath: String?
     private let commonPrefixes: [URL]
@@ -18,12 +27,7 @@ public struct CodexExecutableLocator: CodexExecutableLocating, Sendable {
     public init(
         explicitExecutableURL: URL? = nil,
         environment: [String: String] = ProcessInfo.processInfo.environment,
-        commonPrefixes: [URL] = [
-            URL(fileURLWithPath: "/opt/homebrew/bin", isDirectory: true),
-            URL(fileURLWithPath: "/usr/local/bin", isDirectory: true),
-            URL(fileURLWithPath: "/Applications/Codex.app/Contents/Resources", isDirectory: true),
-            URL(fileURLWithPath: "/Applications/ChatGPT.app/Contents/Resources", isDirectory: true),
-        ]
+        commonPrefixes: [URL] = CodexExecutableLocator.defaultCommonPrefixes
     ) {
         self.explicitExecutableURL = explicitExecutableURL
         environmentPath = environment["PATH"]
