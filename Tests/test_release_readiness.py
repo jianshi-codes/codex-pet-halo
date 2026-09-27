@@ -444,9 +444,6 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("newer versions below 1.0 are checked at runtime", readme)
         self.assertIn("[Compatibility](docs/COMPATIBILITY.md)", readme)
 
-        unreleased = changelog.split("## [Unreleased]", maxsplit=1)[1]
-        unreleased = unreleased.split("## [0.1.0-beta.7]", maxsplit=1)[0]
-        self.assertIn("No changes yet.", unreleased)
         beta_seven = changelog.split("## [0.1.0-beta.7]", maxsplit=1)[1]
         beta_seven = beta_seven.split("## [0.1.0-beta.6]", maxsplit=1)[0]
         for pending_change in (
@@ -516,7 +513,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("2026-09-14T16:51:05Z", current_state)
         self.assertIn("bundle build `7`", current_state)
         self.assertIn("39a0c1a596309f6ff5467be65f5059f175c03c47", current_state)
-        self.assertIn("Beta 6 remains Latest", current_state)
+        self.assertIn("Beta 7 is Latest", current_state)
         self.assertIn("draft: false", current_state)
         self.assertIn("prerelease: true", current_state)
         self.assertIn("signing: unsigned", current_state)

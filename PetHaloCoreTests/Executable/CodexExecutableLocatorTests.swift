@@ -4,6 +4,53 @@ import XCTest
 @testable import PetHaloCore
 
 final class CodexExecutableLocatorTests: XCTestCase {
+    func testDefaultPrefixesDiscoverNestedBundledCLIsWithoutShellPath() async throws {
+        for application in ["Codex", "ChatGPT"] {
+            let directory = FileManager.default.temporaryDirectory
+                .appendingPathComponent(UUID().uuidString, isDirectory: true)
+            defer { try? FileManager.default.removeItem(at: directory) }
+            let executable = try makeCandidate(
+                relativePath: "Applications/\(application).app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex",
+                in: directory
+            )
+            let locator = defaultPrefixLocator(in: directory)
+
+            let result = await locator.locate()
+
+            XCTAssertEqual(result, .available(executable.resolvingSymlinksInPath()))
+        }
+    }
+
+    func testLegacyPrefixPriorityAndNonExecutableNestedFallbackArePreserved() async throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let legacy = try makeCandidate(
+            relativePath: "Applications/ChatGPT.app/Contents/Resources/codex",
+            in: directory
+        )
+        let nestedCodex = try makeCandidate(
+            relativePath: "Applications/Codex.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex",
+            in: directory
+        )
+        let nestedChatGPT = try makeCandidate(
+            relativePath: "Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex",
+            in: directory
+        )
+        let locator = defaultPrefixLocator(in: directory)
+
+        for expected in [legacy, nestedCodex, nestedChatGPT] {
+            let result = await locator.locate()
+            XCTAssertEqual(result, .available(expected.resolvingSymlinksInPath()))
+            try FileManager.default.setAttributes(
+                [.posixPermissions: 0o644],
+                ofItemAtPath: expected.path
+            )
+        }
+        let unavailable = await locator.locate()
+        XCTAssertEqual(unavailable, .unavailable)
+    }
+
     func testExplicitExecutableAndPathDiscoveryResolveSymlinks() async throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
@@ -128,6 +175,26 @@ final class CodexExecutableLocatorTests: XCTestCase {
         let result = await inspection.value
         XCTAssertEqual(result, .unavailable)
         assertProcessDoesNotExist(pid)
+    }
+
+    private func defaultPrefixLocator(in directory: URL) -> CodexExecutableLocator {
+        CodexExecutableLocator(
+            environment: [:],
+            commonPrefixes: CodexExecutableLocator.defaultCommonPrefixes.map {
+                directory.appendingPathComponent(String($0.path.dropFirst()), isDirectory: true)
+            }
+        )
+    }
+
+    private func makeCandidate(relativePath: String, in directory: URL) throws -> URL {
+        let executable = directory.appendingPathComponent(relativePath)
+        try FileManager.default.createDirectory(
+            at: executable.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        try Data().write(to: executable)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: executable.path)
+        return executable
     }
 
     private func makeExecutable(body: String) throws -> URL {

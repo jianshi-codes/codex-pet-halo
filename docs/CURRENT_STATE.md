@@ -4,12 +4,24 @@
 - Status: **PARTIAL — SOURCE RELEASE READY, SIGNED BINARY BLOCKED**
 - Published release: `v0.1.0-beta.7`, product version `0.1.0`, bundle build `7`
 - Published source: `d8feb391f0144d23c4136c73782c6d750c6842b8`
-- Release classification: public, non-draft prerelease; ad-hoc signed, not
-  Developer ID-signed or notarized. Beta 6 remains Latest pending Beta 7 closeout.
-- Post-release branch: `codex/beta7-release-closeout`
+- Release classification: public, non-draft, non-prerelease; ad-hoc signed,
+  not Developer ID-signed or notarized. Beta 7 is Latest in the GitHub API
+  observation on 2026-09-27.
 - Next unused identity: `v0.1.0-beta.8`, product version `0.1.0`, bundle build
-  `8`; remote tag and GitHub Release were absent on 2026-09-16
+  `8`; remote tag and GitHub Release were absent on 2026-09-27
 - Repository: public at `jianshi-codes/codex-pet-halo`
+
+## Beta 8 candidate — 2026-09-27
+
+- Scope: executable discovery only, adding the nested CLI bundle directories
+  for Codex.app and ChatGPT.app after the existing common prefixes.
+- Source branch: `codex/beta8-cli-discovery`; no Beta 8 tag or Release exists.
+- The user authorized the minimal fix, commit/push, unsigned Beta 8 publication,
+  separate post-release documentation, Latest promotion, and local replacement.
+- Required validation and publication evidence will be recorded at closeout.
+  Independent clean-machine acceptance remains separate from local evidence.
+- Usage protocol, version policy, application resources, entitlements, and
+  Pet presentation/following behavior retain the Beta 7 boundary.
 
 ## Published Beta 7 evidence — 2026-09-16
 
@@ -22,7 +34,8 @@
 - Tag `v0.1.0-beta.7` resolves directly to that commit. The
   [Beta 7 Release](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.7)
   was published at `2026-09-16T13:07:43Z` as a non-draft prerelease; Beta 6
-  remains the `/releases/latest` result.
+  was the `/releases/latest` result at that publication. The 2026-09-27 API
+  observation reports Beta 7 as non-prerelease and Latest.
 - Exactly four public assets were freshly downloaded and their SHA-256 values
   matched both `SHA256SUMS` and GitHub digests:
   - `Pet-Halo-0.1.0-beta.7-unsigned-universal.zip` — 1,388,050 bytes,
@@ -42,7 +55,8 @@
 - The downloaded ZIP passed isolated LaunchServices startup, owned Codex
   app-server startup, normal App quit, and owned-child cleanup on this Mac.
   Clean-machine first launch, Gatekeeper, and Accessibility granted/denied
-  acceptance remain **not run**, not PASS. Promotion to Latest is pending.
+  acceptance remain **not run**, not PASS. The later Latest metadata observation
+  does not change that evidence boundary.
 
 ## Beta 7 packaging diagnosis
 

@@ -99,3 +99,9 @@ Beta 7 is authorized as an unsigned packaging repair. It adds a complete
 post-strip ad-hoc bundle signature, strict unsigned bundle verification, and a
 LaunchServices release smoke without changing Pet behavior or claiming
 Developer ID, notarization, or Gatekeeper trust.
+
+Beta 8 preparation is authorized as a minimal executable-discovery repair for
+the nested CLI bundled with current Codex.app and ChatGPT.app installations.
+It preserves existing path priority and executable validation, requires no
+runtime permission or Usage protocol change, and retains the unsigned
+Universal distribution boundary.
