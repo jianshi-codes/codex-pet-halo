@@ -224,12 +224,48 @@ overwrite, retag, or upload with `--clobber` to an existing release identity.
   acceptance — not run; local isolated preferences are not a separate host.
 - [ ] Post-release documentation PR merged and Beta 7 promoted to Latest.
 
+## Published Beta 8 record — 2026-09-27
+
+- [x] PR #30 merged at `8ea5000ce07ef6507ad95983aff6701138ffc25c` after
+  both required CI checks passed. The user explicitly authorized administrator
+  bypass of the approving reviewer; repository settings were not changed.
+- [x] Candidate full checks and local release-specific gates passed. The first
+  PR CI attempt exited unexpectedly in an existing reconnect test; its 20-iteration
+  local check and same-head failed-job rerun passed. Merged-main CI also passed.
+- [x] Validation-only workflow
+  [36322585245](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/36322585245)
+  passed without creating release state.
+- [x] Publication workflow
+  [36322777110](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/36322777110)
+  passed at the same source; the unsigned job completed and signing/notarization
+  was skipped. Beta 8 was initially a non-draft prerelease at
+  `2026-09-27T13:36:27Z`.
+- [x] The tag and manifest match the source, version `0.1.0`, build `8`, identifier,
+  macOS `14.0`, and Universal `arm64 x86_64`.
+- [x] All four assets were freshly downloaded and checked against GitHub digests
+  and `SHA256SUMS`; the ZIP SHA-256 is
+  `16d45bf1b1eaaf6990faaf96533e015c182c42469c926095081a618b41fa88f0`.
+- [x] Public notes are byte-identical to tagged source; framework and App pass
+  strict ad-hoc verification with Hardened Runtime and the existing App-only
+  Library Validation exception. Manifest states `signing: unsigned` and
+  `notarization: not-submitted`.
+- [x] Public LaunchServices startup, owned child, normal quit, and cleanup passed
+  without a manual CLI link. The downloaded framework's provisional runtime
+  connected with CLI `0.158.0-alpha.2.1` and current Weekly data; optional 5h was
+  unavailable and not estimated.
+- [x] The user explicitly accepted local validation for unsigned publication and
+  Latest promotion after the separate post-release documentation is merged.
+- [ ] Independent clean-machine first launch, Gatekeeper, Accessibility/Pet,
+  and uninstall acceptance — not run; the Beta 8 exception is not a PASS result.
+- [ ] Developer ID, notarization, stapling, and signed Gatekeeper verification —
+  incomplete and not claimed for Beta 8.
+
 ## Source and compatibility for a future Beta
 
-- [x] Confirm `v0.1.0-beta.8` and build `8` were unused on 2026-09-27; both
+- [x] Confirm `v0.1.0-beta.9` and build `9` were unused on 2026-09-27; both
   the remote tag and GitHub Release were absent.
-- [x] Obtain authorization for the minimal CLI discovery fix and unsigned Beta 8
-  publication, documentation closeout, Latest promotion, and local replacement.
+- [ ] Obtain separate authorization for the next candidate and its distribution,
+  publication, documentation closeout, and promotion endpoint.
 - [ ] Start the next candidate from a reviewed, clean `main` commit.
 - [ ] Record exact CLI and Desktop evidence in `docs/COMPATIBILITY.md`.
 - [ ] Generate current CLI schemas into a temporary directory and review every
@@ -245,10 +281,10 @@ overwrite, retag, or upload with `--clobber` to an existing release identity.
 
 ```sh
 make public-exposure-audit
-make release-build RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=8 RELEASE_TAG=v0.1.0-beta.8
-make release-archive RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=8 RELEASE_TAG=v0.1.0-beta.8
-make release-checksum RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=8 RELEASE_TAG=v0.1.0-beta.8
-make release-verify RELEASE_ARTIFACT_QUALIFIER=unsigned RELEASE_MODE=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=8 RELEASE_TAG=v0.1.0-beta.8
+make release-build RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=9 RELEASE_TAG=v0.1.0-beta.9
+make release-archive RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=9 RELEASE_TAG=v0.1.0-beta.9
+make release-checksum RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=9 RELEASE_TAG=v0.1.0-beta.9
+make release-verify RELEASE_ARTIFACT_QUALIFIER=unsigned RELEASE_MODE=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=9 RELEASE_TAG=v0.1.0-beta.9
 ```
 
 - [ ] Verify Release configuration and Universal `arm64 x86_64`.
@@ -261,7 +297,7 @@ make release-verify RELEASE_ARTIFACT_QUALIFIER=unsigned RELEASE_MODE=unsigned MA
   its ad-hoc embedded framework.
 - [ ] Launch the packaged App through LaunchServices and verify owned-child
   shutdown; do not substitute direct executable launch.
-- [ ] Verify `Pet-Halo-0.1.0-beta.8-unsigned-universal.zip`, manifest
+- [ ] Verify `Pet-Halo-0.1.0-beta.9-unsigned-universal.zip`, manifest
   `unsigned` / `not-submitted`, release notes, and SHA-256.
 
 ## Developer ID and notarization
@@ -271,10 +307,10 @@ the runbook. Never place identities, secrets, Keychain contents, or notarization
 credentials in repository files or command output.
 
 ```sh
-make release-sign MARKETING_VERSION=0.1.0 BUILD_NUMBER=8 RELEASE_TAG=v0.1.0-beta.8
-make release-archive MARKETING_VERSION=0.1.0 BUILD_NUMBER=8 RELEASE_TAG=v0.1.0-beta.8
-make release-notarize MARKETING_VERSION=0.1.0 BUILD_NUMBER=8 RELEASE_TAG=v0.1.0-beta.8
-make release-verify MARKETING_VERSION=0.1.0 BUILD_NUMBER=8 RELEASE_TAG=v0.1.0-beta.8 RELEASE_MODE=notarized
+make release-sign MARKETING_VERSION=0.1.0 BUILD_NUMBER=9 RELEASE_TAG=v0.1.0-beta.9
+make release-archive MARKETING_VERSION=0.1.0 BUILD_NUMBER=9 RELEASE_TAG=v0.1.0-beta.9
+make release-notarize MARKETING_VERSION=0.1.0 BUILD_NUMBER=9 RELEASE_TAG=v0.1.0-beta.9
+make release-verify MARKETING_VERSION=0.1.0 BUILD_NUMBER=9 RELEASE_TAG=v0.1.0-beta.9 RELEASE_MODE=notarized
 ```
 
 - [ ] Record an actual Apple `Accepted` result; never infer it from submission.
@@ -291,7 +327,7 @@ clean-preferences launch is useful evidence but is not a clean machine.
 
 ## Future publication hold point
 
-Beta 1 through Beta 7 are immutable publication identities: never
+Beta 1 through Beta 8 are immutable publication identities: never
 overwrite, retag, reclassify as signed/notarized, or upload to them with
 `--clobber`. A future release must use a new tag and build number.
 

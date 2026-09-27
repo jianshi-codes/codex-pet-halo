@@ -2,26 +2,73 @@
 
 - Milestone: M9 — Public Beta Release Readiness
 - Status: **PARTIAL — SOURCE RELEASE READY, SIGNED BINARY BLOCKED**
-- Published release: `v0.1.0-beta.7`, product version `0.1.0`, bundle build `7`
-- Published source: `d8feb391f0144d23c4136c73782c6d750c6842b8`
-- Release classification: public, non-draft, non-prerelease; ad-hoc signed,
-  not Developer ID-signed or notarized. Beta 7 is Latest in the GitHub API
-  observation on 2026-09-27.
-- Next unused identity: `v0.1.0-beta.8`, product version `0.1.0`, bundle build
-  `8`; remote tag and GitHub Release were absent on 2026-09-27
+- Published release: `v0.1.0-beta.8`, product version `0.1.0`, bundle build `8`
+- Published source: `8ea5000ce07ef6507ad95983aff6701138ffc25c`
+- Classification at publication: public, non-draft unsigned prerelease;
+  complete ad-hoc signatures, not Developer ID-signed or notarized.
+- Latest promotion: explicitly authorized after this post-release documentation
+  is merged; metadata observations below describe publication time.
+- Acceptance boundary: local public postflight passed; independent clean-machine
+  acceptance remains **not run**, with a user-authorized Beta 8 exception.
+- Next unused identity: `v0.1.0-beta.9`, product version `0.1.0`, bundle build
+  `9`; remote tag and GitHub Release were absent on 2026-09-27
 - Repository: public at `jianshi-codes/codex-pet-halo`
 
-## Beta 8 candidate — 2026-09-27
+## Published Beta 8 evidence — 2026-09-27
 
 - Scope: executable discovery only, adding the nested CLI bundle directories
-  for Codex.app and ChatGPT.app after the existing common prefixes.
-- Source branch: `codex/beta8-cli-discovery`; no Beta 8 tag or Release exists.
-- The user authorized the minimal fix, commit/push, unsigned Beta 8 publication,
-  separate post-release documentation, Latest promotion, and local replacement.
-- Required validation and publication evidence will be recorded at closeout.
-  Independent clean-machine acceptance remains separate from local evidence.
-- Usage protocol, version policy, application resources, entitlements, and
-  Pet presentation/following behavior retain the Beta 7 boundary.
+  for Codex.app and ChatGPT.app after every existing common prefix. Usage
+  protocol, version policy, resources, entitlements, and Pet behavior are unchanged.
+- PR #30 was merged into `main` at `8ea5000ce07ef6507ad95983aff6701138ffc25c`.
+  The user authorized administrator bypass of the approving reviewer; both
+  required CI checks passed before merge. CI
+  [36321768501](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/36321768501)
+  passed on the same-head failed-job rerun after an unexpected test-process exit
+  in the existing reconnect test. That test passed 20 consecutive local iterations;
+  no test or runtime logic was changed for the CI event. Merged-main CI
+  [36322458707](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/36322458707)
+  passed without rerun.
+- Candidate `make check` passed: 75 Core tests with one existing local-only smoke
+  skip, 141 application tests, and 49 Python tests. Local release audit, Universal
+  build/archive/checksum/strict unsigned verification, and isolated LaunchServices
+  launch/shutdown passed from the clean published source.
+- Validation-only workflow
+  [36322585245](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/36322585245)
+  passed without creating release state. Publication workflow
+  [36322777110](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/36322777110)
+  passed at the same SHA; the unsigned job completed and signing/notarization
+  was skipped.
+- Tag `v0.1.0-beta.8` resolves directly to the published source. The
+  [Beta 8 Release](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.8)
+  was published at `2026-09-27T13:36:27Z` as a non-draft prerelease. Beta 7
+  was the `/releases/latest` result in the post-publication API observation.
+- Exactly four assets were freshly downloaded; every SHA-256 matched GitHub's
+  digest and every `SHA256SUMS` entry passed:
+  - `Pet-Halo-0.1.0-beta.8-unsigned-universal.zip` — 1,388,740 bytes,
+    `16d45bf1b1eaaf6990faaf96533e015c182c42469c926095081a618b41fa88f0`;
+  - `release-manifest.json` — 336 bytes,
+    `15f923173bf640a0c8c8008255f1dacfb9051da56a3a894ea60bbf7b339f3cb1`;
+  - `RELEASE_NOTES.md` — 2,103 bytes,
+    `b54cdbd09d89d8476154c6dbe4f59a905259511018ed80b8eb36e8f56b7e3305`;
+  - `SHA256SUMS` — 282 bytes,
+    `bd908f05f90ff4b1f2f9bc838900a41112fed13bdf34af25f4b431599ed95fdc`;
+- Manifest and extracted App match version `0.1.0`, build `8`, tag/source,
+  identifier `io.github.jianshicodes.PetHalo`, minimum macOS `14.0`, and Universal
+  `arm64 x86_64`. Notes are byte-identical to tagged source. Framework and App
+  pass `codesign --verify --deep --strict` with ad-hoc signatures and Hardened
+  Runtime; only the App has the unsigned-preview Library Validation exception.
+- The downloaded ZIP passed local isolated LaunchServices launch, owned app-server
+  startup, normal quit, and child cleanup with the temporary CLI link removed.
+  A safe probe loaded the downloaded embedded framework and waited for the
+  asynchronous initial refresh: CLI `0.158.0-alpha.2.1` connected provisionally,
+  Weekly was available/current, optional 5h was unavailable, and shutdown passed.
+  The probe initially checked `Starting` too early; correcting its wait required
+  no production or public-asset change.
+- The user explicitly accepted local verification for unsigned publication and
+  Latest promotion after documentation merge. Independent clean-machine first
+  launch, Gatekeeper, and Accessibility/Pet interaction acceptance remain
+  **not run**. This Beta 8 exception does not change future release gates or
+  establish Developer ID, notarization, Gatekeeper trust, or a reviewed CLI version.
 
 ## Published Beta 7 evidence — 2026-09-16
 

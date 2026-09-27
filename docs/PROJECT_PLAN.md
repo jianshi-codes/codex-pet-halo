@@ -93,15 +93,23 @@ Beta 7 was published from `d8feb391f0144d23c4136c73782c6d750c6842b8`
 as an unsigned, non-notarized prerelease with complete ad-hoc bundle sealing.
 Downloaded-asset checks and local LaunchServices/owned-child postflight passed.
 Clean-machine Gatekeeper and Accessibility acceptance have not been run;
-the next unused candidate is `v0.1.0-beta.8` / build `8`.
+its then-next candidate was `v0.1.0-beta.8` / build `8`.
 
 Beta 7 is authorized as an unsigned packaging repair. It adds a complete
 post-strip ad-hoc bundle signature, strict unsigned bundle verification, and a
 LaunchServices release smoke without changing Pet behavior or claiming
 Developer ID, notarization, or Gatekeeper trust.
 
-Beta 8 preparation is authorized as a minimal executable-discovery repair for
+Beta 8 was published from `8ea5000ce07ef6507ad95983aff6701138ffc25c` as
+a minimal executable-discovery repair for
 the nested CLI bundled with current Codex.app and ChatGPT.app installations.
 It preserves existing path priority and executable validation, requires no
 runtime permission or Usage protocol change, and retains the unsigned
 Universal distribution boundary.
+
+Its fresh public assets, strict ad-hoc verification, local LaunchServices
+lifecycle, and current Weekly runtime passed without a compatibility link.
+The user explicitly accepted local verification for Beta 8 publication and
+Latest promotion after documentation merge. Independent clean-machine
+acceptance remains not run. The next unused candidate is `v0.1.0-beta.9` /
+build `9`; future clean-machine and signing gates remain unchanged.

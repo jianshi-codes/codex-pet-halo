@@ -6,7 +6,7 @@
 
 Pet Halo is an unofficial macOS menu-bar companion that shows Codex Usage around Codex Pet. It can fall back to the Codex window or a free-floating display.
 
-[![Download v0.1.0-beta.7](https://img.shields.io/badge/download-v0.1.0--beta.7-5865F2)](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.7)
+[![Download v0.1.0-beta.8](https://img.shields.io/badge/download-v0.1.0--beta.8-5865F2)](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.8)
 [![CI](https://github.com/jianshi-codes/codex-pet-halo/actions/workflows/ci.yml/badge.svg)](https://github.com/jianshi-codes/codex-pet-halo/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-black)
@@ -36,7 +36,7 @@ Codex Pet is shown only to demonstrate integration. It is not Pet Halo project b
 
 ## Download
 
-Get `Pet-Halo-0.1.0-beta.7-unsigned-universal.zip` from the [v0.1.0-beta.7 release](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.7). It supports Apple silicon and Intel Macs running macOS 14 or later. You also need Codex Desktop for following, plus a signed-in Codex CLI for Usage. The reviewed CLI baseline is `0.145.0-alpha.18`; newer versions below 1.0 are checked at runtime. See [Compatibility](docs/COMPATIBILITY.md).
+Get `Pet-Halo-0.1.0-beta.8-unsigned-universal.zip` from the [v0.1.0-beta.8 release](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.8). It supports Apple silicon and Intel Macs running macOS 14 or later. You also need Codex Desktop for following, plus a signed-in Codex CLI for Usage. The reviewed CLI baseline is `0.145.0-alpha.18`; newer versions below 1.0 are checked at runtime. See [Compatibility](docs/COMPATIBILITY.md).
 
 > **Unsigned Developer Preview:** the app has a complete ad-hoc bundle signature, but is **not Developer ID-signed and not notarized** by Apple. macOS may block the first launch. Only override Gatekeeper after independently verifying the GitHub source, release checksum, and repository provenance. A later ad-hoc update may require granting Accessibility access again.
 
