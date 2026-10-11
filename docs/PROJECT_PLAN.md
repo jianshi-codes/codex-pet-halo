@@ -7,7 +7,7 @@
 - MVP metrics are capability-driven: optional segments appear only when their source is available.
 - Missing or unsupported data is hidden or displayed as unavailable, never estimated.
 - Each milestone has an explicit gate and does not authorize the next one automatically.
-- Current Beta 9 candidate uses single-shot visual Pet positioning at startup or explicit request. Earlier AX following and window-fallback milestones remain historical implementations, not the default application path.
+- Current Beta 9 release uses single-shot visual Pet positioning at startup or explicit request. Earlier AX following and window-fallback milestones remain historical implementations, not the default application path.
 
 ## Authorized Beta 9 compatibility change — 2026-10-11
 
@@ -122,5 +122,11 @@ Its fresh public assets, strict ad-hoc verification, local LaunchServices
 lifecycle, and current Weekly runtime passed without a compatibility link.
 The user explicitly accepted local verification for Beta 8 publication and
 Latest promotion after documentation merge. Independent clean-machine
-acceptance remains not run. The next unused candidate is `v0.1.0-beta.9` /
-build `9`; future clean-machine and signing gates remain unchanged.
+acceptance remains not run. The next unused candidate is `v0.1.0-beta.10` /
+build `10`; future clean-machine and signing gates remain unchanged.
+
+Beta 9 was published on 2026-10-11 with single-shot positioning and direct user
+acceptance of fixed placement/manual relocation. Public local postflight passed;
+independent clean-machine acceptance remains not run under the explicit Beta 9
+exception. The next candidate is Beta 10/build 10. Historical milestone reports
+and previously published release notes remain unchanged.

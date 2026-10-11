@@ -9,12 +9,12 @@ The next reserved defaults are:
 | Input | Value |
 | --- | --- |
 | Product version | `0.1.0` |
-| Bundle build | `9` |
-| Tag | `v0.1.0-beta.9` |
+| Bundle build | `10` |
+| Tag | `v0.1.0-beta.10` |
 | Distribution | `unsigned` |
-| Release notes | `docs/release-notes/v0.1.0-beta.9.md` — create and review before `PREPARED` |
-| Signed artifact | `Pet-Halo-0.1.0-beta.9-universal.zip` |
-| Local unsigned evidence | `Pet-Halo-0.1.0-beta.9-unsigned-universal.zip` |
+| Release notes | `docs/release-notes/v0.1.0-beta.10.md` — create and review before `PREPARED` |
+| Signed artifact | `Pet-Halo-0.1.0-beta.10-universal.zip` |
+| Local unsigned evidence | `Pet-Halo-0.1.0-beta.10-unsigned-universal.zip` |
 
 Every execution must re-read these values from the reviewed source. Do not reuse
 this table after a release closeout advances the next candidate identity.
@@ -97,8 +97,8 @@ Run both checks and treat any result other than the documented “not found” s
 as a blocker:
 
 ```sh
-git ls-remote --exit-code --refs origin refs/tags/v0.1.0-beta.9
-gh release view v0.1.0-beta.9 --json tagName,name,isDraft,isPrerelease,url
+git ls-remote --exit-code --refs origin refs/tags/v0.1.0-beta.10
+gh release view v0.1.0-beta.10 --json tagName,name,isDraft,isPrerelease,url
 ```
 
 For an unused identity, `git ls-remote --exit-code` returns status `2` and
@@ -142,29 +142,29 @@ make public-exposure-audit
 make release-build \
   RELEASE_ARTIFACT_QUALIFIER=unsigned \
   MARKETING_VERSION=0.1.0 \
-  BUILD_NUMBER=9 \
-  RELEASE_TAG=v0.1.0-beta.9
+  BUILD_NUMBER=10 \
+  RELEASE_TAG=v0.1.0-beta.10
 make release-archive \
   RELEASE_ARTIFACT_QUALIFIER=unsigned \
   MARKETING_VERSION=0.1.0 \
-  BUILD_NUMBER=9 \
-  RELEASE_TAG=v0.1.0-beta.9
+  BUILD_NUMBER=10 \
+  RELEASE_TAG=v0.1.0-beta.10
 make release-checksum \
   RELEASE_ARTIFACT_QUALIFIER=unsigned \
   MARKETING_VERSION=0.1.0 \
-  BUILD_NUMBER=9 \
-  RELEASE_TAG=v0.1.0-beta.9
+  BUILD_NUMBER=10 \
+  RELEASE_TAG=v0.1.0-beta.10
 make release-verify \
   RELEASE_ARTIFACT_QUALIFIER=unsigned \
   RELEASE_MODE=unsigned \
   MARKETING_VERSION=0.1.0 \
-  BUILD_NUMBER=9 \
-  RELEASE_TAG=v0.1.0-beta.9
+  BUILD_NUMBER=10 \
+  RELEASE_TAG=v0.1.0-beta.10
 make release-launch-smoke \
   RELEASE_ARTIFACT_QUALIFIER=unsigned \
   MARKETING_VERSION=0.1.0 \
-  BUILD_NUMBER=9 \
-  RELEASE_TAG=v0.1.0-beta.9
+  BUILD_NUMBER=10 \
+  RELEASE_TAG=v0.1.0-beta.10
 ```
 
 Keep deterministic tests, live smoke, user interaction, and clean-machine
@@ -172,7 +172,7 @@ evidence as separate rows in the release record. Evidence reuse must name the
 exact source and environment. The release workflow repeats only release-specific
 validation and must not call `make check`.
 
-The unsigned command must produce, under `dist/v0.1.0-beta.9/`, only:
+The unsigned command must produce, under `dist/v0.1.0-beta.10/`, only:
 
 - the local unsigned Universal ZIP;
 - `release-manifest.json`;
@@ -197,8 +197,8 @@ The manual workflow must run from the same reviewed `main` commit:
 gh workflow run release.yml \
   --ref main \
   -f marketing_version=0.1.0 \
-  -f build_number=9 \
-  -f release_tag=v0.1.0-beta.9 \
+  -f build_number=10 \
+  -f release_tag=v0.1.0-beta.10 \
   -f distribution=unsigned \
   -f publish=false
 ```
@@ -253,8 +253,8 @@ For an unsigned developer preview:
 gh workflow run release.yml \
   --ref main \
   -f marketing_version=0.1.0 \
-  -f build_number=9 \
-  -f release_tag=v0.1.0-beta.9 \
+  -f build_number=10 \
+  -f release_tag=v0.1.0-beta.10 \
   -f distribution=unsigned \
   -f publish=true
 ```
@@ -269,8 +269,8 @@ For a signed and notarized prerelease:
 gh workflow run release.yml \
   --ref main \
   -f marketing_version=0.1.0 \
-  -f build_number=9 \
-  -f release_tag=v0.1.0-beta.9 \
+  -f build_number=10 \
+  -f release_tag=v0.1.0-beta.10 \
   -f distribution=signed-notarized \
   -f publish=true
 ```
@@ -295,7 +295,7 @@ Download into a new temporary directory; never verify against local build output
 
 ```sh
 release_tmp="$(mktemp -d "${TMPDIR:-/tmp}/pet-halo-release-postflight.XXXXXX")"
-gh release download v0.1.0-beta.9 --dir "$release_tmp"
+gh release download v0.1.0-beta.10 --dir "$release_tmp"
 (
   cd "$release_tmp"
   shasum -a 256 -c SHA256SUMS
@@ -384,7 +384,7 @@ trust level, and assets. Promotion is a separate public metadata change: require
 the user's explicit approval, recheck tag/source and assets, then run:
 
 ```sh
-gh release edit v0.1.0-beta.9 --prerelease=false --latest
+gh release edit v0.1.0-beta.10 --prerelease=false --latest
 ```
 
 Requery the Release and `/releases/latest`. Require non-draft,
@@ -437,3 +437,7 @@ this candidate. Independent clean-machine acceptance remains **not run**; no
 Apple trust is claimed. Reviewer bypass is authorized only after both required
 CI checks pass, without changing repository rules. These exceptions apply only
 to Beta 9 and do not authorize a later candidate.
+
+Beta 9 published source: `01885e64ca81af0ab57bb7d95a4e82e5baae68d5`. Public local postflight passed;
+independent clean-machine acceptance remains not run. This is a per-release
+exception, not a changed trust policy. The next default identity is Beta 10/build 10.
