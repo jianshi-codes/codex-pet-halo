@@ -205,6 +205,25 @@ final class PetTargetModelsTests: XCTestCase {
         )
     }
 
+    func testScreenSizedOverlaysAreNotPetCandidates() {
+        for subrole in ["AXDialog", "AXSystemDialog", "AXFloatingWindow"] {
+            for size in [CGSize(width: 2560, height: 1440), CGSize(width: 1440, height: 1440)] {
+                let overlay = candidate(
+                    2,
+                    subrole: subrole,
+                    frame: CGRect(origin: .zero, size: size)
+                )
+                XCTAssertFalse(overlay.isPlausiblePetScale)
+                XCTAssertEqual(PetWindowSelector.select(from: [overlay]), .unavailable)
+                let pet = candidate(1)
+                XCTAssertEqual(
+                    PetWindowSelector.select(from: [overlay, pet]),
+                    .selected(memberIdentities: [pet.identity], frame: pet.frame)
+                )
+            }
+        }
+    }
+
     func testUniqueNonSquareDialogIsAcceptedAsCompatibilityFallback() {
         let candidate = candidate(
             1,

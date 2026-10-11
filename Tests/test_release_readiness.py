@@ -306,7 +306,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("docs/assets/screenshots/pet-halo-activity-below.png", readme)
         self.assertIn("Task card above · Weekly label on the right", readme)
         self.assertIn("Task card below · Weekly label on the left", readme)
-        self.assertIn("These screenshots show current source behavior", readme)
+        self.assertIn("These screenshots show Beta 8 reference behavior", readme)
         self.assertIn("## Download", readme)
         self.assertIn("not Developer ID-signed and not notarized", readme)
         self.assertIn("Only override Gatekeeper after independently verifying", readme)
@@ -348,7 +348,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("cannot truthfully infer Live Activity from window geometry", readme)
         self.assertIn("not an idle/working signal", readme)
         self.assertIn("safe, exact Context Remaining metric", readme)
-        self.assertIn("Adjust Ring Center", readme)
+        self.assertIn("Locate Pet", readme)
         self.assertIn("codex --version", readme)
         self.assertIn("[Compatibility](docs/COMPATIBILITY.md)", readme)
         self.assertIn("[Privacy](docs/PRIVACY.md)", readme)
@@ -557,7 +557,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         ):
             self.assertIn(expected, current_state)
         unreleased, published = changelog.split("## [0.1.0-beta.8]", maxsplit=1)
-        self.assertIn("No changes yet.", unreleased)
+        self.assertIn("Locate Pet", unreleased)
         beta_eight = published.split("## [0.1.0-beta.7]", maxsplit=1)[0]
         self.assertTrue(beta_eight.lstrip().startswith("- 2026-09-27"))
         self.assertIn("nested Codex CLI", beta_eight)

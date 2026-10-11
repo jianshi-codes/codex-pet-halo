@@ -21,7 +21,7 @@ Maintainers should acknowledge a report without confirming impact prematurely, r
 - Generated schemas are retained evidence, not production resources.
 - Codex internal databases, credentials, prompts, responses, and conversation content are out of scope and prohibited.
 - Accessibility is exact-process geometry/structure only and is explicitly enabled by the user.
-- The app has no telemetry, analytics, crash upload, updater, cloud service, Screen Recording, OCR, or Apple Events entitlement.
+- The app has no telemetry, analytics, crash upload, updater, cloud service, OCR or Apple Events entitlement. Single-shot positioning requires Screen Recording permission and captures only the Codex Pet overlay in memory; no capture stream or image storage is used.
 - Release credentials belong only in Keychain, environment variables, or GitHub encrypted secrets. They must never be committed or printed.
 
 The app-server protocol and Codex Pet Accessibility surface are experimental compatibility boundaries. Treat changes to either as security-sensitive and fail closed until reviewed.

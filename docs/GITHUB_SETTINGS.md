@@ -8,6 +8,13 @@ on 2026-09-27; the remaining settings observations are from
 2026-07-31. “Observed” means the API confirmed
 the state; “Recommended” is a manual action and is not claimed as enabled.
 
+## Beta 9 preparation observation — 2026-10-11
+
+API queries confirmed Beta 8 is non-prerelease Latest, Beta 9 tag/Release are
+absent, and the active main ruleset still requires one approval plus strict
+`macOS application` and `Protocol evidence` checks. The user authorized this
+candidate's reviewer bypass after both checks pass; no rule was changed.
+
 ## Observed state
 
 | Area | API-confirmed state |

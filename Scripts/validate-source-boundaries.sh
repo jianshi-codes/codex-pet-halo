@@ -31,8 +31,15 @@ if grep -EnR 'UserDefaults([.(]|[[:space:]])' PetHalo PetHaloCore \
     exit 1
 fi
 
-if grep -EnR 'CGWindowListCopyWindowInfo|ScreenCaptureKit|SCShareableContent|CGDisplayStream|VNRecognizeTextRequest' PetHalo PetHaloCore; then
-    echo "error: production source contains screen capture, broad window enumeration, or OCR" >&2
+if grep -EnR 'CGWindowListCopyWindowInfo|CGDisplayStream|VNRecognizeTextRequest' PetHalo PetHaloCore; then
+    echo "error: production source contains broad display/window capture or OCR" >&2
+    exit 1
+fi
+
+# The authorized single-shot adapter is the only ScreenCaptureKit boundary.
+if grep -EnR 'ScreenCaptureKit|SCShareableContent' PetHalo PetHaloCore \
+    | grep -Ev '^PetHalo/WindowFollowing/OneShotPetCapture\.swift:'; then
+    echo "error: screen capture escaped the single-shot positioning adapter" >&2
     exit 1
 fi
 

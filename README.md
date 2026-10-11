@@ -4,7 +4,7 @@
   <img src="PetHalo/Assets.xcassets/AppIcon.appiconset/app-icon-256.png" width="128" height="128" alt="Pet Halo app icon">
 </p>
 
-Pet Halo is an unofficial macOS menu-bar companion that shows Codex Usage around Codex Pet. It can fall back to the Codex window or a free-floating display.
+Pet Halo is an unofficial macOS menu-bar companion that shows Codex Usage around Codex Pet. The current source positions the ring once and lets you relocate it from the menu.
 
 [![Download v0.1.0-beta.8](https://img.shields.io/badge/download-v0.1.0--beta.8-5865F2)](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.8)
 [![CI](https://github.com/jianshi-codes/codex-pet-halo/actions/workflows/ci.yml/badge.svg)](https://github.com/jianshi-codes/codex-pet-halo/actions/workflows/ci.yml)
@@ -16,10 +16,10 @@ Pet Halo is an unofficial macOS menu-bar companion that shows Codex Usage around
 <table>
   <tr>
     <td width="50%" align="center">
-      <img src="docs/assets/screenshots/pet-halo-activity-above.png" width="100%" alt="Pet Halo current source with the Codex task card above and Weekly label on the right">
+      <img src="docs/assets/screenshots/pet-halo-activity-above.png" width="100%" alt="Pet Halo Beta 8 reference with the Codex task card above and Weekly label on the right">
     </td>
     <td width="50%" align="center">
-      <img src="docs/assets/screenshots/pet-halo-activity-below.png" width="100%" alt="Pet Halo current source with the Codex task card below and Weekly label on the left">
+      <img src="docs/assets/screenshots/pet-halo-activity-below.png" width="100%" alt="Pet Halo Beta 8 reference with the Codex task card below and Weekly label on the left">
     </td>
   </tr>
   <tr>
@@ -30,19 +30,19 @@ Pet Halo is an unofficial macOS menu-bar companion that shows Codex Usage around
 
 Codex Pet is shown only to demonstrate integration. It is not Pet Halo project branding.
 
-> These screenshots show current source behavior: Weekly is visible, the optional
+> These screenshots show Beta 8 reference behavior: Weekly is visible, the optional
 > 5h ring is omitted when unavailable, and the inner layout slot stays hidden for
 > a future exact Context Remaining metric.
 
 ## Download
 
-Get `Pet-Halo-0.1.0-beta.8-unsigned-universal.zip` from the [v0.1.0-beta.8 release](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.8). It supports Apple silicon and Intel Macs running macOS 14 or later. You also need Codex Desktop for following, plus a signed-in Codex CLI for Usage. The reviewed CLI baseline is `0.145.0-alpha.18`; newer versions below 1.0 are checked at runtime. See [Compatibility](docs/COMPATIBILITY.md).
+Get `Pet-Halo-0.1.0-beta.8-unsigned-universal.zip` from the [v0.1.0-beta.8 release](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.8). It supports Apple silicon and Intel Macs running macOS 14 or later. You also need Codex Desktop for Pet positioning, plus a signed-in Codex CLI for Usage. The reviewed CLI baseline is `0.145.0-alpha.18`; newer versions below 1.0 are checked at runtime. See [Compatibility](docs/COMPATIBILITY.md).
 
-> **Unsigned Developer Preview:** the app has a complete ad-hoc bundle signature, but is **not Developer ID-signed and not notarized** by Apple. macOS may block the first launch. Only override Gatekeeper after independently verifying the GitHub source, release checksum, and repository provenance. A later ad-hoc update may require granting Accessibility access again.
+> **Unsigned Developer Preview:** the app has a complete ad-hoc bundle signature, but is **not Developer ID-signed and not notarized** by Apple. macOS may block the first launch. Only override Gatekeeper after independently verifying the GitHub source, release checksum, and repository provenance. A later ad-hoc update may require granting Screen Recording access again.
 
 1. Download the ZIP, `SHA256SUMS`, `release-manifest.json`, and `RELEASE_NOTES.md` from the same release page. In their download folder, run `shasum -a 256 -c SHA256SUMS` to check the files. A matching checksum detects changes relative to that release's checksum file; it does not establish publisher identity.
 2. Unzip and move **Pet Halo.app** to Applications. Open it from there. Pet Halo appears in the menu bar, not the Dock.
-3. Start Codex Desktop, make Pet visible, and check that the Pet Halo menu says `Usage: Connected`. Select **Enable Pet Following** if you want the Ring to follow Pet.
+3. Start Codex Desktop, make Pet visible, and check that the Pet Halo menu says `Usage: Connected`. The current source automatically locates Pet once at startup; allow Screen Recording if prompted. After moving Pet, select **Locate Pet**. Beta 8 downloads still use the older AX following controls.
 
 ### If macOS blocks the first launch
 
@@ -52,9 +52,9 @@ Follow these steps only for the **unverified developer** warning, after checking
 2. Go to **Apple menu → System Settings → Privacy & Security → Security → Open → Open Anyway**. On macOS versions without a separate **Open** step, use **Open Anyway** in Security.
 3. Enter your Mac login password and confirm. The control appears for about an hour after an attempted launch; if missing, try opening the app once more. See [Apple's current instructions](https://support.apple.com/en-gb/guide/mac-help/mh40616/mac).
 
-## Enable following
+## Position the ring (Beta 9 candidate)
 
-Following is optional; Usage works without Accessibility access. After choosing **Enable Pet Following**, allow **Pet Halo** in **System Settings → Privacy & Security → Accessibility**. Return to Pet Halo and wait briefly while macOS updates the permission state. If Pet is unavailable, the calibrated Codex-window fallback or free-floating mode remains available. Use **Adjust Ring Center** to correct visual alignment; it changes only the Ring offset, not Pet detection.
+Allow **Pet Halo** in **System Settings → Privacy & Security → Screen Recording** (called **Screen & System Audio Recording** on newer macOS). Startup captures one image of Codex's Pet overlay, detects the body locally, and fixes the ring there. Move Pet, then choose **Locate Pet** to align again. No continuous capture or automatic following runs. Failed requests preserve the previous position; Usage remains available without capture permission. Accessibility access is no longer needed for positioning.
 
 ## What the rings mean
 
@@ -67,9 +67,8 @@ Ring colors indicate remaining capacity: healthy `>= 50%`, warning `20%` through
 ## Help and privacy
 
 - `Usage` is disconnected: check `codex --version` and your Codex sign-in, then choose **Refresh Usage**. See [Compatibility](docs/COMPATIBILITY.md) for supported versions and sanitized issue reports.
-- `Following: Accessibility Required`: check Pet Halo's Accessibility switch; after a new grant, allow a moment for `Following: Checking Accessibility` to finish.
-- `Pet: Unavailable or Tucked Away`: wake Pet or select **Use Codex Window Fallback**.
+- `Pet: Unavailable or Tucked Away`: make Pet visible, check Screen Recording permission, then choose **Locate Pet**. Multiple overlays, unfamiliar artwork, or ambiguous body shapes can prevent positioning.
 
-Pet Halo uses a local read-only `codex app-server --stdio` connection. It does not read conversation content, use Screen Recording, or send telemetry. See [Privacy](docs/PRIVACY.md) and [Security](SECURITY.md).
+Pet Halo uses a local read-only `codex app-server --stdio` connection. The current source captures only Codex's Pet overlay on startup or explicit positioning requests; pixels stay in memory, with no OCR or saved images. The overlay can include Pet status or Quick Chat pixels. It sends no telemetry. See [Privacy](docs/PRIVACY.md) and [Security](SECURITY.md).
 
-For source builds and release procedures, see [Contributing](CONTRIBUTING.md), the [Release runbook](docs/RELEASE_RUNBOOK.md), and the [Release checklist](docs/RELEASE_CHECKLIST.md). To uninstall, quit Pet Halo, move it to Trash, and optionally remove its Accessibility entry. Licensed under [MIT](LICENSE).
+For source builds and release procedures, see [Contributing](CONTRIBUTING.md), the [Release runbook](docs/RELEASE_RUNBOOK.md), and the [Release checklist](docs/RELEASE_CHECKLIST.md). To uninstall, quit Pet Halo, move it to Trash, and optionally remove its Screen Recording permission. Licensed under [MIT](LICENSE).

@@ -4,7 +4,18 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 
 ## [Unreleased]
 
-No changes yet.
+### Changed
+
+- Replace continuous Pet following with one startup positioning request and
+  explicit **Locate Pet** requests. The ring stays fixed after Pet movement;
+  failed requests preserve the previous position.
+- Detect a unique Pet body from an in-memory, single-window transparent capture
+  when current Codex Desktop exposes only a full-display overlay. Screen
+  Recording permission is required; no OCR, saved images, mouse monitoring,
+  capture stream, or background positioning loop is used.
+- Remove obsolete following, window-fallback calibration, ring-center adjustment,
+  and orientation-preview menu controls. Usage and Show/Hide controls remain.
+
 
 ## [0.1.0-beta.8] - 2026-09-27
 

@@ -1,5 +1,22 @@
 # Compatibility
 
+## Current source: fixed Pet positioning (2026-10-11)
+
+Startup makes one visual positioning request. `Locate Pet` repeats it on demand.
+After completion the ring stays fixed, including after Pet movement, Quick Chat,
+hide/wake, or display changes. Failed requests preserve the previous position.
+Continuous following, mouse monitoring, adaptive sampling, window fallback controls,
+legacy center adjustment and orientation preview have been removed from the menu.
+The published Beta and installed application are unchanged.
+
+
+Validation: 149 PetHaloTests passed; Debug and Release builds passed. A 30-second
+local idle sample after single-shot startup positioning averaged 0.10% of one CPU
+core and approximately 19.7 MiB physical footprint. Process-attributed energy was
+approximately 0.0002 W on average (OS estimate, not whole-machine power). The prior
+adaptive continuous capture trial averaged approximately 18% CPU and 0.67 W. These
+are short local observations, not battery-life predictions or a universal benchmark.
+
 ## CLI compatibility policy and reviewed registry
 
 Pet Halo separates exact reviewed evidence from bounded provisional forward compatibility. `CodexCompatibilityRegistry` contains only versions whose production-used semantics were explicitly reviewed; successful provisional runtime validation never adds reviewed evidence.
@@ -257,6 +274,121 @@ presentation.
 Synthetic tests cover a main display at `(0,0)`, a negative-X left display, a negative-Y lower display, mixed sizes, boundary-crossing windows, screen removal, and an oversized Halo. The implementation currently targets macOS 14 or later. Direct validation passed explicit Accessibility permission, calibration, physical move/resize, focus and interaction behavior, multi-display containment, permission fallback/recovery, Codex termination/relaunch recovery, Pet Halo restart, and clean shutdown as recorded in the M4 report.
 
 ## M5 Pet-target contract
+
+### 2026-10-11 compatibility observation
+
+Codex `26.1007.30912 (20156)` exposes one Pet `AXWindow/AXDialog`
+covering a full 2560×1440-point display. A bounded read-only inspection of
+its descendants found six `AXGroup` nodes, all with that same frame;
+this observation provides no Pet-body position. The former non-square
+Dialog fallback selected this overlay and placed the Ring at the display
+midpoint. It does not establish a change to the Pet's default position.
+
+Pet candidates now require both dimensions to be at least 64 points and
+neither dimension to exceed 640 points. The upper bound conservatively
+retains the previously supported compact and tall Pet surfaces while
+rejecting large containers, including square overlays. The same predicate
+applies to retained targets and display-linked frame reads, so a tracked
+window cannot resize into a screen overlay and remain a Pet target.
+Larger Pet surfaces are intentionally unsupported until independently
+validated. When only this overlay is available, the existing Codex-window
+fallback (or free-floating mode without a calibrated window) applies.
+Precise Pet following on this topology remains unsupported; visual-center
+calibration cannot recover a position absent from AX geometry.
+
+Follow-up read-only probes on the same build checked two alternatives:
+
+- WindowServer metadata (`CGWindowListCopyWindowInfo`) showed only two
+  currently visible related windows: the standard application window and
+  the full-display layer-3 overlay. The all-window list contained other
+  non-visible windows, but no verified visible Pet-sized window. No window
+  titles or pixels were read, and no Screen Recording prompt was requested.
+- The Pet overlay's AX attribute names and element-valued relations were
+  inspected, including navigation-order children, sections, title/control
+  elements, and row/header relations. `AXContents`, visible children, and
+  linked elements were not advertised. The complete reachable graph
+  contained the overlay plus six full-display groups; no traversal bound
+  was reached. Activation points were display-edge or out-of-display
+  coordinates, not a usable Pet position. Text, DOM identifiers, values,
+  and parameterized text attributes were not read.
+
+Neither alternative provided a Pet-body location in the observed state.
+The initial result was a snapshot. No WindowServer or expanded AX
+traversal was added to production.
+
+### Dynamic geometry follow-up
+
+On 2026-10-11, the user manually dragged the Pet to two positions, hid and
+woke it, and opened/closed Quick Chat while a temporary read-only probe
+sampled visible WindowServer windows and non-standard AX window graphs.
+The observation lasted approximately 125 seconds and recorded 295
+samples; none reported an unfinished AX traversal. Sampling was roughly
+every 0.4 seconds plus query time, so brief states may be missed and CG/AX
+reads are not atomic.
+
+- Dragging: the first 28 samples were identical despite the user's
+  completed drag operation. No motion-correlated Pet-body frame appeared.
+- Hide/Wake: the full-display overlay disappeared from the visible window
+  list and returned with the same full-display frame. AX temporarily
+  exposed no non-standard window; recovery again exposed the full-display
+  window plus its six full-display groups.
+- Quick Chat and surrounding interactions: local geometry did appear for
+  transient layer-20 windows containing `AXList`/`AXButton` nodes, and
+  layer-103 `AXHelpTag` windows. The former CG surfaces were 28 points high;
+  their AX lists could extend to 144 points high. Help tags were 18 or 47
+  points high. These are local UI surfaces, not a verified Pet-body frame.
+  Their exact semantic identity was not read, and no stable relationship
+  between their coordinates and the Pet center was established. The Pet
+  overlay and its groups retained the full-display frame whenever exposed.
+
+The tested transitions did not produce a reliable Pet-center coordinate.
+Transient controls or help tags must not be used to guess the Pet position.
+This does not rule out other states or future builds exposing usable
+geometry. No screenshots, text values, or chat contents were read.
+
+### Historical visual-following experiment (superseded by single-shot positioning)
+
+The user subsequently authorized screen capture and image-based following.
+A single-window ScreenCaptureKit capture of the unique exact-process
+layer-3 overlay preserved transparency and excluded the desktop behind it.
+The overlay's own status bubble and controls remained in the captured
+pixels. Alpha-connected components separated a roughly 73×115-point Pet
+body from a 330×56-point status bubble and a 120×40-point toolbar.
+
+The initial Debug experiment used an explicit opt-in launch flag. That continuous
+capture route and flag have since been removed. The following records its historical
+results rather than the current default behavior.
+
+With both Accessibility and Screen Recording permission granted to that
+build, unavailable AX discovery starts a serial single-window capture
+fallback. Captures are requested at half the overlay's point dimensions
+and converted back to global AppKit coordinates after local alpha-only
+component detection. A unique body-shaped region is required; opaque,
+missing, or ambiguous images do not supply a target. The legacy AX padding
+offset is not applied to visual body bounds. Visual-center calibration is
+session-only for this route and does not overwrite saved AX calibration.
+
+The user confirmed successful Pet following, dragging to two positions,
+opening/closing Quick Chat, and hiding/waking the Pet. An independent probe
+recorded 113 stable-body paired measurements, each within 1.2 points of the
+Ring midpoint (median approximately 0.7 points). "Stable" means the current
+body center was within two points of the preceding three paired samples.
+Moving-frame measurements were not atomic and included transient lag;
+neither capture rate nor end-to-end latency has been established. The
+experiment is not equivalent to the AX display-linked tracking path.
+
+Validation: all 146 `PetHaloTests` passed again after the final
+permission-request and session-calibration refinements.
+Debug and Release builds succeeded. The Release binary did not link
+ScreenCaptureKit. No installed application was replaced, no release was
+published, and no capture image was committed. Runtime frames remain in
+memory; the one temporary feasibility inspection image was removed.
+
+Known limits: current character and scale only; other artwork, fragmented
+or wide animation poses, similarly shaped controls, multiple overlays,
+large displays, and every Quick Chat layout are not validated. Capture
+permissions are specific to the experimental build; launching the installed
+Beta 8 application restores the old installed behavior.
 
 | Component | M5 contract |
 | --- | --- |
