@@ -1,5 +1,6 @@
 import AppKit
-import ScreenCaptureKit
+// Older SDKs lack concurrency annotations on ScreenCaptureKit result types.
+@preconcurrency import ScreenCaptureKit
 
 @MainActor
 enum OneShotPetCapture {
