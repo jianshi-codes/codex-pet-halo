@@ -7,7 +7,18 @@
 - MVP metrics are capability-driven: optional segments appear only when their source is available.
 - Missing or unsupported data is hidden or displayed as unavailable, never estimated.
 - Each milestone has an explicit gate and does not authorize the next one automatically.
-- Targeting follows a product hierarchy: Pet target following is preferred, calibrated Codex-window following is the permanent fallback, and a free-floating Halo is the final fallback.
+- Current Beta 9 candidate uses single-shot visual Pet positioning at startup or explicit request. Earlier AX following and window-fallback milestones remain historical implementations, not the default application path.
+
+## Authorized Beta 9 compatibility change — 2026-10-11
+
+Current Desktop exposes a full-display Pet overlay rather than usable Pet-body AX
+geometry. The user authorized transparent single-window capture and then selected
+single-shot positioning to avoid ongoing resource use. Startup and **Locate Pet**
+perform one local alpha-component detection; the ring then remains fixed. Screen
+Recording is required; Accessibility, polling, mouse monitoring, OCR, image storage,
+and automatic recovery are not part of this path. Prior continuous visual and
+adaptive sampling experiments are superseded. Publishing Beta 9, closeout,
+Latest promotion and local version cleanup are separately authorized.
 
 ## Milestones
 

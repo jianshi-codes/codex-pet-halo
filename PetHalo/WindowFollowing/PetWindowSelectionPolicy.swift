@@ -4,6 +4,9 @@ import Foundation
 struct PetWindowCandidate: Equatable, Sendable {
     // Transient input-method indicators are much smaller than the Pet AX surface.
     private static let minimumPetSurfaceDimension: CGFloat = 64
+    // Pet-sized windows only. New Desktop builds may expose a screen-sized
+    // overlay whose midpoint describes the display, not the visible Pet.
+    private static let maximumPetSurfaceDimension: CGFloat = 640
 
     let identity: Int
     let frame: CGRect
@@ -27,8 +30,13 @@ struct PetWindowCandidate: Equatable, Sendable {
     }
 
     var isPlausiblePetScale: Bool {
-        isEligibleCoreWindow
-            && min(frame.width, frame.height) >= Self.minimumPetSurfaceDimension
+        isEligibleCoreWindow && Self.isPlausiblePetFrame(frame)
+    }
+
+    static func isPlausiblePetFrame(_ frame: CGRect) -> Bool {
+        frame.hasFiniteComponents
+            && min(frame.width, frame.height) >= minimumPetSurfaceDimension
+            && max(frame.width, frame.height) <= maximumPetSurfaceDimension
     }
 
     var isEligibleCoreGeometry: Bool {

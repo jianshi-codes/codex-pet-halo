@@ -105,10 +105,10 @@ final class ApplicationCoordinator: ObservableObject {
             {
                 self.windowFollowingService = XCTestDisabledWindowFollowingService()
             } else {
-                self.windowFollowingService = WindowFollowingService()
+                self.windowFollowingService = PetPositioningService()
             }
             #else
-            self.windowFollowingService = WindowFollowingService()
+            self.windowFollowingService = PetPositioningService()
             #endif
         }
         self.presentationMapper = presentationMapper
@@ -248,6 +248,12 @@ final class ApplicationCoordinator: ObservableObject {
             && targetSource != .freeFloating
             && !codexFallbackExplicitlyVisible
             && windowFollowingState != .calibrating
+    }
+
+    func locatePet() {
+        guard state == .running else { return }
+        haloVisibilityRequested = true
+        windowFollowingService.enable()
     }
 
     func enablePetFollowing() {

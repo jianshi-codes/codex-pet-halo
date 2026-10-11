@@ -38,55 +38,6 @@ private struct ApplicationMenuContent: View {
 
         if coordinator.haloSurfaceMode == .petRing {
             Text("Display: Pet Ring")
-            if coordinator.isAdjustingPetRingCenter {
-                Text("Drag the Ring or use 4 pt nudges")
-                Button("Nudge Up") {
-                    coordinator.nudgePetRing(horizontal: 0, vertical: 4)
-                }
-                Button("Nudge Down") {
-                    coordinator.nudgePetRing(horizontal: 0, vertical: -4)
-                }
-                Button("Nudge Left") {
-                    coordinator.nudgePetRing(horizontal: -4, vertical: 0)
-                }
-                Button("Nudge Right") {
-                    coordinator.nudgePetRing(horizontal: 4, vertical: 0)
-                }
-                Button("Save Ring Center") {
-                    coordinator.finishWindowFollowingCalibration()
-                }
-                Button("Cancel Ring Center Adjustment") {
-                    coordinator.cancelWindowFollowingCalibration()
-                }
-                Button("Reset Visual Center") {
-                    coordinator.resetPetVisualCenter()
-                }
-            } else {
-                Button("Adjust Ring Center") {
-                    coordinator.beginPetFollowingCalibration()
-                }
-                .disabled(!coordinator.canFineTunePetRing)
-                Button("Reset Visual Center") {
-                    coordinator.resetPetVisualCenter()
-                }
-                .disabled(!coordinator.canFineTunePetRing)
-            }
-
-            #if DEBUG
-            Menu("Orientation Preview") {
-                ForEach(PetRingOrientationPreview.allCases, id: \.self) { preview in
-                    Button {
-                        coordinator.setPetRingOrientationPreview(preview)
-                    } label: {
-                        if coordinator.petRingOrientationPreview == preview {
-                            Label(preview.label, systemImage: "checkmark")
-                        } else {
-                            Text(preview.label)
-                        }
-                    }
-                }
-            }
-            #endif
         } else {
             Button {
                 coordinator.setHaloMode(.compact)
@@ -116,40 +67,12 @@ private struct ApplicationMenuContent: View {
         }
         .disabled(!coordinator.canRefreshUsage)
         Divider()
-        Text(coordinator.targetStatusText)
+        Text("Position: Fixed")
         Text(coordinator.petStatusText)
-        Text(coordinator.petPlacementStatusText)
-        Text(coordinator.followingStatusText)
-
-        Button("Enable Pet Following") {
-            coordinator.enablePetFollowing()
+        Button("Locate Pet") {
+            coordinator.locatePet()
         }
-        .disabled(!coordinator.canEnablePetFollowing)
-
-        Button("Calibrate Codex Window Fallback") {
-            coordinator.beginWindowFallbackCalibration()
-        }
-        .disabled(!coordinator.canCalibrateWindowFallback)
-
-        Button("Finish Window Calibration") {
-            coordinator.finishWindowFollowingCalibration()
-        }
-        .disabled(!coordinator.canFinishCalibration || coordinator.isAdjustingPetRingCenter)
-
-        Button("Cancel Window Calibration") {
-            coordinator.cancelWindowFollowingCalibration()
-        }
-        .disabled(!coordinator.canFinishCalibration || coordinator.isAdjustingPetRingCenter)
-
-        Button("Use Codex Window Fallback") {
-            coordinator.useWindowFallback()
-        }
-        .disabled(!coordinator.canUseWindowFallback)
-
-        Button("Disable Following") {
-            coordinator.disableWindowFollowing()
-        }
-        .disabled(!coordinator.canDisableWindowFollowing)
+        .disabled(!coordinator.acceptsUICommands)
 
         Divider()
         Text(menuModel.versionText)

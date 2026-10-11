@@ -1,5 +1,27 @@
 # Current State
 
+## Beta 9 candidate — PREPARED (2026-10-11)
+
+- Identity: `v0.1.0-beta.9`, product `0.1.0`, build `9`, unsigned Universal.
+- Endpoint authorized: feature merge, publication, separate documentation merge,
+  Latest promotion, and replacement/removal of old local Pet Halo versions.
+- The user accepted local verification instead of independent clean-machine
+  acceptance for this candidate and administrator reviewer bypass after both CI
+  checks pass. Repository rules remain unchanged.
+- Default positioning captures once on startup or **Locate Pet**, with no ongoing
+  capture or tracking. The user confirmed fixed placement and successful relocation.
+- Local Debug observation: 30-second idle CPU mean 0.10% of one core, physical
+  footprint 19.7 MiB; prior adaptive trial approximately 18% CPU. OS-attributed
+  energy estimates are not whole-machine or battery measurements.
+- Release smoke checks LaunchServices and owned-child lifecycle only; its
+  diagnostic environment suppresses positioning/TCC prompts. Direct Pet
+  acceptance is a separate user observation.
+- Candidate `make check` passed: 75 Core tests (one existing local-only smoke skip),
+  149 application tests, 51 Python tests, Debug/Release builds, bundle and privacy
+  checks. Direct Pet acceptance was performed separately before release preparation.
+- This candidate is not published yet. Published Beta 8 evidence follows.
+
+
 - Milestone: M9 — Public Beta Release Readiness
 - Status: **PARTIAL — SOURCE RELEASE READY, SIGNED BINARY BLOCKED**
 - Published release: `v0.1.0-beta.8`, product version `0.1.0`, bundle build `8`

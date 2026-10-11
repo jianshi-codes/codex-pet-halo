@@ -351,6 +351,7 @@ final class AccessibilityPetTargetAccessor: PetTargetAccessing {
         guard !targetElements.isEmpty else { return nil }
         let frames = targetElements.compactMap(accessibilityFrame(of:))
         guard frames.count == targetElements.count,
+              frames.allSatisfy(PetWindowCandidate.isPlausiblePetFrame),
               let frame = PetTrackedFrameResolver.resolve(frames),
               let appKitFrame = appKitFrame(fromAccessibilityFrame: frame)
         else {

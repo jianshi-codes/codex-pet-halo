@@ -7,7 +7,7 @@ Thank you for helping improve Pet Halo. The core product and release UI are froz
 1. Search existing issues and compatibility reports.
 2. Keep one change focused on one observable problem.
 3. For protocol work, generate schemas from your installed Codex CLI and review production semantics. Do not infer support from successful decoding.
-4. For Accessibility work, stay within exact `com.openai.codex` geometry/structure attributes. Do not add titles, content inspection, screenshots, Screen Recording, or OCR.
+4. For Accessibility work, stay within exact `com.openai.codex` geometry/structure attributes. Do not add titles or content inspection. The separately authorized single-shot positioning adapter may capture only the exact-process Pet overlay in memory; no OCR, saved screenshots, broad display capture, or ongoing capture is allowed.
 5. Never include credentials, account identity, raw protocol payloads, private conversations, private screenshots, raw Accessibility errors, executable paths, or user-specific paths.
 
 ## Development setup

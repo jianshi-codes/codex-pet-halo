@@ -422,3 +422,18 @@ The user also authorized administrator bypass of the approving reviewer for this
 release's merges, while requiring both CI checks to pass. PR #30 used that bypass
 without changing repository settings. The post-release documentation merge uses
 the same explicitly authorized boundary.
+
+## Recorded Beta 9 authority — 2026-10-11
+
+The user explicitly authorized `v0.1.0-beta.9` / build `9` as an unsigned
+Universal Developer Preview, feature/preparation merge, publication, separate
+post-release documentation merge, Latest promotion, and local replacement/old
+version cleanup. The reviewed source is the clean main commit resulting from
+the Beta 9 preparation PR; validation and publication must use that same SHA.
+
+The user accepted local public postflight plus direct fixed-placement/manual
+relocation acceptance in place of the independent clean-machine R6/R8 hold for
+this candidate. Independent clean-machine acceptance remains **not run**; no
+Apple trust is claimed. Reviewer bypass is authorized only after both required
+CI checks pass, without changing repository rules. These exceptions apply only
+to Beta 9 and do not authorize a later candidate.
