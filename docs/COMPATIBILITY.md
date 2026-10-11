@@ -1,13 +1,13 @@
 # Compatibility
 
-## Current source: fixed Pet positioning (2026-10-11)
+## Published Beta 9: fixed Pet positioning (2026-10-11)
 
 Startup makes one visual positioning request. `Locate Pet` repeats it on demand.
 After completion the ring stays fixed, including after Pet movement, Quick Chat,
 hide/wake, or display changes. Failed requests preserve the previous position.
 Continuous following, mouse monitoring, adaptive sampling, window fallback controls,
 legacy center adjustment and orientation preview have been removed from the menu.
-The published Beta and installed application are unchanged.
+Beta 9 ships this behavior; prior releases retain their historical AX behavior.
 
 
 Validation: 149 PetHaloTests passed; Debug and Release builds passed. A 30-second
@@ -468,3 +468,12 @@ The official `codex doctor --json` `app_server.status` check reported `backgroun
 The aggregate v2 JSON schema is not byte-deterministic in this CLI build because its `definitions` object order changes between runs. A second generation produced the same canonical sorted-JSON SHA-256 and identical individual JSON/TypeScript files. Consumers must treat JSON object ordering as insignificant.
 
 Generated M0 schemas and TypeScript remain retained evidence only. `PetHaloCore` owns minimal forward-compatible DTOs, ignores unknown response fields, and is not linked to or packaged with the probe, schemas, fixtures, or test fake server.
+
+### Beta 9 publication compatibility boundary — 2026-10-11
+
+Codex Desktop `26.1007.30912 (20156)` was the directly accepted positioning host.
+The local installed CLI reported `0.162.0-alpha.17.2`; lifecycle startup/shutdown
+passed, but no new CLI schema review or registry entry is claimed. The reviewed
+baseline remains `0.145.0-alpha.18`; protocol semantics are unchanged. Public
+Beta 9 notes are frozen, and capture permission/clean-machine acceptance remains
+distinct from the instrumented release lifecycle smoke.

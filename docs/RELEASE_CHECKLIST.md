@@ -4,6 +4,25 @@ This checklist records release state. Execute the ordered automation and
 post-release closeout through the [Release runbook](RELEASE_RUNBOOK.md). Never
 overwrite, retag, or upload with `--clobber` to an existing release identity.
 
+## Published Beta 9 record — 2026-10-11
+
+- [x] PR #32 merged at `01885e64ca81af0ab57bb7d95a4e82e5baae68d5` after both required CI checks passed.
+- [x] Candidate checks, merged-main CI rerun and 20-iteration existing-test check passed.
+- [x] Validation-only workflow `38141551157` passed without release state.
+- [x] Publication workflow `38142142013` passed with signing/notarization skipped.
+- [x] Non-draft unsigned prerelease published at `2026-10-11T13:14:50Z`.
+- [x] Tag, manifest and approved source match product `0.1.0`, build `9`, macOS `14.0`,
+  bundle identifier and Universal architectures.
+- [x] Four fresh public assets passed GitHub digests and SHA256SUMS; notes match source.
+- [x] App/framework strict ad-hoc signatures, Hardened Runtime and scoped entitlement passed.
+- [x] Public isolated LaunchServices, owned-child startup, quit and cleanup passed.
+- [x] User confirmed fixed ring placement and successful manual Locate Pet relocation.
+- [x] Local-validation exception and reviewer bypass explicitly authorized for this release.
+- [ ] Independent clean-machine first launch, Gatekeeper, capture permission and uninstall — not run.
+- [ ] Developer ID signing, notarization and signed trust verification — incomplete, not claimed.
+- Latest promotion is authorized only after this separate post-release closeout merges;
+  the checked publication facts above precede that metadata change.
+
 ## Published Beta 1 record — 2026-07-21
 
 - [x] PRs #8, #9, #10, and #11 merged into `main`.
@@ -262,7 +281,7 @@ overwrite, retag, or upload with `--clobber` to an existing release identity.
 
 ## Source and compatibility for a future Beta
 
-- [x] Confirm `v0.1.0-beta.9` and build `9` were unused on 2026-09-27; both
+- [x] Confirm `v0.1.0-beta.10` and build `10` were unused on 2026-10-11; both
   the remote tag and GitHub Release were absent.
 - [ ] Obtain separate authorization for the next candidate and its distribution,
   publication, documentation closeout, and promotion endpoint.
@@ -281,10 +300,10 @@ overwrite, retag, or upload with `--clobber` to an existing release identity.
 
 ```sh
 make public-exposure-audit
-make release-build RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=9 RELEASE_TAG=v0.1.0-beta.9
-make release-archive RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=9 RELEASE_TAG=v0.1.0-beta.9
-make release-checksum RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=9 RELEASE_TAG=v0.1.0-beta.9
-make release-verify RELEASE_ARTIFACT_QUALIFIER=unsigned RELEASE_MODE=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=9 RELEASE_TAG=v0.1.0-beta.9
+make release-build RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=10 RELEASE_TAG=v0.1.0-beta.10
+make release-archive RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=10 RELEASE_TAG=v0.1.0-beta.10
+make release-checksum RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=10 RELEASE_TAG=v0.1.0-beta.10
+make release-verify RELEASE_ARTIFACT_QUALIFIER=unsigned RELEASE_MODE=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=10 RELEASE_TAG=v0.1.0-beta.10
 ```
 
 - [ ] Verify Release configuration and Universal `arm64 x86_64`.
@@ -297,7 +316,7 @@ make release-verify RELEASE_ARTIFACT_QUALIFIER=unsigned RELEASE_MODE=unsigned MA
   its ad-hoc embedded framework.
 - [ ] Launch the packaged App through LaunchServices and verify owned-child
   shutdown; do not substitute direct executable launch.
-- [ ] Verify `Pet-Halo-0.1.0-beta.9-unsigned-universal.zip`, manifest
+- [ ] Verify `Pet-Halo-0.1.0-beta.10-unsigned-universal.zip`, manifest
   `unsigned` / `not-submitted`, release notes, and SHA-256.
 
 ## Developer ID and notarization
@@ -307,10 +326,10 @@ the runbook. Never place identities, secrets, Keychain contents, or notarization
 credentials in repository files or command output.
 
 ```sh
-make release-sign MARKETING_VERSION=0.1.0 BUILD_NUMBER=9 RELEASE_TAG=v0.1.0-beta.9
-make release-archive MARKETING_VERSION=0.1.0 BUILD_NUMBER=9 RELEASE_TAG=v0.1.0-beta.9
-make release-notarize MARKETING_VERSION=0.1.0 BUILD_NUMBER=9 RELEASE_TAG=v0.1.0-beta.9
-make release-verify MARKETING_VERSION=0.1.0 BUILD_NUMBER=9 RELEASE_TAG=v0.1.0-beta.9 RELEASE_MODE=notarized
+make release-sign MARKETING_VERSION=0.1.0 BUILD_NUMBER=10 RELEASE_TAG=v0.1.0-beta.10
+make release-archive MARKETING_VERSION=0.1.0 BUILD_NUMBER=10 RELEASE_TAG=v0.1.0-beta.10
+make release-notarize MARKETING_VERSION=0.1.0 BUILD_NUMBER=10 RELEASE_TAG=v0.1.0-beta.10
+make release-verify MARKETING_VERSION=0.1.0 BUILD_NUMBER=10 RELEASE_TAG=v0.1.0-beta.10 RELEASE_MODE=notarized
 ```
 
 - [ ] Record an actual Apple `Accepted` result; never infer it from submission.
@@ -327,7 +346,7 @@ clean-preferences launch is useful evidence but is not a clean machine.
 
 ## Future publication hold point
 
-Beta 1 through Beta 8 are immutable publication identities: never
+Beta 1 through Beta 9 are immutable publication identities: never
 overwrite, retag, reclassify as signed/notarized, or upload to them with
 `--clobber`. A future release must use a new tag and build number.
 

@@ -8,14 +8,21 @@ on 2026-09-27; the remaining settings observations are from
 2026-07-31. “Observed” means the API confirmed
 the state; “Recommended” is a manual action and is not claimed as enabled.
 
-## Beta 9 preparation observation — 2026-10-11
+## Beta 9 publication observation — 2026-10-11
 
-API queries confirmed Beta 8 is non-prerelease Latest, Beta 9 tag/Release are
-absent, and the active main ruleset still requires one approval plus strict
-`macOS application` and `Protocol evidence` checks. The user authorized this
-candidate's reviewer bypass after both checks pass; no rule was changed.
+- Tag `v0.1.0-beta.9` resolves directly to `01885e64ca81af0ab57bb7d95a4e82e5baae68d5`.
+- Release is non-draft, unsigned prerelease at `2026-10-11T13:14:50Z` with exactly
+  four verified public assets. `/releases/latest` still returned Beta 8 before
+  the authorized R10 promotion. This is a pre-promotion snapshot.
+- Beta 10 / build 10 is the next unused identity; both remote checks reported absent.
+- The active main ruleset was rechecked on 2026-10-11: one approval and strict
+  macOS application / Protocol evidence checks, with the existing administrator
+  bypass actor. PR #32 bypassed the reviewer only after both checks passed,
+  under explicit user authority. No rule or environment was changed.
 
-## Observed state
+The table below retains the Beta 8 publication-time observations.
+
+## Historical Beta 8 observed state
 
 | Area | API-confirmed state |
 | --- | --- |

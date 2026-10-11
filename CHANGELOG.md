@@ -4,6 +4,10 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 
 ## [Unreleased]
 
+No changes yet.
+
+## [0.1.0-beta.9] - 2026-10-11
+
 ### Changed
 
 - Replace continuous Pet following with one startup positioning request and
@@ -16,6 +20,13 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 - Remove obsolete following, window-fallback calibration, ring-center adjustment,
   and orientation-preview menu controls. Usage and Show/Hide controls remain.
 
+### Release
+
+- Published the unsigned Universal Developer Preview from `01885e64ca81af0ab57bb7d95a4e82e5baae68d5`.
+  Fresh public provenance, asset digests, checksums, strict ad-hoc signatures,
+  bundle metadata and local LaunchServices/owned-child lifecycle passed.
+- Independent clean-machine acceptance remains not run under the user's explicit
+  Beta 9 exception. Developer ID signing and Apple notarization remain incomplete.
 
 ## [0.1.0-beta.8] - 2026-09-27
 

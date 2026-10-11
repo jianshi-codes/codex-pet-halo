@@ -1,40 +1,73 @@
 # Current State
 
-## Beta 9 candidate — PREPARED (2026-10-11)
-
-- Identity: `v0.1.0-beta.9`, product `0.1.0`, build `9`, unsigned Universal.
-- Endpoint authorized: feature merge, publication, separate documentation merge,
-  Latest promotion, and replacement/removal of old local Pet Halo versions.
-- The user accepted local verification instead of independent clean-machine
-  acceptance for this candidate and administrator reviewer bypass after both CI
-  checks pass. Repository rules remain unchanged.
-- Default positioning captures once on startup or **Locate Pet**, with no ongoing
-  capture or tracking. The user confirmed fixed placement and successful relocation.
-- Local Debug observation: 30-second idle CPU mean 0.10% of one core, physical
-  footprint 19.7 MiB; prior adaptive trial approximately 18% CPU. OS-attributed
-  energy estimates are not whole-machine or battery measurements.
-- Release smoke checks LaunchServices and owned-child lifecycle only; its
-  diagnostic environment suppresses positioning/TCC prompts. Direct Pet
-  acceptance is a separate user observation.
-- Candidate `make check` passed: 75 Core tests (one existing local-only smoke skip),
-  149 application tests, 51 Python tests, Debug/Release builds, bundle and privacy
-  checks. Direct Pet acceptance was performed separately before release preparation.
-- This candidate is not published yet. Published Beta 8 evidence follows.
-
-
-- Milestone: M9 — Public Beta Release Readiness
+- Milestone: M9 — Public Beta Release Readiness, with authorized Beta 9 positioning change
 - Status: **PARTIAL — SOURCE RELEASE READY, SIGNED BINARY BLOCKED**
-- Published release: `v0.1.0-beta.8`, product version `0.1.0`, bundle build `8`
-- Published source: `8ea5000ce07ef6507ad95983aff6701138ffc25c`
-- Classification at publication: public, non-draft unsigned prerelease;
-  complete ad-hoc signatures, not Developer ID-signed or notarized.
-- Latest promotion: explicitly authorized after this post-release documentation
-  is merged; metadata observations below describe publication time.
-- Acceptance boundary: local public postflight passed; independent clean-machine
-  acceptance remains **not run**, with a user-authorized Beta 8 exception.
-- Next unused identity: `v0.1.0-beta.9`, product version `0.1.0`, bundle build
-  `9`; remote tag and GitHub Release were absent on 2026-09-27
+- Published release: `v0.1.0-beta.9`, product version `0.1.0`, bundle build `9`
+- Published source: `01885e64ca81af0ab57bb7d95a4e82e5baae68d5`
+- Classification at publication: public, non-draft unsigned prerelease with
+  complete ad-hoc signatures; not Developer ID-signed or notarized.
+- Latest promotion: explicitly authorized after this separate closeout merges;
+  the release metadata below is a publication-time observation.
+- Acceptance: local public postflight and direct user positioning acceptance;
+  independent clean-machine acceptance remains **not run** under a Beta 9 exception.
+- Next unused identity: `v0.1.0-beta.10`, product `0.1.0`, build `10`; remote tag
+  and GitHub Release were absent on 2026-10-11.
+- Default behavior: one local Pet-overlay capture at startup or **Locate Pet**,
+  then fixed placement. No automatic following, polling or mouse observer.
 - Repository: public at `jianshi-codes/codex-pet-halo`
+
+## Published Beta 9 evidence — 2026-10-11
+
+- PR #32 was administrator-merged after both required checks passed in
+  [38141269179](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/38141269179).
+  The user explicitly authorized reviewer bypass without changing repository rules.
+- Candidate full checks passed: 75 Core tests (one existing local-only smoke skip),
+  149 application tests and 51 Python tests. A CI SDK annotation compatibility
+  error was corrected before merge. The final source uses a preconcurrency import
+  for older ScreenCaptureKit SDK result annotations.
+- Merged-main CI [38141511253](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/38141511253)
+  passed on same-source failed-job rerun. Its first attempt had a test-process
+  exit/timeout in the unchanged `testMalformedOutputAndAbruptExitDisconnectClient`.
+  The test passed 20 consecutive local iterations. Publication attempt
+  [38141807167](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/38141807167)
+  was cancelled before any tag/Release creation; publication resumed only after
+  merged-main CI passed. No release source changed for that rerun.
+- Validation-only workflow [38141551157](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/38141551157)
+  passed without release state. Publication workflow
+  [38142142013](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/38142142013)
+  passed at the same source, with signing/notarization skipped.
+- The tag resolves directly to the manifest source. The non-draft unsigned
+  prerelease was published at `2026-10-11T13:14:50Z` with exactly four assets:
+- `Pet-Halo-0.1.0-beta.9-unsigned-universal.zip` — 1,392,360 bytes, SHA-256
+  `924929acf7fa196ef9a076d9fd009ca80eb829ac3ec17ac99085632341a5266d`;
+- `RELEASE_NOTES.md` — 2,729 bytes, SHA-256
+  `e684908dbc771fd8a80f8957a5a7b9d888271f4030f624e6d8849cb09a680361`;
+- `SHA256SUMS` — 282 bytes, SHA-256
+  `117802061c87cf284eb0a6075b9b8009ba17616951d932300dbdcfde0626fa93`;
+- `release-manifest.json` — 336 bytes, SHA-256
+  `cd3cd1ba31ee92d687d504d71f076ab471872c6c935dc9b422ff7ebed8de40f1`;
+- Every public digest and SHA256SUMS entry passed after a fresh download. Notes
+  match tagged source byte-for-byte (SHA-256 `e684908dbc771fd8a80f8957a5a7b9d888271f4030f624e6d8849cb09a680361`).
+- Manifest and extracted app match `0.1.0`, build `9`, identifier
+  `io.github.jianshicodes.PetHalo`, macOS `14.0`, and Universal `arm64 x86_64`.
+  App and framework pass strict ad-hoc verification with Hardened Runtime;
+  only the app carries the existing scoped Library Validation exception.
+  Manifest records `signing: unsigned` and `notarization: not-submitted`.
+- Local packaged and public downloaded apps passed isolated LaunchServices
+  startup, owned app-server startup, normal quit and child cleanup. The smoke
+  diagnostic environment suppresses capture/TCC prompts; these are lifecycle
+  results, not Screen Recording, Gatekeeper, or clean-machine acceptance.
+- The user directly confirmed the ring stays fixed after Pet movement and
+  **Locate Pet** successfully realigns it. The prior Debug 30-second idle sample
+  averaged 0.10% of one CPU core and 19.7 MiB physical footprint. OS energy
+  estimates are process-attributed, not whole-machine power or battery predictions.
+- Screen Recording is required for positioning; Accessibility is not. Capture
+  includes only the exact-process transparent Pet overlay, potentially including
+  status/Quick Chat pixels; no OCR, saving or transmission is used. Artwork, pose,
+  scale, multiple overlays and all Quick Chat layouts remain incompletely tested.
+- The user accepted local verification in lieu of independent clean-machine
+  acceptance for this release, publication, documentation merge, Latest promotion
+  and local upgrade/old-version cleanup. No Apple trust is claimed.
 
 ## Published Beta 8 evidence — 2026-09-27
 
@@ -325,7 +358,10 @@
   normally, and left neither process running.
 - Beta 1 and Beta 2 tags, assets, and release notes were not modified.
 
-## CLI and Desktop compatibility state
+## CLI and Desktop compatibility state (historical baseline)
+
+Current Beta 9 host evidence appears above. The following retains earlier
+version observations and does not describe the new positioning path.
 
 - CLI `0.145.0-alpha.18` remains the exact reviewed baseline. Newer versions at
   or above that version and below `1.0.0` may run provisionally only after
@@ -348,7 +384,7 @@
   available only in fallback cards, not the Pet Ring. Missing data is never
   estimated.
 
-## Final validation state
+## Final validation state (historical baseline)
 
 - The Beta 4 source fix passed 115 M7 tests. Release preparation passed the
   full check with 73 core Swift tests including one intended local-only skip,
