@@ -16,6 +16,15 @@ local-only smoke skip) and 52 Python tests on macOS with Xcode 26.5. The install
 Codex Desktop bundle is `26.1016.61520 (21421)`; deterministic lifecycle tests do
 not constitute direct quit/relaunch acceptance of that Desktop version.
 
+Local post-release acceptance found that an ad-hoc upgrade could leave an enabled
+Screen Recording entry with a code requirement that did not match Beta 10.
+The user removed the old Pet Halo entry from **Screen & System Audio Recording**,
+re-added the current app from Applications, enabled it and relaunched. The native
+UI then exposed and rendered the Usage ring; menu Fixed/Following transitions
+were also confirmed, with following left off. Re-enabling the old switch alone
+was insufficient. See the [recovery steps](../README.md#if-the-ring-disappears-after-an-update).
+This local result does not establish independent clean-machine acceptance.
+
 ## Published Beta 9: fixed Pet positioning (2026-10-11)
 
 Startup makes one visual positioning request. `Locate Pet` repeats it on demand.

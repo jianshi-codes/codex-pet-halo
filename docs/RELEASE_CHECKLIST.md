@@ -9,10 +9,12 @@
 - [x] Version/build/identifier/macOS/Universal metadata and strict ad-hoc signatures passed.
 - [x] Downloaded package passed isolated LaunchServices and owned-child startup/quit/cleanup.
 - [x] Codex exit, relaunch, default-off following and cancellation regression tests passed.
+- [x] Local menu Fixed/Following transitions passed; following was left off.
+- [x] Local ring display recovered after removing the stale Screen Recording entry, re-adding the installed Beta 10 app and relaunching.
 - [x] Local-validation exception, CI-green administrator merge, docs merge and Latest authorized.
 - [ ] Independent clean-machine first launch, capture permission and Gatekeeper — not run.
 - [ ] Developer ID signing, notarization and signed trust verification — incomplete, not claimed.
-- Latest promotion is the final R10 metadata step after this separate closeout merges.
+- [x] Latest promotion completed after PR #35 merged; the latest-release endpoint confirms Beta 10 at the published source with four assets.
 
 This checklist records release state. Execute the ordered automation and
 post-release closeout through the [Release runbook](RELEASE_RUNBOOK.md). Never
