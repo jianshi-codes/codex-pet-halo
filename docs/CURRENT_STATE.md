@@ -6,8 +6,9 @@
 - Published source: `6a86826ce47b81d05fe21935575d1f3c1873ca2f`
 - Classification at publication: public, non-draft unsigned prerelease with complete
   ad-hoc signatures; not Developer ID-signed or notarized.
-- Latest policy: promotion follows verified public postflight and this separate
-  documentation merge; publication-time classification is recorded below.
+- Latest: `v0.1.0-beta.10`, confirmed through GitHub's latest-release endpoint on
+  2026-10-22 as non-draft and non-prerelease, still at the published source with
+  four assets. Publication-time classification is recorded below.
 - Acceptance: local public postflight under the explicit Beta 10 exception;
   independent clean-machine acceptance remains **not run**.
 - Next unused identity: `v0.1.0-beta.11`, product `0.1.0`, build `11`;
@@ -59,6 +60,14 @@
   capture/TCC prompts and is not direct Screen Recording, Desktop quit, Gatekeeper
   or independent clean-machine acceptance. Deterministic tests cover Codex exit,
   stale images, relaunch, default-off following and cancellation.
+- Subsequent local menu acceptance confirmed Fixed/default-off following and
+  successful on/off transitions, leaving following off. The initial installed-app
+  positioning failure was traced to a macOS Screen Recording code-requirement
+  mismatch after the ad-hoc update, despite the existing settings entry appearing
+  enabled. The user removed that entry and re-added the current installed app;
+  after relaunch, the native UI exposed and rendered the Usage ring. This is local
+  permission-recovery/display evidence, not independent clean-machine or physical
+  Codex quit/relaunch acceptance. No application binary change was needed.
 - The user accepted local validation instead of independent clean-machine R6/R8
   acceptance for Beta 10, plus publication, separate documentation merge, Latest
   promotion and local replacement/old-version cleanup. Independent clean-machine

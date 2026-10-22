@@ -56,6 +56,20 @@ Follow these steps only for the **unverified developer** warning, after checking
 
 Allow **Pet Halo** in **System Settings → Privacy & Security → Screen Recording** (called **Screen & System Audio Recording** on newer macOS). Startup captures one image of Codex's Pet overlay, detects the body locally, and fixes the ring there. Move Pet, then choose **Locate Pet** to align again. **Continuous Following** is off on every launch. Enable it in the menu for optional updates at most once per second after each capture completes; switch it off to keep the ring fixed. Codex quitting hides the ring and cancels positioning; a new Codex process triggers one fresh position. Failed requests preserve the previous position; Usage remains available without capture permission. Accessibility access is no longer needed for positioning.
 
+### If the ring disappears after an update
+
+An ad-hoc update can invalidate the previous Screen Recording authorization even
+while the old Pet Halo entry still appears enabled. If Pet is visible but
+**Locate Pet** still reports `Pet: Unavailable or Tucked Away`:
+
+1. Quit Pet Halo.
+2. Open **System Settings → Privacy & Security → Screen Recording** (or **Screen & System Audio Recording**). Select the existing **Pet Halo** entry and use **−** to remove it.
+3. Use **+** to add the current **Pet Halo.app** from Applications, then enable its switch.
+4. Reopen Pet Halo, keep Codex Pet visible, and choose **Locate Pet** if needed. Continuous Following can stay off.
+
+Removing and re-adding the current app restored the ring in the locally verified
+Beta 10 upgrade. Toggling the old entry alone did not resolve that case.
+
 ## What the rings mean
 
 - **Outer ring — Weekly remaining:** the exact 10,080-minute rate-limit window. The capsule can show its local reset date, for example `W 39% · Jul 27`.
@@ -67,7 +81,7 @@ Ring colors indicate remaining capacity: healthy `>= 50%`, warning `20%` through
 ## Help and privacy
 
 - `Usage` is disconnected: check `codex --version` and your Codex sign-in, then choose **Refresh Usage**. See [Compatibility](docs/COMPATIBILITY.md) for supported versions and sanitized issue reports.
-- `Pet: Unavailable or Tucked Away`: make Pet visible, check Screen Recording permission, then choose **Locate Pet**. Multiple overlays, unfamiliar artwork, or ambiguous body shapes can prevent positioning.
+- `Pet: Unavailable or Tucked Away`: make Pet visible, check Screen Recording permission, then choose **Locate Pet**. After an update, follow the [permission recovery steps](#if-the-ring-disappears-after-an-update) if the existing enabled entry no longer works. Multiple overlays, unfamiliar artwork, or ambiguous body shapes can prevent positioning.
 
 Pet Halo uses a local read-only `codex app-server --stdio` connection. Pet Halo captures only Codex's Pet overlay on startup, explicit positioning requests, or while you enable Continuous Following; pixels stay in memory, with no OCR or saved images. The overlay can include Pet status or Quick Chat pixels. It sends no telemetry. See [Privacy](docs/PRIVACY.md) and [Security](SECURITY.md).
 
