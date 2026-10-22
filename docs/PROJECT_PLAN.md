@@ -1,16 +1,15 @@
 # Pet Halo Project Plan
 
-## Beta 10 preparation — 2026-10-22
+## Published Beta 10 — 2026-10-22
 
-Candidate `v0.1.0-beta.10`, product `0.1.0`, build `10`, unsigned Universal
-Developer Preview. Scope: hide on Codex exit and add default-off, session-only
-Continuous Following. Publication, separate documentation merge, Latest promotion
-and local replacement are authorized. The user explicitly accepted CI-green
-administrator merges and local public postflight instead of independent
-clean-machine acceptance for this candidate. Independent clean-machine acceptance
-remains not run; Developer ID signing, notarization and Gatekeeper trust are not
-claimed. Candidate verification and publication are pending. The existing
-published-release evidence below is historical.
+`v0.1.0-beta.10`, build `10`, is the unsigned Universal Developer Preview from
+`6a86826ce47b81d05fe21935575d1f3c1873ca2f`. It hides the Halo when Codex exits and adds session-only
+**Continuous Following**, off on every launch. Default positioning remains fixed;
+opt-in captures are serialized with a one-second delay after completion. Local
+checks, required PR/main CI, release validation/publication and fresh public
+postflight passed. The authorized local acceptance exception does not establish
+independent clean-machine acceptance, Developer ID signing or Apple notarization.
+See [Current State](CURRENT_STATE.md) for immutable source and asset evidence.
 
 ## Principles
 
@@ -19,7 +18,7 @@ published-release evidence below is historical.
 - MVP metrics are capability-driven: optional segments appear only when their source is available.
 - Missing or unsupported data is hidden or displayed as unavailable, never estimated.
 - Each milestone has an explicit gate and does not authorize the next one automatically.
-- Current Beta 9 release uses single-shot visual Pet positioning at startup or explicit request. Earlier AX following and window-fallback milestones remain historical implementations, not the default application path.
+- Current Beta 10 release uses fixed startup/Locate Pet positioning, Codex-exit hiding, and a session-only Continuous Following toggle that defaults off. Earlier AX following and window-fallback milestones remain historical implementations, not the default application path.
 
 ## Authorized Beta 9 compatibility change — 2026-10-11
 
@@ -87,8 +86,8 @@ chooses only the arc opening and is never exposed as idle/working state. See the
 **Complete with partial gate — `PARTIAL — SOURCE RELEASE READY, SIGNED BINARY BLOCKED`.** PRs #10 and #11 merged on 2026-07-21. The repository is public, and Beta 1 plus its unsigned Universal ZIP and checksum metadata were published on 2026-07-21. PRs #14 and #15 subsequently merged, and `v0.1.0-beta.2` plus its unsigned Universal ZIP and checksum metadata were published on 2026-07-21. PRs #17 and #18 merged on 2026-07-25, and `v0.1.0-beta.3` plus its unsigned Universal ZIP and checksum metadata were published as an Unsigned Developer Preview from commit `e8480a0443783e05dd871f5c248157633a84d9c5`; the user explicitly promoted the verified Release to Latest. PR #20 merged on 2026-07-31, and `v0.1.0-beta.4` was published as an Unsigned Developer Preview from commit `beb0c2c925d04fccf650205a611a1a20d22ead75`. Compatibility hardening, onboarding, privacy/security/legal evidence, reproducible packaging, sanitized issue forms, and collision-safe future release automation are in place. Developer ID signing, Apple notarization, stapling, Gatekeeper verification, and signed clean-machine acceptance remain incomplete and require a new release identity. See [the M9 report](milestones/m9-public-beta-readiness.md).
 
 Beta 5 and Beta 6 were subsequently published as unsigned prereleases after
-their validation and public-download postflight gates. Beta 6 is the current
-published source release at reviewed commit
+their validation and public-download postflight gates. Beta 6 was published
+from reviewed commit
 `39a0c1a596309f6ff5467be65f5059f175c03c47`; its Accessibility permission-state
 and transient input-method target fixes preserve the existing target hierarchy,
 privacy boundary, and unsigned-only distribution gate. Developer ID signing,
@@ -134,11 +133,10 @@ Its fresh public assets, strict ad-hoc verification, local LaunchServices
 lifecycle, and current Weekly runtime passed without a compatibility link.
 The user explicitly accepted local verification for Beta 8 publication and
 Latest promotion after documentation merge. Independent clean-machine
-acceptance remains not run. The next unused candidate is `v0.1.0-beta.10` /
-build `10`; future clean-machine and signing gates remain unchanged.
+acceptance remains not run. Future clean-machine and signing gates remain unchanged.
 
 Beta 9 was published on 2026-10-11 with single-shot positioning and direct user
 acceptance of fixed placement/manual relocation. Public local postflight passed;
 independent clean-machine acceptance remains not run under the explicit Beta 9
-exception. The next candidate is Beta 10/build 10. Historical milestone reports
+exception. Its then-next candidate was Beta 10/build 10. Historical milestone reports
 and previously published release notes remain unchanged.

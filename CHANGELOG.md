@@ -4,6 +4,10 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 
 ## [Unreleased]
 
+No changes yet.
+
+## [0.1.0-beta.10] - 2026-10-22
+
 ### Fixed
 
 - Hide the Halo when Codex quits, cancel pending positioning, and reject late
@@ -14,6 +18,13 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 - Add a **Continuous Following** menu toggle, off on every launch. Opt-in following
   performs at most one local Pet-overlay capture per second after completion;
   switching off stops scheduled work and keeps the last successful position.
+
+### Release
+
+- Published the unsigned Universal Developer Preview from `6a86826ce47b81d05fe21935575d1f3c1873ca2f`.
+  Required CI, local packaging and fresh public provenance/signature/lifecycle
+  postflight passed. Independent clean-machine acceptance remains not run under
+  the explicit Beta 10 exception; Developer ID signing and notarization remain incomplete.
 
 ## [0.1.0-beta.9] - 2026-10-11
 

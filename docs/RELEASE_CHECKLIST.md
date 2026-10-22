@@ -1,16 +1,18 @@
 # Public Beta Release Checklist
 
-## Beta 10 preparation — 2026-10-22
+## Published Beta 10 record — 2026-10-22
 
-Candidate `v0.1.0-beta.10`, product `0.1.0`, build `10`, unsigned Universal
-Developer Preview. Scope: hide on Codex exit and add default-off, session-only
-Continuous Following. Publication, separate documentation merge, Latest promotion
-and local replacement are authorized. The user explicitly accepted CI-green
-administrator merges and local public postflight instead of independent
-clean-machine acceptance for this candidate. Independent clean-machine acceptance
-remains not run; Developer ID signing, notarization and Gatekeeper trust are not
-claimed. Candidate verification and publication are pending. The existing
-published-release evidence below is historical.
+- [x] PR #34 merged at `6a86826ce47b81d05fe21935575d1f3c1873ca2f` after both required CI checks passed.
+- [x] Main CI `39738451878` and validation-only workflow `39738847246` passed.
+- [x] Publication workflow `39739286405` passed with signed/notarized publication skipped.
+- [x] Four fresh public assets passed GitHub digests, SHA256SUMS and tagged-source provenance.
+- [x] Version/build/identifier/macOS/Universal metadata and strict ad-hoc signatures passed.
+- [x] Downloaded package passed isolated LaunchServices and owned-child startup/quit/cleanup.
+- [x] Codex exit, relaunch, default-off following and cancellation regression tests passed.
+- [x] Local-validation exception, CI-green administrator merge, docs merge and Latest authorized.
+- [ ] Independent clean-machine first launch, capture permission and Gatekeeper — not run.
+- [ ] Developer ID signing, notarization and signed trust verification — incomplete, not claimed.
+- Latest promotion is the final R10 metadata step after this separate closeout merges.
 
 This checklist records release state. Execute the ordered automation and
 post-release closeout through the [Release runbook](RELEASE_RUNBOOK.md). Never
@@ -293,7 +295,7 @@ overwrite, retag, or upload with `--clobber` to an existing release identity.
 
 ## Source and compatibility for a future Beta
 
-- [x] Confirm `v0.1.0-beta.10` and build `10` were unused on 2026-10-11; both
+- [x] Confirm `v0.1.0-beta.11` and build `11` were unused on 2026-10-22; both
   the remote tag and GitHub Release were absent.
 - [ ] Obtain separate authorization for the next candidate and its distribution,
   publication, documentation closeout, and promotion endpoint.
@@ -312,10 +314,10 @@ overwrite, retag, or upload with `--clobber` to an existing release identity.
 
 ```sh
 make public-exposure-audit
-make release-build RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=10 RELEASE_TAG=v0.1.0-beta.10
-make release-archive RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=10 RELEASE_TAG=v0.1.0-beta.10
-make release-checksum RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=10 RELEASE_TAG=v0.1.0-beta.10
-make release-verify RELEASE_ARTIFACT_QUALIFIER=unsigned RELEASE_MODE=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=10 RELEASE_TAG=v0.1.0-beta.10
+make release-build RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=11 RELEASE_TAG=v0.1.0-beta.11
+make release-archive RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=11 RELEASE_TAG=v0.1.0-beta.11
+make release-checksum RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=11 RELEASE_TAG=v0.1.0-beta.11
+make release-verify RELEASE_ARTIFACT_QUALIFIER=unsigned RELEASE_MODE=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=11 RELEASE_TAG=v0.1.0-beta.11
 ```
 
 - [ ] Verify Release configuration and Universal `arm64 x86_64`.
@@ -328,7 +330,7 @@ make release-verify RELEASE_ARTIFACT_QUALIFIER=unsigned RELEASE_MODE=unsigned MA
   its ad-hoc embedded framework.
 - [ ] Launch the packaged App through LaunchServices and verify owned-child
   shutdown; do not substitute direct executable launch.
-- [ ] Verify `Pet-Halo-0.1.0-beta.10-unsigned-universal.zip`, manifest
+- [ ] Verify `Pet-Halo-0.1.0-beta.11-unsigned-universal.zip`, manifest
   `unsigned` / `not-submitted`, release notes, and SHA-256.
 
 ## Developer ID and notarization
@@ -338,10 +340,10 @@ the runbook. Never place identities, secrets, Keychain contents, or notarization
 credentials in repository files or command output.
 
 ```sh
-make release-sign MARKETING_VERSION=0.1.0 BUILD_NUMBER=10 RELEASE_TAG=v0.1.0-beta.10
-make release-archive MARKETING_VERSION=0.1.0 BUILD_NUMBER=10 RELEASE_TAG=v0.1.0-beta.10
-make release-notarize MARKETING_VERSION=0.1.0 BUILD_NUMBER=10 RELEASE_TAG=v0.1.0-beta.10
-make release-verify MARKETING_VERSION=0.1.0 BUILD_NUMBER=10 RELEASE_TAG=v0.1.0-beta.10 RELEASE_MODE=notarized
+make release-sign MARKETING_VERSION=0.1.0 BUILD_NUMBER=11 RELEASE_TAG=v0.1.0-beta.11
+make release-archive MARKETING_VERSION=0.1.0 BUILD_NUMBER=11 RELEASE_TAG=v0.1.0-beta.11
+make release-notarize MARKETING_VERSION=0.1.0 BUILD_NUMBER=11 RELEASE_TAG=v0.1.0-beta.11
+make release-verify MARKETING_VERSION=0.1.0 BUILD_NUMBER=11 RELEASE_TAG=v0.1.0-beta.11 RELEASE_MODE=notarized
 ```
 
 - [ ] Record an actual Apple `Accepted` result; never infer it from submission.

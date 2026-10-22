@@ -1,16 +1,17 @@
 # GitHub Repository Settings
 
-## Beta 10 preparation — 2026-10-22
+## Beta 10 publication observation — 2026-10-22
 
-Candidate `v0.1.0-beta.10`, product `0.1.0`, build `10`, unsigned Universal
-Developer Preview. Scope: hide on Codex exit and add default-off, session-only
-Continuous Following. Publication, separate documentation merge, Latest promotion
-and local replacement are authorized. The user explicitly accepted CI-green
-administrator merges and local public postflight instead of independent
-clean-machine acceptance for this candidate. Independent clean-machine acceptance
-remains not run; Developer ID signing, notarization and Gatekeeper trust are not
-claimed. Candidate verification and publication are pending. The existing
-published-release evidence below is historical.
+- Tag `v0.1.0-beta.10` resolves directly to `6a86826ce47b81d05fe21935575d1f3c1873ca2f`.
+- Release published at `2026-10-22T07:19:04Z` as a non-draft unsigned prerelease
+  with exactly four freshly verified assets. Latest promotion follows the separate
+  documentation merge; this is a publication-time observation.
+- Beta 11/build 11 is the next unused identity; remote tag and Release were absent.
+- Active main ruleset `19339705` requires one approval and strictly up-to-date
+  `macOS application` and `Protocol evidence` checks. Administrator merge was
+  authorized only after both checks passed. The environment API returned an empty
+  list (`total_count: 0`) on 2026-10-22. No repository setting, environment or
+  credential was changed. Earlier observations below retain their original dates.
 
 Repository settings were observed on 2026-07-21 with `gh repo view` and GitHub
 REST API calls against `jianshi-codes/codex-pet-halo`. Tag, Release, and Latest
