@@ -49,6 +49,7 @@ final class ApplicationCoordinator: ObservableObject {
     @Published private(set) var haloMode: HaloPresentationMode = .compact
     @Published private(set) var haloSurfaceMode: HaloSurfaceMode = .compactCard
     @Published private(set) var haloIsVisible = false
+    @Published private(set) var continuousFollowingEnabled = false
     @Published private(set) var windowFollowingState: WindowFollowingState = .disabled
     @Published private(set) var followingStatusText = WindowFollowingState.disabled.statusText
     @Published private(set) var petDiscoveryState: PetTargetDiscoveryState = .disabled
@@ -254,6 +255,12 @@ final class ApplicationCoordinator: ObservableObject {
         guard state == .running else { return }
         haloVisibilityRequested = true
         windowFollowingService.enable()
+    }
+
+    func setContinuousFollowingEnabled(_ enabled: Bool) {
+        guard state == .running, continuousFollowingEnabled != enabled else { return }
+        continuousFollowingEnabled = enabled
+        windowFollowingService.setContinuousFollowingEnabled(enabled)
     }
 
     func enablePetFollowing() {

@@ -441,3 +441,15 @@ to Beta 9 and do not authorize a later candidate.
 Beta 9 published source: `01885e64ca81af0ab57bb7d95a4e82e5baae68d5`. Public local postflight passed;
 independent clean-machine acceptance remains not run. This is a per-release
 exception, not a changed trust policy. The next default identity is Beta 10/build 10.
+
+## Recorded Beta 10 authority — 2026-10-22
+
+The user authorized Beta 10/build 10 as an unsigned Universal Developer Preview,
+feature/preparation merge, publication from its resulting clean main commit,
+separate post-release documentation merge, Latest promotion, and local replacement
+with old-version cleanup. The user separately accepted administrator merge after
+both required CI checks pass without repository rule changes, and local public
+postflight instead of independent clean-machine R6/R8 acceptance for this release.
+Independent clean-machine acceptance remains **not run**; no Apple trust is claimed.
+The reviewed clean main commit and exact workflow inputs must be recorded before
+publication. These exceptions apply only to Beta 10.

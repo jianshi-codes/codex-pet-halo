@@ -1,5 +1,17 @@
 # GitHub Repository Settings
 
+## Beta 10 preparation — 2026-10-22
+
+Candidate `v0.1.0-beta.10`, product `0.1.0`, build `10`, unsigned Universal
+Developer Preview. Scope: hide on Codex exit and add default-off, session-only
+Continuous Following. Publication, separate documentation merge, Latest promotion
+and local replacement are authorized. The user explicitly accepted CI-green
+administrator merges and local public postflight instead of independent
+clean-machine acceptance for this candidate. Independent clean-machine acceptance
+remains not run; Developer ID signing, notarization and Gatekeeper trust are not
+claimed. Candidate verification and publication are pending. The existing
+published-release evidence below is historical.
+
 Repository settings were observed on 2026-07-21 with `gh repo view` and GitHub
 REST API calls against `jianshi-codes/codex-pet-halo`. Tag, Release, and Latest
 state were refreshed after the Beta 8 publication on 2026-09-27, before R10

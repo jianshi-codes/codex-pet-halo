@@ -67,7 +67,12 @@ private struct ApplicationMenuContent: View {
         }
         .disabled(!coordinator.canRefreshUsage)
         Divider()
-        Text("Position: Fixed")
+        Text(coordinator.continuousFollowingEnabled ? "Position: Following" : "Position: Fixed")
+        Toggle("Continuous Following", isOn: Binding(
+            get: { coordinator.continuousFollowingEnabled },
+            set: { coordinator.setContinuousFollowingEnabled($0) }
+        ))
+        .disabled(!coordinator.acceptsUICommands)
         Text(coordinator.petStatusText)
         Button("Locate Pet") {
             coordinator.locatePet()

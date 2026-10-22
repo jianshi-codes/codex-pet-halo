@@ -132,6 +132,7 @@ private final class FakeWindowFollowingService: HaloWindowFollowing {
     private let continuation: AsyncStream<HaloWindowFollowingEvent>.Continuation
     private(set) var startCount = 0
     private(set) var stopCount = 0
+    private(set) var continuousFollowingChanges: [Bool] = []
     private(set) var enableCount = 0
     private(set) var useWindowFallbackCount = 0
     private(set) var disableCount = 0
@@ -159,6 +160,7 @@ private final class FakeWindowFollowingService: HaloWindowFollowing {
     }
     func stop() async { stopCount += 1 }
     func enable() { enableCount += 1 }
+    func setContinuousFollowingEnabled(_ enabled: Bool) { continuousFollowingChanges.append(enabled) }
     func useWindowFallback() { useWindowFallbackCount += 1 }
     func disable() { disableCount += 1 }
     func beginPetCalibration(currentReferencePoint: CGPoint) { beginPetCount += 1 }
@@ -240,6 +242,55 @@ private actor FakeUsageService: CodexUsageServing {
 }
 
 final class ApplicationCoordinatorTests: XCTestCase {
+    @MainActor
+    func testFollowingToggleDefaultsOffAndRoutesOnlyChanges() async {
+        let panel = FakeHaloPanelController()
+        let following = FakeWindowFollowingService()
+        let service = FakeUsageService()
+        let coordinator = ApplicationCoordinator(
+            usageService: service, haloPanelController: panel,
+            windowFollowingService: following, terminateApplication: {}
+        )
+        XCTAssertFalse(coordinator.continuousFollowingEnabled)
+        coordinator.start()
+        coordinator.setContinuousFollowingEnabled(true)
+        coordinator.setContinuousFollowingEnabled(true)
+        coordinator.setContinuousFollowingEnabled(false)
+        XCTAssertFalse(coordinator.continuousFollowingEnabled)
+        XCTAssertEqual(following.continuousFollowingChanges, [true, false])
+        coordinator.requestTermination()
+        await coordinator.waitForShutdown()
+        coordinator.setContinuousFollowingEnabled(true)
+        XCTAssertEqual(following.continuousFollowingChanges, [true, false])
+    }
+
+    @MainActor
+    func testCodexExitEventHidesAnAlreadyVisibleRing() async {
+        let panel = FakeHaloPanelController()
+        let following = FakeWindowFollowingService()
+        let coordinator = ApplicationCoordinator(
+            usageService: FakeUsageService(), haloPanelController: panel,
+            windowFollowingService: following, terminateApplication: {}
+        )
+        coordinator.start()
+        let layout = PetAttachmentLayoutPolicy.centeredLayout(
+            petFrame: CGRect(x: 100, y: 100, width: 80, height: 120),
+            panelSize: PetAttachmentLayoutPolicy.petAttachmentSize,
+            visualCenterOffset: .zero
+        )!
+        following.emit(.activatePetAttachment(layout))
+        for _ in 0..<100 { await Task.yield() }
+        XCTAssertTrue(coordinator.haloIsVisible)
+        following.emit(.targetSourceChanged(.freeFloating))
+        for _ in 0..<100 { await Task.yield() }
+        XCTAssertFalse(coordinator.haloIsVisible)
+        XCTAssertFalse(coordinator.canShowHalo)
+        coordinator.showHalo()
+        XCTAssertFalse(panel.isVisible)
+        coordinator.requestTermination()
+        await coordinator.waitForShutdown()
+    }
+
     @MainActor
     func testPublicUsageFailureMessagesAreConciseAndSafe() {
         let cases: [(SafeFailureReason, String)] = [

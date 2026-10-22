@@ -1,5 +1,19 @@
 # Current State
 
+## Beta 10 preparation — 2026-10-22
+
+Candidate `v0.1.0-beta.10`, product `0.1.0`, build `10`, unsigned Universal
+Developer Preview. Scope: hide on Codex exit and add default-off, session-only
+Continuous Following. Publication, separate documentation merge, Latest promotion
+and local replacement are authorized. The user explicitly accepted CI-green
+administrator merges and local public postflight instead of independent
+clean-machine acceptance for this candidate. Independent clean-machine acceptance
+remains not run; Developer ID signing, notarization and Gatekeeper trust are not
+claimed. Local `make check` passed: 155 application tests, 75 Core tests (one existing
+local-only smoke skip), 52 Python tests, Debug/Release builds and bundle/privacy
+gates. CI, release packaging and publication are pending. The existing
+published-release evidence below is historical.
+
 - Milestone: M9 — Public Beta Release Readiness, with authorized Beta 9 positioning change
 - Status: **PARTIAL — SOURCE RELEASE READY, SIGNED BINARY BLOCKED**
 - Published release: `v0.1.0-beta.9`, product version `0.1.0`, bundle build `9`

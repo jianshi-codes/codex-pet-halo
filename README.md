@@ -4,7 +4,7 @@
   <img src="PetHalo/Assets.xcassets/AppIcon.appiconset/app-icon-256.png" width="128" height="128" alt="Pet Halo app icon">
 </p>
 
-Pet Halo is an unofficial macOS menu-bar companion that shows Codex Usage around Codex Pet. Pet Halo positions the ring once and lets you relocate it from the menu.
+Pet Halo is an unofficial macOS menu-bar companion that shows Codex Usage around Codex Pet. Pet Halo positions the ring once and lets you relocate it from the menu. The ring hides when Codex quits.
 
 [![Download v0.1.0-beta.9](https://img.shields.io/badge/download-v0.1.0--beta.9-5865F2)](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.9)
 [![CI](https://github.com/jianshi-codes/codex-pet-halo/actions/workflows/ci.yml/badge.svg)](https://github.com/jianshi-codes/codex-pet-halo/actions/workflows/ci.yml)
@@ -36,7 +36,7 @@ Codex Pet is shown only to demonstrate integration. It is not Pet Halo project b
 
 ## Download
 
-Get `Pet-Halo-0.1.0-beta.9-unsigned-universal.zip` from the [v0.1.0-beta.8 release](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.9). It supports Apple silicon and Intel Macs running macOS 14 or later. You also need Codex Desktop for Pet positioning, plus a signed-in Codex CLI for Usage. The reviewed CLI baseline is `0.145.0-alpha.18`; newer versions below 1.0 are checked at runtime. See [Compatibility](docs/COMPATIBILITY.md).
+Get `Pet-Halo-0.1.0-beta.9-unsigned-universal.zip` from the [v0.1.0-beta.9 release](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.9). It supports Apple silicon and Intel Macs running macOS 14 or later. You also need Codex Desktop for Pet positioning, plus a signed-in Codex CLI for Usage. The reviewed CLI baseline is `0.145.0-alpha.18`; newer versions below 1.0 are checked at runtime. See [Compatibility](docs/COMPATIBILITY.md).
 
 > **Unsigned Developer Preview:** the app has a complete ad-hoc bundle signature, but is **not Developer ID-signed and not notarized** by Apple. macOS may block the first launch. Only override Gatekeeper after independently verifying the GitHub source, release checksum, and repository provenance. A later ad-hoc update may require granting Screen Recording access again.
 
@@ -54,7 +54,7 @@ Follow these steps only for the **unverified developer** warning, after checking
 
 ## Position the ring
 
-Allow **Pet Halo** in **System Settings → Privacy & Security → Screen Recording** (called **Screen & System Audio Recording** on newer macOS). Startup captures one image of Codex's Pet overlay, detects the body locally, and fixes the ring there. Move Pet, then choose **Locate Pet** to align again. No continuous capture or automatic following runs. Failed requests preserve the previous position; Usage remains available without capture permission. Accessibility access is no longer needed for positioning.
+Allow **Pet Halo** in **System Settings → Privacy & Security → Screen Recording** (called **Screen & System Audio Recording** on newer macOS). Startup captures one image of Codex's Pet overlay, detects the body locally, and fixes the ring there. Move Pet, then choose **Locate Pet** to align again. **Continuous Following** is off on every launch. Enable it in the menu for optional updates at most once per second after each capture completes; switch it off to keep the ring fixed. Codex quitting hides the ring and cancels positioning; a new Codex process triggers one fresh position. Failed requests preserve the previous position; Usage remains available without capture permission. Accessibility access is no longer needed for positioning.
 
 ## What the rings mean
 
@@ -69,6 +69,6 @@ Ring colors indicate remaining capacity: healthy `>= 50%`, warning `20%` through
 - `Usage` is disconnected: check `codex --version` and your Codex sign-in, then choose **Refresh Usage**. See [Compatibility](docs/COMPATIBILITY.md) for supported versions and sanitized issue reports.
 - `Pet: Unavailable or Tucked Away`: make Pet visible, check Screen Recording permission, then choose **Locate Pet**. Multiple overlays, unfamiliar artwork, or ambiguous body shapes can prevent positioning.
 
-Pet Halo uses a local read-only `codex app-server --stdio` connection. Pet Halo captures only Codex's Pet overlay on startup or explicit positioning requests; pixels stay in memory, with no OCR or saved images. The overlay can include Pet status or Quick Chat pixels. It sends no telemetry. See [Privacy](docs/PRIVACY.md) and [Security](SECURITY.md).
+Pet Halo uses a local read-only `codex app-server --stdio` connection. Pet Halo captures only Codex's Pet overlay on startup, explicit positioning requests, or while you enable Continuous Following; pixels stay in memory, with no OCR or saved images. The overlay can include Pet status or Quick Chat pixels. It sends no telemetry. See [Privacy](docs/PRIVACY.md) and [Security](SECURITY.md).
 
 For source builds and release procedures, see [Contributing](CONTRIBUTING.md), the [Release runbook](docs/RELEASE_RUNBOOK.md), and the [Release checklist](docs/RELEASE_CHECKLIST.md). To uninstall, quit Pet Halo, move it to Trash, and optionally remove its Screen Recording permission. Licensed under [MIT](LICENSE).

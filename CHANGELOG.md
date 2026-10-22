@@ -4,7 +4,16 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 
 ## [Unreleased]
 
-No changes yet.
+### Fixed
+
+- Hide the Halo when Codex quits, cancel pending positioning, and reject late
+  images from the previous Codex process. Locate once when Codex starts again.
+
+### Added
+
+- Add a **Continuous Following** menu toggle, off on every launch. Opt-in following
+  performs at most one local Pet-overlay capture per second after completion;
+  switching off stops scheduled work and keeps the last successful position.
 
 ## [0.1.0-beta.9] - 2026-10-11
 

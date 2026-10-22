@@ -1,5 +1,17 @@
 # Public Beta Release Checklist
 
+## Beta 10 preparation — 2026-10-22
+
+Candidate `v0.1.0-beta.10`, product `0.1.0`, build `10`, unsigned Universal
+Developer Preview. Scope: hide on Codex exit and add default-off, session-only
+Continuous Following. Publication, separate documentation merge, Latest promotion
+and local replacement are authorized. The user explicitly accepted CI-green
+administrator merges and local public postflight instead of independent
+clean-machine acceptance for this candidate. Independent clean-machine acceptance
+remains not run; Developer ID signing, notarization and Gatekeeper trust are not
+claimed. Candidate verification and publication are pending. The existing
+published-release evidence below is historical.
+
 This checklist records release state. Execute the ordered automation and
 post-release closeout through the [Release runbook](RELEASE_RUNBOOK.md). Never
 overwrite, retag, or upload with `--clobber` to an existing release identity.
