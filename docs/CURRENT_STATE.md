@@ -1,37 +1,72 @@
 # Current State
 
-## Beta 10 preparation — 2026-10-22
-
-Candidate `v0.1.0-beta.10`, product `0.1.0`, build `10`, unsigned Universal
-Developer Preview. Scope: hide on Codex exit and add default-off, session-only
-Continuous Following. Publication, separate documentation merge, Latest promotion
-and local replacement are authorized. The user explicitly accepted CI-green
-administrator merges and local public postflight instead of independent
-clean-machine acceptance for this candidate. Independent clean-machine acceptance
-remains not run; Developer ID signing, notarization and Gatekeeper trust are not
-claimed. Local `make check` passed: 155 application tests, 75 Core tests (one existing
-local-only smoke skip), 52 Python tests, Debug/Release builds and bundle/privacy
-gates. CI, release packaging and publication are pending. The existing
-published-release evidence below is historical.
-
-- Milestone: M9 — Public Beta Release Readiness, with authorized Beta 9 positioning change
+- Milestone: M9 — Public Beta Release Readiness, with authorized Beta 10 lifecycle/following changes
 - Status: **PARTIAL — SOURCE RELEASE READY, SIGNED BINARY BLOCKED**
-- Published release: `v0.1.0-beta.9`, product version `0.1.0`, bundle build `9`
-- Published source: `01885e64ca81af0ab57bb7d95a4e82e5baae68d5`
-- Classification at publication: public, non-draft unsigned prerelease with
-  complete ad-hoc signatures; not Developer ID-signed or notarized.
-- Latest promotion: explicitly authorized after this separate closeout merges;
-  the release metadata below is a publication-time observation.
-- Acceptance: local public postflight and direct user positioning acceptance;
-  independent clean-machine acceptance remains **not run** under a Beta 9 exception.
-- Next unused identity: `v0.1.0-beta.10`, product `0.1.0`, build `10`; remote tag
-  and GitHub Release were absent on 2026-10-11.
-- Default behavior: one local Pet-overlay capture at startup or **Locate Pet**,
-  then fixed placement. No automatic following, polling or mouse observer.
+- Published release: `v0.1.0-beta.10`, product version `0.1.0`, bundle build `10`
+- Published source: `6a86826ce47b81d05fe21935575d1f3c1873ca2f`
+- Classification at publication: public, non-draft unsigned prerelease with complete
+  ad-hoc signatures; not Developer ID-signed or notarized.
+- Latest policy: promotion follows verified public postflight and this separate
+  documentation merge; publication-time classification is recorded below.
+- Acceptance: local public postflight under the explicit Beta 10 exception;
+  independent clean-machine acceptance remains **not run**.
+- Next unused identity: `v0.1.0-beta.11`, product `0.1.0`, build `11`;
+  remote tag and Release absence checked on 2026-10-22.
+- Default: one local positioning request at startup, a new Codex process, or
+  **Locate Pet**, then fixed placement. Codex exit hides the Halo and cancels work.
+- **Continuous Following** is session-only and off on every launch. While enabled,
+  captures run serially with a one-second wait after completion; switch-off cancels
+  pending work. No OCR, saved images, capture stream or mouse tracking.
 - Repository: public at `jianshi-codes/codex-pet-halo`
+
+## Published Beta 10 evidence — 2026-10-22
+
+- PR #34 merged after both required checks passed in
+  [39737705743](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/39737705743).
+  The user explicitly authorized administrator merge without repository rule changes.
+- Main CI [39738451878](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/39738451878)
+  passed. The reviewed tree matches the locally tested tree exactly: 155 application
+  tests, 75 Core tests (one existing local-only smoke skip), and 52 Python tests;
+  Debug/Release builds and bundle/privacy gates passed. The final menu-status
+  cancellation adjustment also passed the complete Swift test suite.
+- Local release audit, Universal build, archive, checksum, strict unsigned
+  verification and isolated LaunchServices/owned-child lifecycle passed from
+  clean source `6a86826ce47b81d05fe21935575d1f3c1873ca2f`.
+- Validation-only workflow
+  [39738847246](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/39738847246)
+  passed without creating release state. Publication workflow
+  [39739286405](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/39739286405)
+  passed at the same source, with signed/notarized publication skipped.
+- The tag resolves directly to the manifest source. The unsigned non-draft
+  prerelease was published at `2026-10-22T07:19:04Z` with exactly four assets:
+- `Pet-Halo-0.1.0-beta.10-unsigned-universal.zip` — 1,406,206 bytes, SHA-256
+  `78429a0bfedc7d4755872d9dde74e2914d6ed63a89d6787ffda462fe175783f4`;
+- `release-manifest.json` — 338 bytes, SHA-256
+  `ce3b20b4a971ada1bd41d5f0f4272e4ba344082dc3226ade33fd507fccdb4ac6`;
+- `RELEASE_NOTES.md` — 1,869 bytes, SHA-256
+  `00716ad89fbff12cf1ed25cac7bc43b5b308036fa0284bd6b184c47505cbdb1d`;
+- `SHA256SUMS` — 283 bytes, SHA-256
+  `7bc2ec3ae20ce87a90a867911518e8f6e04f0023178705d6430f428fcd29aeee`;
+- Every fresh public asset matched GitHub's digest and every SHA256SUMS entry.
+  Notes match tagged source byte-for-byte (SHA-256 `00716ad89fbff12cf1ed25cac7bc43b5b308036fa0284bd6b184c47505cbdb1d`).
+- Manifest and extracted bundle match product `0.1.0`, build `10`, identifier
+  `io.github.jianshicodes.PetHalo`, macOS `14.0`, Universal `arm64 x86_64`,
+  `signing: unsigned` and `notarization: not-submitted`. App/framework strict
+  ad-hoc signatures and Hardened Runtime passed; only the app carries the existing
+  scoped Library Validation exception.
+- The freshly downloaded package passed local isolated LaunchServices startup,
+  owned app-server startup, normal quit and child cleanup. This smoke suppresses
+  capture/TCC prompts and is not direct Screen Recording, Desktop quit, Gatekeeper
+  or independent clean-machine acceptance. Deterministic tests cover Codex exit,
+  stale images, relaunch, default-off following and cancellation.
+- The user accepted local validation instead of independent clean-machine R6/R8
+  acceptance for Beta 10, plus publication, separate documentation merge, Latest
+  promotion and local replacement/old-version cleanup. Independent clean-machine
+  acceptance remains **not run**; Developer ID and Apple trust are not claimed.
 
 ## Published Beta 9 evidence — 2026-10-11
 
+- Published source: `01885e64ca81af0ab57bb7d95a4e82e5baae68d5`.
 - PR #32 was administrator-merged after both required checks passed in
   [38141269179](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/38141269179).
   The user explicitly authorized reviewer bypass without changing repository rules.
@@ -374,7 +409,7 @@ published-release evidence below is historical.
 
 ## CLI and Desktop compatibility state (historical baseline)
 
-Current Beta 9 host evidence appears above. The following retains earlier
+Beta 10 release evidence appears above. The following retains earlier
 version observations and does not describe the new positioning path.
 
 - CLI `0.145.0-alpha.18` remains the exact reviewed baseline. Newer versions at

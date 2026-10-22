@@ -1,6 +1,6 @@
 # Compatibility
 
-## Beta 10 candidate: lifecycle and optional following (2026-10-22)
+## Published Beta 10: lifecycle and optional following (2026-10-22)
 
 Fixed positioning remains the default on every launch. NSWorkspace notifications
 hide the Halo and cancel pending work when the selected Codex process exits.
@@ -11,7 +11,7 @@ local single-window captures repeat with a one-second delay after completion,
 without overlapping images, a capture stream, AX tracking or mouse monitoring.
 Turning it off stops scheduled work and leaves the last successful position fixed.
 This opt-in mode can consume more CPU and memory; no new benchmark is claimed.
-Candidate `make check` passed 155 application tests, 75 Core tests (one existing
+Candidate validation passed `make check`: 155 application tests, 75 Core tests (one existing
 local-only smoke skip) and 52 Python tests on macOS with Xcode 26.5. The installed
 Codex Desktop bundle is `26.1016.61520 (21421)`; deterministic lifecycle tests do
 not constitute direct quit/relaunch acceptance of that Desktop version.
