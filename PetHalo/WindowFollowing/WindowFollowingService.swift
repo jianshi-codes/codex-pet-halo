@@ -26,6 +26,7 @@ protocol HaloWindowFollowing: AnyObject {
     func start()
     func stop() async
     func enable()
+    func setContinuousFollowingEnabled(_ enabled: Bool)
     func useWindowFallback()
     func disable()
     func beginPetCalibration(currentReferencePoint: CGPoint)
@@ -36,6 +37,11 @@ protocol HaloWindowFollowing: AnyObject {
     func samplePetAttachmentLayout() -> PetAttachmentLayout?
     func beginPresentationTransition()
     func finishPresentationTransition(panelSize: CGSize)
+}
+
+extension HaloWindowFollowing {
+    // Retained milestone adapters do not use the optional visual following mode.
+    func setContinuousFollowingEnabled(_ enabled: Bool) {}
 }
 
 @MainActor

@@ -556,7 +556,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         ):
             self.assertIn(expected, current_state)
         unreleased, published = changelog.split("## [0.1.0-beta.8]", maxsplit=1)
-        self.assertIn("No changes yet.", unreleased)
+        self.assertIn("## [Unreleased]", unreleased)
         beta_eight = published.split("## [0.1.0-beta.7]", maxsplit=1)[0]
         self.assertTrue(beta_eight.lstrip().startswith("- 2026-09-27"))
         self.assertIn("nested Codex CLI", beta_eight)

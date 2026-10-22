@@ -118,7 +118,7 @@ final class WorkspaceCodexApplicationLocator: CodexApplicationLocating {
     func locate() -> CodexApplicationSelection {
         let candidates = NSRunningApplication.runningApplications(
             withBundleIdentifier: CodexApplicationSelector.bundleIdentifier
-        ).map { application in
+        ).filter { !$0.isTerminated }.map { application in
             CodexApplicationCandidate(
                 processIdentifier: application.processIdentifier,
                 bundleIdentifier: application.bundleIdentifier,

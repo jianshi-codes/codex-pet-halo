@@ -6,20 +6,30 @@ The M9 Public Beta candidate launches one owned local `codex app-server --stdio`
 
 ## Data boundaries
 
-### Single-shot Pet positioning (2026-10-11)
+### Fixed positioning and optional following (2026-10-22)
 
-The user authorized replacing continuous visual following with startup positioning
-and explicit menu requests. The current source uses one ScreenCaptureKit image of
-the unique visible layer-3 overlay owned by the selected `com.openai.codex` process
-per request. It never captures the full display, cursor, audio, or window shadows.
-The overlay can include Pet status bubbles and Quick Chat pixels; these remain in
-memory only. Alpha-component detection runs locally without OCR or text inspection.
-Images are released after processing and are never saved or transmitted.
+The default makes one ScreenCaptureKit image request at startup, on a new Codex
+process, or on **Locate Pet**. The ring then stays fixed. Lightweight NSWorkspace
+application lifecycle notifications observe only Codex availability and process
+selection, without a timer or capture loop in fixed mode. Codex exit hides the
+ring, clears the old attachment and cancels pending work; stale images are rejected.
 
-Screen Recording permission is required. No Accessibility or mouse event observer
-is used by this positioning service. There is no timer, polling loop, background
-capture stream, or automatic reacquisition. Failed requests preserve the previous
-position; overlapping requests are coalesced. Coordinates remain session-only.
+The user explicitly authorized **Continuous Following**, off on every launch and
+never persisted. While enabled, one local Pet-overlay image is processed at a time,
+with a one-second wait after completion before the next request. Switching off,
+Codex exit or Pet Halo shutdown cancels scheduled work and rejects pending images.
+This mode can consume more CPU and memory; it creates no capture stream, mouse
+observer or display-linked geometry sampling. Screen Recording is required;
+Accessibility is not used. A denied permission prompt is attempted at most once
+per Pet Halo session.
+
+Both modes capture only the selected exact `com.openai.codex` process's unique
+visible layer-3 Pet overlay, never the full display, cursor, audio or shadows.
+Status bubbles and Quick Chat pixels may appear in that overlay. Pixels remain
+in memory, undergo local alpha-component detection without OCR, and are released
+after processing; no image is saved or transmitted. Failed relocation preserves
+the previous position while that Codex process remains selected. Overlapping
+requests are coalesced. Coordinates and the toggle remain session-only.
 
 The following sections describe the retained legacy AX implementation and published
 Beta behavior; it is no longer the default service in this source build.

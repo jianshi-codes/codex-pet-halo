@@ -4,15 +4,19 @@
 
 Pet Halo is an independent, unofficial macOS companion for Codex. The current application is a native menu-bar/accessory app with a transparent usage Halo that does not modify Codex Desktop or Codex Pet.
 
-## Current authorized behavior (2026-10-11)
+## Current authorized behavior (2026-10-22)
 
-Beta 9 supersedes the default automatic-following path with one local
-ScreenCaptureKit Pet-overlay image on startup or **Locate Pet**. The ring then
-stays fixed. Screen Recording and alpha-component detection are authorized only
-for this bounded positioning route; no OCR, saved images, capture stream,
-background polling or mouse tracking is permitted. The earlier following
-milestones below describe retained historical implementations. Publication and
-local upgrade are authorized for this task under the release runbook.
+Beta 10 keeps single-image startup/Locate Pet positioning as the default.
+Lightweight workspace lifecycle notifications hide the ring and cancel positioning
+when Codex exits, and locate once when a new Codex process starts. The user
+explicitly authorized an optional menu-bar Continuous Following toggle, off on
+every launch. Only while enabled may single-window local captures repeat, at most
+once per second after the previous request completes. Switching off or quitting
+Codex cancels this work. No OCR, saved images, capture stream or mouse tracking is
+permitted. Publication, Git operations, post-release documentation merge, Latest
+promotion and local upgrade/old-version cleanup are authorized for this task.
+The Beta 10 release record documents the separately authorized local acceptance
+and CI-green administrator merge exceptions.
 
 ## Milestone boundaries
 
