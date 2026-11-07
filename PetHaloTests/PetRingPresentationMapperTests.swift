@@ -7,6 +7,23 @@ final class PetRingPresentationMapperTests: XCTestCase {
     private let locale = Locale(identifier: "en_US_POSIX")
     private let timeZone = TimeZone(secondsFromGMT: 0)!
 
+    func testWeeklyResetProgressUsesSevenDaysAndClampsWithoutInventingReset() {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        func value(_ offset: TimeInterval?) -> RingMetricValue {
+            RingMetricValue(remainingPercent: 39, displayedPercent: 39,
+                            semanticLevel: .warning,
+                            resetsAt: offset.map { now.addingTimeInterval($0) })
+        }
+        XCTAssertNil(value(nil).resetProgress(at: now))
+        XCTAssertEqual(value(604_800).resetProgress(at: now), 1)
+        XCTAssertEqual(value(302_400).resetProgress(at: now), 0.5)
+        XCTAssertEqual(value(604_799).resetProgress(at: now)!, 604_799 / 604_800.0, accuracy: 0.000001)
+        XCTAssertEqual(value(700_000).resetProgress(at: now), 1)
+        XCTAssertEqual(value(0).resetProgress(at: now), 0)
+        XCTAssertEqual(value(-1).resetProgress(at: now), 0)
+        XCTAssertEqual(value(302_400).resetProgress(at: now.addingTimeInterval(151_200)), 0.25)
+    }
+
     func testWeeklyResetFlowsAsDateWhileFiveHourPresentationStaysUnchanged() throws {
         let reset = try instant("2026-07-27T00:00:00Z")
         let model = mapper().map(

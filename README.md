@@ -16,23 +16,30 @@ Pet Halo is an unofficial macOS menu-bar companion that shows Codex Usage around
 <table>
   <tr>
     <td width="50%" align="center">
-      <img src="docs/assets/screenshots/pet-halo-activity-above.png" width="100%" alt="Pet Halo Beta 8 reference with the Codex task card above and Weekly label on the right">
+      <img src="docs/assets/screenshots/reset-ring-ahead.png" width="100%" alt="Weekly quota 39% remaining compared with 50% reset time remaining">
     </td>
     <td width="50%" align="center">
-      <img src="docs/assets/screenshots/pet-halo-activity-below.png" width="100%" alt="Pet Halo Beta 8 reference with the Codex task card below and Weekly label on the left">
+      <img src="docs/assets/screenshots/reset-ring-within-pace.png" width="100%" alt="Weekly quota 65% remaining compared with 50% reset time remaining">
     </td>
   </tr>
   <tr>
-    <td align="center">Task card above · Weekly label on the right</td>
-    <td align="center">Task card below · Weekly label on the left</td>
+    <td align="center">39% quota left · 50% time left: usage ahead of time</td>
+    <td align="center">65% quota left · 50% time left: within time budget</td>
   </tr>
 </table>
 
-Codex Pet is shown only to demonstrate integration. It is not Pet Halo project branding.
+These previews render the current SwiftUI ring with synthetic data; they are not
+screenshots of the published Beta 10 build. The thin blue arc immediately inside
+the Weekly quota ring shows **time remaining until the weekly reset**, using the
+reported reset timestamp divided by a seven-day reference (604,800 seconds).
+Both arcs share the same start and direction. If the quota arc is shorter than
+the time arc, usage is ahead of a uniform weekly pace. This is a visual reference,
+not a forecast or a change to the provider's reset policy.
 
-> These screenshots show Beta 8 reference behavior: Weekly is visible, the optional
-> 5h ring is omitted when unavailable, and the inner layout slot stays hidden for
-> a future exact Context Remaining metric.
+The time arc updates every hour, clamps to 0–100%, and stays empty after the
+reported reset until a new timestamp arrives. Missing reset data hides it; stale
+data uses a faded dashed arc. The optional 5h quota ring remains separate, and
+the reserved Context slot remains hidden. See [reset ring details](docs/RESET_TIME_RING.md).
 
 ## Download
 
@@ -73,6 +80,7 @@ Beta 10 upgrade. Toggling the old entry alone did not resolve that case.
 ## What the rings mean
 
 - **Outer ring — Weekly remaining:** the exact 10,080-minute rate-limit window. The capsule can show its local reset date, for example `W 39% · Jul 27`.
+- **Thin blue arc inside Weekly — reset time remaining:** remaining seconds divided by seven days; a shorter quota arc means consumption is ahead of uniform pacing.
 - **Middle ring — optional 5h remaining:** the exact 300-minute window, hidden when Codex does not provide it.
 - **Inner slot — reserved:** hidden until Codex provides a safe, exact Context Remaining metric. Pet Halo cannot truthfully infer Live Activity from window geometry; Earlier AX builds used activity geometry only for arc opening, not an idle/working signal.
 

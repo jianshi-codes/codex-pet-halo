@@ -20,6 +20,23 @@
   pending work. No OCR, saved images, capture stream or mouse tracking.
 - Repository: public at `jianshi-codes/codex-pet-halo`
 
+## Prepared Beta 11 weekly reset-time ring — 2026-11-07
+
+- Candidate: `v0.1.0-beta.11`, product `0.1.0`, build `11`, unsigned Universal
+  Developer Preview. Remote tag and Release were absent on 2026-11-07.
+- User confirmed the locally installed hourly reset-ring behavior; publication,
+  separate documentation closeout and Latest promotion are authorized.
+- Beta 11 local-acceptance/public-postflight exception and CI-green administrator
+  merges are explicitly authorized; independent clean-machine acceptance remains
+  **not run**. Repository rules are unchanged.
+- User-authorized UI addition: a blue two-point time arc immediately inside the
+  Weekly quota arc, sharing its angular origin and sweep. The 5h ring is unchanged.
+- Uses the reported weekly reset timestamp and a fixed seven-day reference;
+  updates every hour without extra server requests or captures.
+- README previews now show synthetic renders of this unreleased UI. Published
+  Beta 10 assets and the installed application are not updated by this change.
+- Semantics, missing/stale data, and preview regeneration: [Reset time ring](RESET_TIME_RING.md).
+
 ## Published Beta 10 evidence — 2026-10-22
 
 - PR #34 merged after both required checks passed in

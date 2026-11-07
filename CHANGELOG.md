@@ -4,7 +4,12 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 
 ## [Unreleased]
 
-No changes yet.
+### Added
+
+- Add a thin blue weekly reset-time arc immediately inside the Weekly quota ring,
+  updated every hour from the reported reset timestamp against seven days.
+- Update README previews using the production SwiftUI view and synthetic data;
+  document remaining-quota versus remaining-time comparison.
 
 ## [0.1.0-beta.10] - 2026-10-22
 

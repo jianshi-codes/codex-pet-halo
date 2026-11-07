@@ -455,3 +455,17 @@ The reviewed clean main commit and exact workflow inputs must be recorded before
 publication. These exceptions apply only to Beta 10.
 
 Beta 10 published source: `6a86826ce47b81d05fe21935575d1f3c1873ca2f`. Fresh public postflight passed; independent clean-machine acceptance remains not run. The next default identity is Beta 11/build 11.
+
+## Recorded Beta 11 authority — 2026-11-07
+
+The user authorized Beta 11/build 11 as an unsigned Universal Developer Preview
+for the weekly reset-time ring with hourly scheduled updates, publication from
+the resulting reviewed clean main commit, a separate post-release documentation
+merge, and Latest promotion after that merge. Local installed acceptance passed.
+The user separately authorized local acceptance plus fresh public-download
+postflight instead of independent clean-machine R6/R8 acceptance, and
+administrator merge of preparation and closeout PRs only after both required CI
+checks pass, without repository rule changes. Independent clean-machine
+acceptance remains **not run**; Developer ID signing, notarization and Apple trust
+are not claimed. These exceptions apply only to Beta 11. Record the reviewed
+clean main SHA and exact workflow inputs before publication.

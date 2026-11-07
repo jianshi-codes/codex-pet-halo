@@ -56,6 +56,7 @@ struct PetRingView: View {
             if let fiveHour = model.fiveHour {
                 remainingRing(name: "5 hour", metric: fiveHour, kind: .fiveHour)
             }
+            resetTimeRing
             labels
             if isCalibrating {
                 calibrationOverlay
@@ -64,6 +65,45 @@ struct PetRingView: View {
         .frame(width: geometry.panelSize.width, height: geometry.panelSize.height)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Pet Halo usage rings")
+    }
+
+    private var resetTimeRing: some View {
+        // Update the weekly time reference hourly to minimize scheduled work.
+        TimelineView(.periodic(from: .now, by: 60 * 60)) { context in
+            if let value = model.weekly.value,
+               let progress = value.resetProgress(at: context.date) {
+                let angles = geometry.angles(for: orientation)
+                let radius = geometry.radius(for: .weekly) - geometry.ringSpacing / 2
+                ZStack {
+                    PetRingArc(
+                        center: geometry.ringCenter(in: geometry.panelSize),
+                        startAngleDegrees: angles.startAngleDegrees,
+                        sweepAngleDegrees: angles.sweepAngleDegrees,
+                        radius: radius,
+                        progress: 1
+                    )
+                    .stroke(Color(nsColor: .separatorColor).opacity(appearancePolicy.trackOpacity),
+                            style: StrokeStyle(lineWidth: 2, lineCap: .round))
+                    if progress > 0 {
+                        PetRingArc(
+                            center: geometry.ringCenter(in: geometry.panelSize),
+                            startAngleDegrees: angles.startAngleDegrees,
+                            sweepAngleDegrees: angles.sweepAngleDegrees,
+                            radius: radius,
+                            progress: progress
+                        )
+                        .stroke(Color(nsColor: .systemBlue).opacity(model.weekly.isStale ? 0.55 : 0.9),
+                                style: StrokeStyle(lineWidth: 2, lineCap: .round,
+                                                   dash: model.weekly.isStale ? [5, 4] : []))
+                    }
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Weekly reset time remaining")
+                .accessibilityValue("\(Int((progress * 100).rounded()))% of seven days, "
+                    + "\(model.weekly.freshnessText.lowercased())")
+            }
+        }
+        .allowsHitTesting(false)
     }
 
     private var calibrationOverlay: some View {
