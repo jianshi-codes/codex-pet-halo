@@ -1,16 +1,16 @@
 # Public Beta Release Checklist
 
-## Prepared Beta 11 record — 2026-11-07
+## Published Beta 11 record — 2026-11-07
 
 - [x] User confirmed the installed weekly reset ring and hourly refresh behavior.
 - [x] Publication, post-release documentation and Latest promotion authorized.
 - [x] Beta 11 local/public-postflight exception and CI-green administrator merges authorized.
 - [x] Beta 11/build 11 remote tag and Release absent at preparation.
-- [ ] Reviewed preparation PR and both required CI checks merged.
-- [ ] Clean-main release audit, packaging and local launch smoke.
-- [ ] Validation-only workflow and publication workflow.
-- [ ] Fresh public download, provenance, signatures and lifecycle postflight.
-- [ ] Separate post-release documentation merge and Latest verification.
+- [x] PR #37 merged after both required checks passed in `42348021417`; main CI `42348247052` passed.
+- [x] Clean-main release audit, Universal packaging, strict signatures and isolated local launch smoke passed.
+- [x] Validation-only `42348320225` and publication `42348484721` passed at `cfdc872468b09028829fef63e9a825d85f295dfc`.
+- [x] Four fresh public downloads passed digests/checksums, provenance, strict signatures and isolated lifecycle postflight.
+- Separate post-release documentation merge and Latest verification follow these publication-time checks.
 - [ ] Independent clean-machine acceptance — not run.
 - [ ] Developer ID signing and notarization — incomplete, not claimed.
 
@@ -311,7 +311,7 @@ overwrite, retag, or upload with `--clobber` to an existing release identity.
 
 ## Source and compatibility for a future Beta
 
-- [x] Confirm `v0.1.0-beta.11` and build `11` were unused on 2026-10-22; both
+- [x] Confirm `v0.1.0-beta.12` and build `12` were unused on 2026-11-07; both
   the remote tag and GitHub Release were absent.
 - [ ] Obtain separate authorization for the next candidate and its distribution,
   publication, documentation closeout, and promotion endpoint.
@@ -330,10 +330,10 @@ overwrite, retag, or upload with `--clobber` to an existing release identity.
 
 ```sh
 make public-exposure-audit
-make release-build RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=11 RELEASE_TAG=v0.1.0-beta.11
-make release-archive RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=11 RELEASE_TAG=v0.1.0-beta.11
-make release-checksum RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=11 RELEASE_TAG=v0.1.0-beta.11
-make release-verify RELEASE_ARTIFACT_QUALIFIER=unsigned RELEASE_MODE=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=11 RELEASE_TAG=v0.1.0-beta.11
+make release-build RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=12 RELEASE_TAG=v0.1.0-beta.12
+make release-archive RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=12 RELEASE_TAG=v0.1.0-beta.12
+make release-checksum RELEASE_ARTIFACT_QUALIFIER=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=12 RELEASE_TAG=v0.1.0-beta.12
+make release-verify RELEASE_ARTIFACT_QUALIFIER=unsigned RELEASE_MODE=unsigned MARKETING_VERSION=0.1.0 BUILD_NUMBER=12 RELEASE_TAG=v0.1.0-beta.12
 ```
 
 - [ ] Verify Release configuration and Universal `arm64 x86_64`.
@@ -346,7 +346,7 @@ make release-verify RELEASE_ARTIFACT_QUALIFIER=unsigned RELEASE_MODE=unsigned MA
   its ad-hoc embedded framework.
 - [ ] Launch the packaged App through LaunchServices and verify owned-child
   shutdown; do not substitute direct executable launch.
-- [ ] Verify `Pet-Halo-0.1.0-beta.11-unsigned-universal.zip`, manifest
+- [ ] Verify `Pet-Halo-0.1.0-beta.12-unsigned-universal.zip`, manifest
   `unsigned` / `not-submitted`, release notes, and SHA-256.
 
 ## Developer ID and notarization
@@ -356,10 +356,10 @@ the runbook. Never place identities, secrets, Keychain contents, or notarization
 credentials in repository files or command output.
 
 ```sh
-make release-sign MARKETING_VERSION=0.1.0 BUILD_NUMBER=11 RELEASE_TAG=v0.1.0-beta.11
-make release-archive MARKETING_VERSION=0.1.0 BUILD_NUMBER=11 RELEASE_TAG=v0.1.0-beta.11
-make release-notarize MARKETING_VERSION=0.1.0 BUILD_NUMBER=11 RELEASE_TAG=v0.1.0-beta.11
-make release-verify MARKETING_VERSION=0.1.0 BUILD_NUMBER=11 RELEASE_TAG=v0.1.0-beta.11 RELEASE_MODE=notarized
+make release-sign MARKETING_VERSION=0.1.0 BUILD_NUMBER=12 RELEASE_TAG=v0.1.0-beta.12
+make release-archive MARKETING_VERSION=0.1.0 BUILD_NUMBER=12 RELEASE_TAG=v0.1.0-beta.12
+make release-notarize MARKETING_VERSION=0.1.0 BUILD_NUMBER=12 RELEASE_TAG=v0.1.0-beta.12
+make release-verify MARKETING_VERSION=0.1.0 BUILD_NUMBER=12 RELEASE_TAG=v0.1.0-beta.12 RELEASE_MODE=notarized
 ```
 
 - [ ] Record an actual Apple `Accepted` result; never infer it from submission.

@@ -26,8 +26,8 @@ fractions/end angles rather than pixel lengths because their radii differ.
 ## Preview generation
 
 README images are native renders of `PetRingView` with synthetic quota values
-and a reset 3.5 days away. They contain no captured Pet or account data and do
-not represent the published Beta 10 build. The old Beta 8 screenshots remain as
+and a reset 3.5 days away. They contain no captured Pet or account data and
+illustrate the published Beta 11 ring. The old Beta 8 screenshots remain as
 historical assets.
 
 From the repository root:

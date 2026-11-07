@@ -272,11 +272,11 @@ class ReleaseReadinessTests(unittest.TestCase):
         common = (ROOT / "Scripts/release-common.sh").read_text(encoding="utf-8")
         validator = (ROOT / "Scripts/validate-bundle.sh").read_text(encoding="utf-8")
         self.assertIn("MARKETING_VERSION: 0.1.0", project)
-        self.assertIn("CURRENT_PROJECT_VERSION: 10", project)
+        self.assertIn("CURRENT_PROJECT_VERSION: 11", project)
         self.assertNotIn("beta", info.lower())
-        self.assertIn('BUILD_NUMBER:-11', common)
-        self.assertIn("v0.1.0-beta.11", common)
-        self.assertIn("EXPECTED_BUILD_NUMBER:-10", validator)
+        self.assertIn('BUILD_NUMBER:-12', common)
+        self.assertIn("v0.1.0-beta.12", common)
+        self.assertIn("EXPECTED_BUILD_NUMBER:-11", validator)
 
     def test_public_preview_screenshots_are_metadata_free_png_files(self) -> None:
         signature = b"\x89PNG\r\n\x1a\n"
@@ -313,8 +313,8 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("not Developer ID-signed and not notarized", readme)
         self.assertIn("Only override Gatekeeper after independently verifying", readme)
         self.assertIn("jianshi-codes/codex-pet-halo", readme)
-        self.assertIn("Download v0.1.0-beta.10", readme)
-        self.assertIn("Pet-Halo-0.1.0-beta.10-unsigned-universal.zip", readme)
+        self.assertIn("Download v0.1.0-beta.11", readme)
+        self.assertIn("Pet-Halo-0.1.0-beta.11-unsigned-universal.zip", readme)
         self.assertIn("shasum -a 256 -c SHA256SUMS", readme)
         self.assertIn(
             "System Settings → Privacy & Security → Security → Open → Open Anyway",
@@ -331,7 +331,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         release_url = (
             "https://github.com/jianshi-codes/codex-pet-halo/releases/tag/"
-            "v0.1.0-beta.10"
+            "v0.1.0-beta.11"
         )
         self.assertIn(release_url, readme)
         self.assertLess(readme.index("## Preview"), readme.index("## Download"))
@@ -513,9 +513,9 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("34870879323", checklist)
         self.assertIn("## Published Beta 7 record — 2026-09-16", checklist)
         future = checklist.split("## Source and compatibility for a future Beta", maxsplit=1)[1]
-        self.assertIn("v0.1.0-beta.11", future)
-        self.assertIn("BUILD_NUMBER=11", future)
-        self.assertIn("Pet-Halo-0.1.0-beta.11-unsigned-universal.zip", future)
+        self.assertIn("v0.1.0-beta.12", future)
+        self.assertIn("BUILD_NUMBER=12", future)
+        self.assertIn("Pet-Halo-0.1.0-beta.12-unsigned-universal.zip", future)
         self.assertNotIn("BUILD_NUMBER=8", future)
         self.assertNotIn("BUILD_NUMBER=7", future)
 
@@ -537,7 +537,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         runbook = (ROOT / "docs/RELEASE_RUNBOOK.md").read_text(encoding="utf-8")
 
         for expected in (
-            "download-v0.1.0--beta.10",
+            "download-v0.1.0--beta.11",
             "`0.145.0-alpha.18`",
             "newer versions below 1.0 are checked at runtime",
             "[Compatibility](docs/COMPATIBILITY.md)",
@@ -572,16 +572,30 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("## Recorded Beta 8 exception — 2026-09-27", runbook)
         self.assertIn("It does not apply to a future candidate.", runbook)
 
+    def test_beta_eleven_release_identity_and_notes_are_frozen(self) -> None:
+        notes = (ROOT / "docs/release-notes/v0.1.0-beta.11.md").read_bytes()
+        self.assertEqual(hashlib.sha256(notes).hexdigest(),
+                         "3ddf03ed0ec8518bf26269f265e8f86849088a96ebe867f8fa3bac0a494870f5")
+        state = (ROOT / "docs/CURRENT_STATE.md").read_text(encoding="utf-8")
+        for expected in ("Published release: `v0.1.0-beta.11`",
+                         "cfdc872468b09028829fef63e9a825d85f295dfc",
+                         "42348320225", "42348484721", "2026-11-07T06:50:20Z",
+                         "ff88645adc1cd3b80353ba1560550250982cf5eabbcb6ae1b8d7422ff211237d",
+                         "**not run**", "v0.1.0-beta.12"):
+            self.assertIn(expected, state)
+        common = (ROOT / "Scripts/release-common.sh").read_text(encoding="utf-8")
+        self.assertNotIn("v0.1.0-beta.11", common)
+
     def test_beta_ten_release_closeout_and_next_identity(self) -> None:
         payload = (ROOT / "docs/release-notes/v0.1.0-beta.10.md").read_bytes()
         self.assertEqual(hashlib.sha256(payload).hexdigest(), "00716ad89fbff12cf1ed25cac7bc43b5b308036fa0284bd6b184c47505cbdb1d")
         state = (ROOT / "docs/CURRENT_STATE.md").read_text(encoding="utf-8")
-        for expected in ("Published release: `v0.1.0-beta.10`", "6a86826ce47b81d05fe21935575d1f3c1873ca2f",
+        for expected in ("Published Beta 10 evidence", "6a86826ce47b81d05fe21935575d1f3c1873ca2f",
                          "39738847246", "39739286405", "**not run**", "Continuous Following"):
             self.assertIn(expected, state)
         common = (ROOT / "Scripts/release-common.sh").read_text(encoding="utf-8")
-        self.assertIn("BUILD_NUMBER:-11", common)
-        self.assertIn("v0.1.0-beta.11", common)
+        self.assertIn("BUILD_NUMBER:-12", common)
+        self.assertIn("v0.1.0-beta.12", common)
         self.assertNotIn("v0.1.0-beta.10", common)
 
     def test_beta_nine_release_identity_and_notes_are_frozen(self) -> None:
@@ -874,7 +888,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         )
         self.assertEqual(
             Path(result.stdout.strip()).name,
-            "Pet-Halo-0.1.0-beta.11-unsigned-universal.zip",
+            "Pet-Halo-0.1.0-beta.12-unsigned-universal.zip",
         )
         environment.pop("RELEASE_ARTIFACT_QUALIFIER")
         default_result = subprocess.run(
@@ -891,7 +905,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         )
         self.assertEqual(
             Path(default_result.stdout.strip()).name,
-            "Pet-Halo-0.1.0-beta.11-universal.zip",
+            "Pet-Halo-0.1.0-beta.12-universal.zip",
         )
         makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
         target = makefile.split("release-unsigned-preview:", maxsplit=1)[1]

@@ -1,43 +1,68 @@
 # Current State
 
-- Milestone: M9 — Public Beta Release Readiness, with authorized Beta 10 lifecycle/following changes
+- Milestone: M9 — Public Beta Release Readiness, with authorized Beta 11 reset-time ring
 - Status: **PARTIAL — SOURCE RELEASE READY, SIGNED BINARY BLOCKED**
-- Published release: `v0.1.0-beta.10`, product version `0.1.0`, bundle build `10`
-- Published source: `6a86826ce47b81d05fe21935575d1f3c1873ca2f`
-- Classification at publication: public, non-draft unsigned prerelease with complete
-  ad-hoc signatures; not Developer ID-signed or notarized.
-- Latest: `v0.1.0-beta.10`, confirmed through GitHub's latest-release endpoint on
-  2026-10-22 as non-draft and non-prerelease, still at the published source with
-  four assets. Publication-time classification is recorded below.
-- Acceptance: local public postflight under the explicit Beta 10 exception;
-  independent clean-machine acceptance remains **not run**.
-- Next unused identity: `v0.1.0-beta.11`, product `0.1.0`, build `11`;
-  remote tag and Release absence checked on 2026-10-22.
-- Default: one local positioning request at startup, a new Codex process, or
-  **Locate Pet**, then fixed placement. Codex exit hides the Halo and cancels work.
-- **Continuous Following** is session-only and off on every launch. While enabled,
-  captures run serially with a one-second wait after completion; switch-off cancels
-  pending work. No OCR, saved images, capture stream or mouse tracking.
-- Repository: public at `jianshi-codes/codex-pet-halo`
+- Published release: `v0.1.0-beta.11`, product version `0.1.0`, bundle build `11`
+- Published source: `cfdc872468b09028829fef63e9a825d85f295dfc`
+- Classification at publication: non-draft unsigned prerelease, with complete
+  ad-hoc signatures and Hardened Runtime; not Developer ID-signed or notarized.
+- Latest promotion is authorized after this separate closeout documentation merges.
+  The publication-time snapshot below does not assert subsequent metadata state.
+- Acceptance: user-confirmed installed hourly reset-ring UI and fresh public
+  postflight under the explicit Beta 11 exception. Independent clean-machine
+  acceptance remains **not run**.
+- Next unused identity: `v0.1.0-beta.12`, product `0.1.0`, build `12`;
+  remote tag and Release absence checked on 2026-11-07.
+- Thin blue inner arc: reported weekly reset timestamp against seven days,
+  hourly scheduled redraw, shared quota start/direction. Missing reset data hides
+  it; stale data is faded/dashed. See [Reset time ring](RESET_TIME_RING.md).
+- Default positioning and session-only **Continuous Following** remain as in
+  Beta 10: startup/new Codex process/Locate Pet position once; Codex exit hides
+  the Halo and cancels work. Following is off on every launch.
+- Repository: public at `jianshi-codes/codex-pet-halo`.
 
-## Prepared Beta 11 weekly reset-time ring — 2026-11-07
+## Published Beta 11 evidence — 2026-11-07
 
-- Candidate: `v0.1.0-beta.11`, product `0.1.0`, build `11`, unsigned Universal
-  Developer Preview. Remote tag and Release were absent on 2026-11-07.
-- User confirmed the locally installed hourly reset-ring behavior; publication,
-  separate documentation closeout and Latest promotion are authorized.
-- Beta 11 local-acceptance/public-postflight exception and CI-green administrator
-  merges are explicitly authorized; independent clean-machine acceptance remains
-  **not run**. Repository rules are unchanged.
-- User-authorized UI addition: a blue two-point time arc immediately inside the
-  Weekly quota arc, sharing its angular origin and sweep. The 5h ring is unchanged.
-- Uses the reported weekly reset timestamp and a fixed seven-day reference;
-  updates every hour without extra server requests or captures.
-- README previews now show synthetic renders of this unreleased UI. Published
-  Beta 10 assets and the installed application are not updated by this change.
-- Semantics, missing/stale data, and preview regeneration: [Reset time ring](RESET_TIME_RING.md).
+- PR #37 merged after both required checks passed in
+  [42348021417](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/42348021417).
+  Main CI [42348247052](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/42348247052)
+  passed at the exact published source.
+- Candidate `make check` passed: 156 application tests, 75 Core tests (one
+  existing opt-in local integration skip), 53 Python tests, Debug/Release builds,
+  bundle checks, source boundaries and privacy scans. User installed acceptance
+  of the hourly ring was confirmed separately on 2026-11-07.
+- Local release audit, clean-source unsigned Universal packaging, strict
+  verification and isolated LaunchServices/owned-child lifecycle passed.
+- Validation-only workflow
+  [42348320225](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/42348320225)
+  passed without creating release state. Publication workflow
+  [42348484721](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/42348484721)
+  passed at the same source with signed/notarized publication skipped.
+- Published at `2026-11-07T06:50:20Z` (14:50:20 Asia/Shanghai), `draft: false`,
+  `prerelease: true`. Latest still pointed to Beta 10 at public postflight.
+- Fresh public downloads matched GitHub digests and SHA256SUMS. Release notes
+  matched tagged source byte-for-byte. Tag resolves to the manifest source.
+- Manifest: version `0.1.0`, build `11`, minimum macOS `14.0`, identifier
+  `io.github.jianshicodes.PetHalo`, architectures `arm64` and `x86_64`,
+  `signing: unsigned`, `notarization: not-submitted`.
+- Public executable/framework signatures, Hardened Runtime and scoped unsigned
+  library-validation entitlement passed. Isolated public-package LaunchServices
+  startup/quit and owned app-server cleanup passed on this Mac.
+- Independent clean-machine first launch, Gatekeeper and capture-permission
+  acceptance are **not run**, under the user-authorized Beta 11 local-validation
+  exception. No Apple trust is claimed. CI-green administrator merges are
+  authorized for preparation and closeout without repository settings changes.
+
+| Public asset | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `Pet-Halo-0.1.0-beta.11-unsigned-universal.zip` | 1,419,264 | `ff88645adc1cd3b80353ba1560550250982cf5eabbcb6ae1b8d7422ff211237d` |
+| `release-manifest.json` | 338 | `b141ca98af802a5c240e451a1382479a6f7849ac29b1448fd13315c971097e2f` |
+| `RELEASE_NOTES.md` | 2,145 | `3ddf03ed0ec8518bf26269f265e8f86849088a96ebe867f8fa3bac0a494870f5` |
+| `SHA256SUMS` | 283 | `44e60f3ff8de1d0d1556c0d0ed9049771ce17222eed9c37c9d6058b6a2e09096` |
 
 ## Published Beta 10 evidence — 2026-10-22
+
+Historical release: `v0.1.0-beta.10`, product `0.1.0`, build `10`.
 
 - PR #34 merged after both required checks passed in
   [39737705743](https://github.com/jianshi-codes/codex-pet-halo/actions/runs/39737705743).

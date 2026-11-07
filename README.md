@@ -6,7 +6,7 @@
 
 Pet Halo is an unofficial macOS menu-bar companion that shows Codex Usage around Codex Pet. Pet Halo positions the ring once and lets you relocate it from the menu. The ring hides when Codex quits.
 
-[![Download v0.1.0-beta.10](https://img.shields.io/badge/download-v0.1.0--beta.10-5865F2)](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.10)
+[![Download v0.1.0-beta.11](https://img.shields.io/badge/download-v0.1.0--beta.11-5865F2)](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.11)
 [![CI](https://github.com/jianshi-codes/codex-pet-halo/actions/workflows/ci.yml/badge.svg)](https://github.com/jianshi-codes/codex-pet-halo/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-black)
@@ -29,8 +29,8 @@ Pet Halo is an unofficial macOS menu-bar companion that shows Codex Usage around
 </table>
 
 These previews render the current SwiftUI ring with synthetic data; they are not
-screenshots of the published Beta 10 build. The thin blue arc immediately inside
-the Weekly quota ring shows **time remaining until the weekly reset**, using the
+live account screenshots. They illustrate the published Beta 11 ring. The thin
+blue arc immediately inside the Weekly quota ring shows **time remaining until the weekly reset**, using the
 reported reset timestamp divided by a seven-day reference (604,800 seconds).
 Both arcs share the same start and direction. If the quota arc is shorter than
 the time arc, usage is ahead of a uniform weekly pace. This is a visual reference,
@@ -43,7 +43,7 @@ the reserved Context slot remains hidden. See [reset ring details](docs/RESET_TI
 
 ## Download
 
-Get `Pet-Halo-0.1.0-beta.10-unsigned-universal.zip` from the [v0.1.0-beta.10 release](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.10). It supports Apple silicon and Intel Macs running macOS 14 or later. You also need Codex Desktop for Pet positioning, plus a signed-in Codex CLI for Usage. The reviewed CLI baseline is `0.145.0-alpha.18`; newer versions below 1.0 are checked at runtime. See [Compatibility](docs/COMPATIBILITY.md).
+Get `Pet-Halo-0.1.0-beta.11-unsigned-universal.zip` from the [v0.1.0-beta.11 release](https://github.com/jianshi-codes/codex-pet-halo/releases/tag/v0.1.0-beta.11). It supports Apple silicon and Intel Macs running macOS 14 or later. You also need Codex Desktop for Pet positioning, plus a signed-in Codex CLI for Usage. The reviewed CLI baseline is `0.145.0-alpha.18`; newer versions below 1.0 are checked at runtime. See [Compatibility](docs/COMPATIBILITY.md).
 
 > **Unsigned Developer Preview:** the app has a complete ad-hoc bundle signature, but is **not Developer ID-signed and not notarized** by Apple. macOS may block the first launch. Only override Gatekeeper after independently verifying the GitHub source, release checksum, and repository provenance. A later ad-hoc update may require granting Screen Recording access again.
 
