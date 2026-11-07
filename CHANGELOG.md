@@ -4,12 +4,25 @@ Pet Halo follows the versioning policy in [`docs/VERSIONING.md`](docs/VERSIONING
 
 ## [Unreleased]
 
+No changes yet.
+
+## [0.1.0-beta.11] - 2026-11-07
+
 ### Added
 
 - Add a thin blue weekly reset-time arc immediately inside the Weekly quota ring,
   updated every hour from the reported reset timestamp against seven days.
 - Update README previews using the production SwiftUI view and synthetic data;
   document remaining-quota versus remaining-time comparison.
+
+### Release
+
+- Published from `cfdc872468b09028829fef63e9a825d85f295dfc` after PR #37 and
+  both required CI checks passed. Public assets, provenance, strict ad-hoc
+  signatures and isolated launch/owned-child shutdown passed.
+- Local installed acceptance passed under the explicit Beta 11 exception;
+  independent clean-machine acceptance remains not run. Developer ID signing
+  and notarization remain incomplete.
 
 ## [0.1.0-beta.10] - 2026-10-22
 

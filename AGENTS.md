@@ -18,6 +18,17 @@ promotion and local upgrade/old-version cleanup are authorized for this task.
 The Beta 10 release record documents the separately authorized local acceptance
 and CI-green administrator merge exceptions.
 
+## Authorized Beta 11 addition (2026-11-07)
+
+Beta 11 adds a thin blue time arc immediately inside Weekly, using its reported
+reset timestamp against seven days. Scheduled redraws are hourly; no extra
+bridge calls, captures or permissions. Missing reset data hides the arc, stale
+data is faded/dashed, and elapsed timestamps never invent another reset. The
+user accepted the installed behavior and authorized publication, separate
+post-release documentation merge and Latest promotion, with local acceptance
+plus fresh public postflight and CI-green administrator merge exceptions limited
+to Beta 11. Independent clean-machine acceptance remains not run.
+
 ## Milestone boundaries
 
 - Work only within the milestone explicitly authorized by the user.

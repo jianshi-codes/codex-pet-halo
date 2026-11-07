@@ -1,12 +1,13 @@
 # Compatibility
 
-## Prepared Beta 11: weekly reset-time reference (2026-11-07)
+## Published Beta 11: weekly reset-time reference (2026-11-07)
 
 The hourly reset-time arc uses the existing weekly reset timestamp; no new
 protocol capability or schema-review claim is introduced. The user confirmed
 this locally installed behavior. Missing weekly/reset data hides the time arc;
-stale data is faded/dashed. Current CLI reports `0.167.0-alpha.3.2`; a version
-observation alone is not provisional session validation. Independent
+stale data is faded/dashed. The installed CLI reports `0.167.0-alpha.3.2`.
+Public-package LaunchServices startup and owned-child shutdown passed locally; this lifecycle evidence does
+not add a reviewed CLI schema or prove every optional capability. Independent
 clean-machine acceptance is not run. Positioning and compatibility policy remain
 as in Beta 10.
 

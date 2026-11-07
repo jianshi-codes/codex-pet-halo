@@ -1,8 +1,12 @@
 # GitHub Repository Settings
 
-## Beta 11 preparation observation — 2026-11-07
+## Beta 11 publication observation — 2026-11-07
 
-- Beta 11/build 11 remote tag and Release are absent.
+- Tag `v0.1.0-beta.11` resolves directly to `cfdc872468b09028829fef63e9a825d85f295dfc`.
+- Release published at `2026-11-07T06:50:20Z`, non-draft unsigned prerelease,
+  with exactly four freshly verified assets. Latest returned Beta 10 during
+  public postflight; promotion is authorized after this documentation merges.
+- Beta 12/build 12 is the next unused identity; tag and Release were absent.
 - Active ruleset `19339705` still requires one approval and strictly up-to-date
   `macOS application` / `Protocol evidence` checks. The administrator bypass is
   available; its use for Beta 11 preparation and closeout is authorized only
