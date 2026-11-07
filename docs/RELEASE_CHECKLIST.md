@@ -1,5 +1,18 @@
 # Public Beta Release Checklist
 
+## Prepared Beta 11 record — 2026-11-07
+
+- [x] User confirmed the installed weekly reset ring and hourly refresh behavior.
+- [x] Publication, post-release documentation and Latest promotion authorized.
+- [x] Beta 11/build 11 remote tag and Release absent at preparation.
+- [ ] Reviewed preparation PR and both required CI checks merged.
+- [ ] Clean-main release audit, packaging and local launch smoke.
+- [ ] Validation-only workflow and publication workflow.
+- [ ] Fresh public download, provenance, signatures and lifecycle postflight.
+- [ ] Separate post-release documentation merge and Latest verification.
+- [ ] Independent clean-machine acceptance — not run.
+- [ ] Developer ID signing and notarization — incomplete, not claimed.
+
 ## Published Beta 10 record — 2026-10-22
 
 - [x] PR #34 merged at `6a86826ce47b81d05fe21935575d1f3c1873ca2f` after both required CI checks passed.

@@ -32,6 +32,12 @@ struct RingMetricValue: Equatable, Sendable {
         min(max(remainingPercent / 100, 0), 1)
     }
 
+    /// Weekly time remaining uses a seven-day reference, never an inferred reset date.
+    func resetProgress(at date: Date) -> Double? {
+        guard let resetsAt else { return nil }
+        return min(max(resetsAt.timeIntervalSince(date) / (7 * 24 * 60 * 60), 0), 1)
+    }
+
     var percentText: String {
         "\(displayedPercent)%"
     }

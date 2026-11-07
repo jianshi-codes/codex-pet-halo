@@ -1,5 +1,13 @@
 # Pet Halo Project Plan
 
+## Authorized Beta 11 reset-time ring — 2026-11-07
+
+Add a thin blue time reference immediately inside Weekly, using the reported
+weekly reset timestamp against seven days. Scheduled updates are hourly at the
+user's request. Local installed acceptance passed; release preparation is in
+progress. Publication, post-release documentation and Latest promotion are
+authorized. Independent clean-machine acceptance and Apple trust remain unproven.
+
 ## Published Beta 10 — 2026-10-22
 
 `v0.1.0-beta.10`, build `10`, is the unsigned Universal Developer Preview from

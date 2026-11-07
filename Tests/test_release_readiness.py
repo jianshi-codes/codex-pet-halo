@@ -283,6 +283,8 @@ class ReleaseReadinessTests(unittest.TestCase):
         for filename in (
             "pet-halo-activity-above.png",
             "pet-halo-activity-below.png",
+            "reset-ring-ahead.png",
+            "reset-ring-within-pace.png",
         ):
             path = ROOT / "docs/assets/screenshots" / filename
             payload = path.read_bytes()
@@ -302,11 +304,11 @@ class ReleaseReadinessTests(unittest.TestCase):
     def test_readme_documents_both_screenshots_and_unsigned_warning(self) -> None:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         self.assertIn("# Pet Halo for Codex", readme)
-        self.assertIn("docs/assets/screenshots/pet-halo-activity-above.png", readme)
-        self.assertIn("docs/assets/screenshots/pet-halo-activity-below.png", readme)
-        self.assertIn("Task card above · Weekly label on the right", readme)
-        self.assertIn("Task card below · Weekly label on the left", readme)
-        self.assertIn("These screenshots show Beta 8 reference behavior", readme)
+        self.assertIn("docs/assets/screenshots/reset-ring-ahead.png", readme)
+        self.assertIn("docs/assets/screenshots/reset-ring-within-pace.png", readme)
+        self.assertIn("39% quota left · 50% time left: usage ahead of time", readme)
+        self.assertIn("65% quota left · 50% time left: within time budget", readme)
+        self.assertIn("These previews render the current SwiftUI ring with synthetic data", readme)
         self.assertIn("## Download", readme)
         self.assertIn("not Developer ID-signed and not notarized", readme)
         self.assertIn("Only override Gatekeeper after independently verifying", readme)

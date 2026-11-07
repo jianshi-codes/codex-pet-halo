@@ -4,6 +4,13 @@ Pet Halo is designed to expose only the minimum local usage state needed for its
 
 The M9 Public Beta candidate launches one owned local `codex app-server --stdio` child and requests only account availability, rate-limit windows, and Account Usage. It keeps normalized Usage and UI presentation state in memory and stores none of it. It makes no direct network request and includes no analytics, telemetry, crash upload, updater, or cloud service.
 
+## Weekly reset-time reference (2026-11-07)
+
+The inner time arc uses only the existing in-memory weekly reset timestamp and
+local clock, with a fixed seven-day visual reference and hourly scheduled redraw.
+It introduces no bridge request, capture, stored data, permission or telemetry.
+Documentation previews render synthetic data without capturing any screen.
+
 ## Data boundaries
 
 ### Fixed positioning and optional following (2026-10-22)

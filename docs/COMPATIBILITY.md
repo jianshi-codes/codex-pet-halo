@@ -1,5 +1,15 @@
 # Compatibility
 
+## Prepared Beta 11: weekly reset-time reference (2026-11-07)
+
+The hourly reset-time arc uses the existing weekly reset timestamp; no new
+protocol capability or schema-review claim is introduced. The user confirmed
+this locally installed behavior. Missing weekly/reset data hides the time arc;
+stale data is faded/dashed. Current CLI reports `0.167.0-alpha.3.2`; a version
+observation alone is not provisional session validation. Independent
+clean-machine acceptance is not run. Positioning and compatibility policy remain
+as in Beta 10.
+
 ## Published Beta 10: lifecycle and optional following (2026-10-22)
 
 Fixed positioning remains the default on every launch. NSWorkspace notifications
