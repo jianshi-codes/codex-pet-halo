@@ -26,6 +26,9 @@
   Developer Preview. Remote tag and Release were absent on 2026-11-07.
 - User confirmed the locally installed hourly reset-ring behavior; publication,
   separate documentation closeout and Latest promotion are authorized.
+- Beta 11 local-acceptance/public-postflight exception and CI-green administrator
+  merges are explicitly authorized; independent clean-machine acceptance remains
+  **not run**. Repository rules are unchanged.
 - User-authorized UI addition: a blue two-point time arc immediately inside the
   Weekly quota arc, sharing its angular origin and sweep. The 5h ring is unchanged.
 - Uses the reported weekly reset timestamp and a fixed seven-day reference;

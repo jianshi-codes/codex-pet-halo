@@ -5,7 +5,9 @@
 - Beta 11/build 11 remote tag and Release are absent.
 - Active ruleset `19339705` still requires one approval and strictly up-to-date
   `macOS application` / `Protocol evidence` checks. The administrator bypass is
-  available; no repository settings have been changed.
+  available; its use for Beta 11 preparation and closeout is authorized only
+  after both CI checks pass. No repository settings have been changed.
+- The environment API returned an empty list (`total_count: 0`).
 
 ## Beta 10 publication observation — 2026-10-22
 

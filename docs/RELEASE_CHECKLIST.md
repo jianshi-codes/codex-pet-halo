@@ -4,6 +4,7 @@
 
 - [x] User confirmed the installed weekly reset ring and hourly refresh behavior.
 - [x] Publication, post-release documentation and Latest promotion authorized.
+- [x] Beta 11 local/public-postflight exception and CI-green administrator merges authorized.
 - [x] Beta 11/build 11 remote tag and Release absent at preparation.
 - [ ] Reviewed preparation PR and both required CI checks merged.
 - [ ] Clean-main release audit, packaging and local launch smoke.
